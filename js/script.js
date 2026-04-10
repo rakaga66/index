@@ -1247,7 +1247,7 @@ function openBuzzerModal() {
         const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D8%A3%D9%88%D9%84';
         const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
 
-        const serverBase = 'https://7roof-buzzer.vercel.app';
+        const serverBase = 'https://buzzer-server-qaf.up.railway.app';
 
         const buzzerUrl = `${serverBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
 
@@ -1365,10 +1365,7 @@ function openBuzzerDirectly() {
     const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D8%A3%D9%88%D9%84';
     const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
 
-    const serverBase = window.location.protocol === 'file:' 
-        ? 'http://192.168.1.19:3000' 
-        : window.location.origin.replace(/:\d+$/, ':3000');
-
+    const serverBase = 'https://buzzer-server-qaf.up.railway.app';
     const buzzerUrl = `${serverBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
     window.open(buzzerUrl, '_blank');
 }
