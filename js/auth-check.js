@@ -1,5 +1,5 @@
 (function () {
-    const AUTH_SERVER = 'https://hojas-auth9-production.up.railway.app';
+    const AUTH_SERVER = 'https://7roof-auth.vercel.app';
 
     // 1. أولاً: حاول قراءة التوكن من الرابط إذا وجد (بعد العودة من سيرفر المصادقة)
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,7 +21,7 @@
         // إذا لم يكن هناك جلسة، يتم التوجيه لصفحة تسجيل الدخول الجديدة.
         // تحديد المسار بناءً على موقع الصفحة الحالية (داخل مجلد pages أو في الجذر)
         const inSubfolder = window.location.pathname.includes('/pages/');
-        const loginPath = inSubfolder ? '../hojas-auth/public/login.html' : 'hojas-auth/public/login.html';
+        const loginPath = inSubfolder ? 'https://7roof-auth.vercel.app/login.html' : 'https://7roof-auth.vercel.app/login.html';
         window.location.href = loginPath;
     }
 })();
