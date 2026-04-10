@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hojagas Gaming | Next-Gen Gaming Experiences</title>
+    <meta name="description" content="Hojagas Studio - Professional gaming platform showcasing futuristic games, services and digital experiences.">
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass" id="main-nav">
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="text-gradient">HOJAGAS</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#games">Games</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="menu-toggle" id="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="glow-sphere"></div>
+        </div>
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="animate-fade-in">Experience <br><span class="text-gradient">The Future</span> Of Play</h1>
+                <p class="animate-fade-in delay-1">Hojagas Studio is dedicated to building state-of-the-art interactive solutions and immersive digital worlds for gamers worldwide.</p>
+                <div class="hero-actions animate-fade-in delay-2">
+                    <a href="#games" class="btn-primary">Explore Games</a>
+                    <a href="#about" class="btn-outline">Our Story</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section id="games" class="games-section">
+        <div class="container">
+            <h2 class="section-title">Latest Releases</h2>
+            <div class="games-grid" id="games-grid">
+                <!-- Game cards will be injected by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section glass">
+        <div class="container stats-grid">
+            <div class="stat-item">
+                <h3 class="stat-number" data-target="500000">0</h3>
+                <p>Total Players</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="stat-number" data-target="15">0</h3>
+                <p>Games Released</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="stat-number" data-target="120000">0</h3>
+                <p>Active Users</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="stat-number" data-target="24">0</h3>
+                <p>Partnerships</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container about-container">
+            <div class="about-image">
+                <div class="image-placeholder glass">
+                    <img id="about-img" src="about-img.png" alt="About Hojagas">
+                </div>
+            </div>
+            <div class="about-content">
+                <h2 class="section-title" style="text-align: left;">About Us</h2>
+                <p>Born from a passion for boundary-pushing technology and immersive storytelling, Hojagas Studio stands at the intersection of innovation and entertainment. Our mission is to redefine how players connect and interact within digital environments.</p>
+                <p>Under the vision of [YOUR NAME], we've grown into a professional studio capable of delivering high-end startup solutions and world-class gaming experiences.</p>
+                <div class="vision-grid">
+                    <div class="vision-item">
+                        <h4>Mission</h4>
+                        <p>To deliver quality gaming that inspires.</p>
+                    </div>
+                    <div class="vision-item">
+                        <h4>Vision</h4>
+                        <p>Leading the interactive digital revolution.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section glass">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <i class="icon">💻</i>
+                    <h3>Game Development</h3>
+                    <p>End-to-end development using modern engines and tools.</p>
+                </div>
+                <div class="service-card">
+                    <i class="icon">🚀</i>
+                    <h3>Publishing</h3>
+                    <p>Bringing your vision to global markets with strategic marketing.</p>
+                </div>
+                <div class="service-card">
+                    <i class="icon">✨</i>
+                    <h3>Digital Experiences</h3>
+                    <p>Interactive web and VR solutions that wow your audience.</p>
+                </div>
+                <div class="service-card">
+                    <i class="icon">🛠️</i>
+                    <h3>Support</h3>
+                    <p>Long-term maintenance and scaling for digital platforms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-wrapper">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <span>📧</span> [YOUR EMAIL]
+                    </div>
+                    <div class="info-item">
+                        <span>📞</span> [YOUR PHONE]
+                    </div>
+                    <div class="social-links">
+                        <a href="#">TW</a>
+                        <a href="#">IG</a>
+                        <a href="#">LN</a>
+                        <a href="#">YT</a>
+                    </div>
+                </div>
+                <form class="contact-form glass">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <textarea placeholder="How can we help?" rows="5" required></textarea>
+                    <button type="submit" class="btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass">
+        <div class="container footer-container">
+            <div class="footer-logo">
+                <span class="text-gradient">HOJAGAS</span>
+            </div>
+            <p>&copy; 2026 Hojagas Studio. All rights reserved.</p>
+            <ul class="footer-links">
+                <li><a href="#">Privacy</a></li>
+                <li><a href="#">Terms</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

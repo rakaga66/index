@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الأسئلة - هوجاس</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple: #6B3FA0;
+            --purple-dark: #4A2570;
+            --yellow: #FFD600;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--purple-dark);
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: linear-gradient(135deg, #4A2570 0%, #1e0a3c 100%);
+        }
+
+        .hex-bg-pattern {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.3v34.6L30 69.3 0 52V17.3zM30 104l30-17.3V52L30 34.6 0 52v34.6z' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E");
+            background-size: 60px 104px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 800px;
+            background: rgba(26, 10, 60, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 214, 0, 0.3);
+            border-radius: 40px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .title {
+            font-family: 'Lalezar', sans-serif;
+            font-size: 4rem;
+            color: var(--yellow);
+            -webkit-text-stroke: 2px #000;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin: 0;
+        }
+
+        .letter-badge {
+            display: inline-block;
+            background: var(--yellow);
+            color: var(--purple-dark);
+            font-family: 'Lalezar', sans-serif;
+            font-size: 3rem;
+            padding: 10px 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .question-box {
+            font-size: 2.22rem;
+            font-weight: 800;
+            line-height: 1.4;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            -webkit-text-stroke: 1px #000;
+            text-shadow: 3px 3px 0 #000;
+            paint-order: stroke fill;
+        }
+
+        .answer-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .answer-label {
+            font-size: 1rem;
+            color: var(--yellow);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .answer-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--yellow);
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: 4px solid #000;
+            font-family: 'Lalezar', sans-serif !important;
+            font-weight: normal;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .btn-reveal {
+            background: var(--yellow);
+            color: #000;
+            box-shadow: 0 6px 0 #000;
+            text-shadow: none;
+        }
+
+        .btn-reveal:hover {
+            transform: translateY(-2px);
+            background: #fff;
+            box-shadow: 0 8px 0 #000;
+        }
+
+        .btn-reveal:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #000;
+        }
+
+        .btn-next {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 6px 0 #000;
+            text-shadow: none;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            background: #eee;
+            box-shadow: 0 8px 0 #000;
+        }
+
+        .btn-next:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #000;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .waiting {
+            font-size: 1.5rem;
+            opacity: 0.6;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.4; }
+        }
+    </style>
+    <!-- PDF.js for reading questions file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="../js/pdfData.js"></script>
+</head>
+<body>
+    <div class="hex-bg-pattern"></div>
+    
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <h1 class="title">عرض الأسئلة</h1>
+            <div id="letterBadge" class="letter-badge" style="display:none;">-</div>
+        </div>
+
+        <div id="statusMsg" class="waiting">بانتظار اختيار حرف من شاشة اللعبة...</div>
+
+        <div id="questionDisplay" style="display:none;">
+            <div class="question-box" id="qText"></div>
+            
+            <div class="answer-box" id="aBox">
+                <div class="answer-label">الإجابة</div>
+                <div class="answer-text" id="aText"></div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-reveal" id="revealBtn" onclick="revealAnswer()">إظهار الإجابة</button>
+                <button class="btn btn-next" onclick="nextQuestion()">تغيير السؤال ↺</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionsBank = [];
+        let questionsLoaded = false;
+        let currentLetter = null;
+        let lastUpdateTrigger = null;
+
+        async function loadQuestions() {
+            if (typeof pdfBase64Data === 'undefined') {
+                console.error('PDF Data not found!');
+                return;
+            }
+            try {
+                const raw = atob(pdfBase64Data);
+                const uint8Array = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++) uint8Array[i] = raw.charCodeAt(i);
+                
+                const pdf = await pdfjsLib.getDocument({data: uint8Array}).promise;
+                let fullText = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    fullText += content.items.map(item => item.str.trim()).join('\n') + '\n';
+                }
+
+                const parsedQs = [];
+                const linesArr = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 1);
+                let currentLetGroup = '';
+
+                for (let i = 0; i < linesArr.length; i++) {
+                    let line = linesArr[i];
+                    if (line.match(/(حرف|أسئلة)\s+([أ-ي])/i) || (line.length < 15 && line.includes('حرف'))) {
+                        let match = line.match(/(حرف\s+[أ-ي]+)/i);
+                        if (match) currentLetGroup = match[1];
+                        continue;
+                    }
+
+                    let q = line;
+                    let a = '';
+                    let qmIndex = q.indexOf('؟');
+                    if (qmIndex > -1 && qmIndex < q.length - 2) {
+                        a = q.substring(qmIndex + 1).trim();
+                        q = q.substring(0, qmIndex + 1).trim();
+                        a = a.replace(/^(ج|الجواب|الإجابة|الاجابه)[\s:\/\-]*/i, '').trim();
+                    } else if (i + 1 < linesArr.length && linesArr[i+1].match(/^(ج|الجواب|الإجابة)/)) {
+                        a = linesArr[i+1].replace(/^(ج|الجواب|الإجابة)[\s:\/\-]*/i, '').trim();
+                        i++;
+                    }
+
+                    q = q.replace(/^(\d+[\-\.\)]|س[\/\:\-]|س\s+)/, '').trim();
+                    if (q.length > 5 && q.includes(' ')) {
+                        let derivedLetter = currentLetGroup;
+                        if (!derivedLetter && a) {
+                            let cleanA = a.replace(/^(ال|و|ف|ب|ك)/, '');
+                            if (cleanA) derivedLetter = cleanA[0];
+                        }
+                        const normalize = (l) => l.replace(/[أإآ]/g, 'ا');
+                        parsedQs.push({ q, a, letterMatch: normalize(derivedLetter || 'عام') });
+                    }
+                }
+                questionsBank = parsedQs;
+                questionsLoaded = true;
+                console.log('Loaded ' + questionsBank.length + ' questions');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function checkUpdate() {
+            const letter = localStorage.getItem('7roof_current_letter');
+            const trigger = localStorage.getItem('7roof_update_trigger');
+            
+            if (letter && (letter !== currentLetter || trigger !== lastUpdateTrigger)) {
+                currentLetter = letter;
+                lastUpdateTrigger = trigger;
+                showQuestionFor(letter);
+            }
+        }
+
+        function showQuestionFor(letter) {
+            if (!questionsLoaded) return;
+            
+            document.getElementById('statusMsg').style.display = 'none';
+            document.getElementById('letterBadge').style.display = 'inline-block';
+            document.getElementById('letterBadge').textContent = 'حرف ' + letter;
+            document.getElementById('questionDisplay').style.display = 'block';
+            document.getElementById('aBox').style.display = 'none';
+            document.getElementById('revealBtn').style.display = 'block';
+
+            const normalize = (l) => l.replace(/[أإآ]/g, 'ا');
+            let normTarget = normalize(letter);
+            let filtered = questionsBank.filter(q => q.letterMatch.includes(normTarget));
+            
+            if (filtered.length === 0) filtered = questionsBank;
+
+            const qChosen = filtered[Math.floor(Math.random() * filtered.length)];
+            document.getElementById('qText').textContent = qChosen.q;
+            document.getElementById('aText').textContent = qChosen.a || "غير متوفرة";
+        }
+
+        function revealAnswer() {
+            document.getElementById('aBox').style.display = 'block';
+            document.getElementById('revealBtn').style.display = 'none';
+        }
+
+        function nextQuestion() {
+            showQuestionFor(currentLetter);
+        }
+
+        // Initialize
+        loadQuestions().then(() => {
+            setInterval(checkUpdate, 1000);
+        });
+    </script>
+</body>
+</html>

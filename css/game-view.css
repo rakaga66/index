@@ -1,0 +1,174 @@
+/* ===== Game Presentation Mode Styles ===== */
+
+/* Hide unwanted UI elements when in presentation mode */
+body.presentation-mode .sidebar,
+body.presentation-mode .bottom-icon-bar,
+body.presentation-mode #darkModeToggleBtn {
+    display: none !important;
+}
+
+body.presentation-mode .main-area {
+    padding-left: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 100px !important; /* Reverted to the previous preferred spacing */
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.presentation-mode .board-wrap {
+    transform: scale(1.2);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ===== Game View Header (TV Show Style) ===== */
+.game-view-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(180deg, rgba(30, 15, 55, 0.8) 0%, rgba(30, 15, 55, 0) 100%);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    padding: 0 40px;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideDownFade 0.6s ease forwards;
+}
+
+body.presentation-mode .game-view-header {
+    display: flex;
+    height: 180px; /* Increased to fit stacked logo */
+}
+
+.gv-current-round {
+    font-family: 'Lalezar', cursive;
+    font-size: 2.4rem;
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    background: rgba(139, 95, 191, 0.4);
+    padding: 8px 30px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 15px; /* Added spacing between words */
+}
+
+.gv-word-1 { color: #fff; }
+.gv-word-2 { color: #FFD600; } /* Yellow for "الأولى" etc */
+
+/* ===== 3D logo container ===== */
+.gv-logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 0.75;
+    transform: scale(0.9);
+}
+
+.gv-logo-line {
+    font-family: "Lalezar", sans-serif;
+    -webkit-text-stroke: 3px #000;
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 #000,
+        4px 4px 0 #000,
+        6px 6px 0 #000,
+        8px 8px 0 rgba(0,0,0,0.5);
+    position: relative;
+    white-space: nowrap;
+}
+
+.gv-logo-line1 { font-size: 4rem; color: #FFD600; }
+.gv-logo-line2 { font-size: 3rem; color: #00E5FF; }
+.gv-logo-line3 { font-size: 5rem; color: #FF1744; }
+
+.gv-exit-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    opacity: 0.3;
+}
+
+.gv-exit-btn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #EF4444;
+}
+
+/* ===== Game View Scores (Floating cards) ===== */
+.game-view-scores {
+    display: none;
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+    z-index: 10000;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+body.presentation-mode .game-view-scores {
+    display: flex;
+}
+
+.gv-score-card {
+    background: rgba(18, 8, 35, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 15px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 180px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    animation: slideUpFade 0.6s ease forwards;
+    pointer-events: auto;
+}
+
+.gv-score-card.team-1 {
+    border-right: 6px solid var(--team1-bg, #FF9800);
+}
+
+.gv-score-card.team-2 {
+    border-left: 6px solid var(--team2-bg, #8B5FBF);
+}
+
+.gv-team-name {
+    font-weight: 800;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.gv-score-num {
+    font-family: 'Lalezar', cursive;
+    font-size: 3.5rem;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+/* Animations */
+@keyframes slideDownFade {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideUpFade {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
