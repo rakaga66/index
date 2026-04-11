@@ -40,14 +40,30 @@ let teamSetup = {
     ansTime: 3,
     otherTime: 10,
     presenter: 'ai',
-    sound: 'on'
+    sound: 'on',
+    buzzerServerUrl: 'https://buzzer-server-production-8b8a.up.railway.app'
 };
+
+// ===== Buzzer State =====
+let buzzerSocket = null;
+let buzzerRoom = null;
+let isBuzzerLocked = false;
+let buzzerFirstTeam = null; // 'team1' or 'team2'
+let buzzerTimerInterval = null;
+let buzzerTimeLeft = 0;
 
 let timerInterval = null;
 let currentTimerTeam = null;
 let timeLeft = 0;
 
 // ===== Utility Functions =====
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 function safeSetDisplay(idOrElement, displayStyle) {
     const el = typeof idOrElement === 'string' ? document.getElementById(idOrElement) : idOrElement;
     if (el) {
@@ -210,7 +226,13 @@ window.addEventListener('DOMContentLoaded', () => {
     initSettingsUI();
     setGamePresenter(teamSetup.presenter);
     
-
+    // Load saved buzzer URL from localStorage if it exists
+    const savedBuzzerUrl = localStorage.getItem('buzzerServerUrl');
+    if (savedBuzzerUrl) {
+        teamSetup.buzzerServerUrl = savedBuzzerUrl;
+        const input = document.getElementById('setBuzzerUrl');
+        if (input) input.value = savedBuzzerUrl;
+    }
 });
 
 
@@ -243,10 +265,65 @@ function showSettings() {
     const isInGame = homeScreen && homeScreen.style.display === 'none';
     settingsCalledFromGame = isInGame;
 
+    syncSettingsUI();
+
     if (!isInGame) {
         homeScreen.style.display = 'none';
     }
     document.getElementById('settingsScreen').style.display = 'flex';
+}
+
+function updateRoundDisplay() {
+    const el = document.getElementById('roundText');
+    if (el) {
+        const idx = (teamSetup.currentRound - 1) % ROUND_WORDS.length;
+        el.textContent = ROUND_WORDS[idx] || 'الأولى';
+    }
+    
+    const totalEl = document.getElementById('roundTotal');
+    if (totalEl) {
+        totalEl.textContent = ` (${teamSetup.currentRound}/${teamSetup.totalRounds})`;
+    }
+}
+
+function syncSettingsUI() {
+    const compInput = document.getElementById('setCompName');
+    if (compInput) compInput.value = teamSetup.competitionName;
+
+    const t1Input = document.getElementById('setTeam1Name');
+    if (t1Input) t1Input.value = teamSetup.team1.name;
+
+    const t2Input = document.getElementById('setTeam2Name');
+    if (t2Input) t2Input.value = teamSetup.team2.name;
+
+    const bUrlInput = document.getElementById('setBuzzerUrl');
+    if (bUrlInput) bUrlInput.value = teamSetup.buzzerServerUrl || '';
+
+    // مزامنة أزرار الاختيار (الجولات، المقدم، الصوت، الثيم)
+    const groups = {
+        'setRoundsGroup': teamSetup.totalRounds,
+        'setPresenterGroup': teamSetup.presenter,
+        'setSoundGroup': teamSetup.sound,
+        'setThemeGroup': document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+    };
+
+    for (let gid in groups) {
+        const group = document.getElementById(gid);
+        if (group) {
+            group.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.value == groups[gid]);
+            });
+        }
+    }
+
+    // مزامنة الألوان
+    const colorsGrid = document.getElementById('setColorsGroup');
+    if (colorsGrid) {
+        colorsGrid.querySelectorAll('.color-pair').forEach(btn => {
+            const isSelected = btn.dataset.c1 === teamSetup.team1.color && btn.dataset.c2 === teamSetup.team2.color;
+            btn.classList.toggle('selected', isSelected);
+        });
+    }
 }
 
 function showHome() {
@@ -263,6 +340,10 @@ function saveSettings() {
     
     const t2Name = document.getElementById('setTeam2Name').value.trim();
     if(t2Name) teamSetup.team2.name = t2Name;
+
+    const bUrl = document.getElementById('setBuzzerUrl').value.trim();
+    teamSetup.buzzerServerUrl = bUrl;
+    localStorage.setItem('buzzerServerUrl', bUrl);
 
     // تطبيق التغييرات فوراً إذا كانت اللعبة شغالة
     if (settingsCalledFromGame) {
@@ -334,10 +415,10 @@ function showTransitionScreen(compName, roundWord) {
     `;
     tsc.className = 'ts-content animate-pop-in';
     
-    // After 2 seconds, switch to Phase 2: Round Word
+    // After 1 second, switch to Phase 2: Round Word
     setTimeout(() => {
         tsc.classList.remove('animate-pop-in');
-        void tsc.offsetWidth; // trigger reflow
+        void tsc.offsetWidth; 
         
         tsc.innerHTML = `
             <div class="ts-round">
@@ -347,25 +428,33 @@ function showTransitionScreen(compName, roundWord) {
         `;
         tsc.classList.add('animate-pop-in');
         
-        // After 2 more seconds, hide transition and show main area
+        // After 1 more second, hide transition and show main area
         setTimeout(() => {
-            ts.style.display = 'none';
-            if (mainArea) {
-                mainArea.style.display = 'flex';
-                // Trigger any entry animation for the main area if needed
-                
+            hideTransitionNow(ts, mainArea);
+        }, 1000);
+    }, 1000);
 
-                
-                if (teamSetup.sound === 'on') {
-                    const enterAudio = document.getElementById('enterSound');
-                    if (enterAudio) {
-                        enterAudio.currentTime = 0;
-                        enterAudio.play().catch(e => console.log('Enter sound prevented', e));
-                    }
-                }
+    // Safety timeout
+    setTimeout(() => {
+        if (ts && ts.style.display !== 'none') {
+            console.warn('Transition Safety Timeout triggered');
+            hideTransitionNow(ts, mainArea);
+        }
+    }, 4000);
+}
+
+function hideTransitionNow(ts, mainArea) {
+    if (ts) ts.style.display = 'none';
+    if (mainArea) {
+        mainArea.style.display = 'flex';
+        if (teamSetup.sound === 'on') {
+            const enterAudio = document.getElementById('enterSound');
+            if (enterAudio) {
+                enterAudio.currentTime = 0;
+                enterAudio.play().catch(e => console.log('Enter sound prevented', e));
             }
-        }, 2000);
-    }, 2000);
+        }
+    }
 }
 
 // ===== Game Menu (Dropdown) =====
@@ -712,12 +801,6 @@ function updateSidebar() {
 }
 
 // ===== Round Display =====
-function updateRoundDisplay() {
-    const idx = (teamSetup.currentRound - 1) % ROUND_WORDS.length;
-    document.getElementById('roundText').textContent = ROUND_WORDS[idx];
-    document.getElementById('roundTotal').textContent =
-        '(' + teamSetup.currentRound + '/' + teamSetup.totalRounds + ')';
-}
 
 // ===== Shuffle Board (only unclaimed) =====
 function shuffleBoard() {
@@ -1184,45 +1267,15 @@ function getHexSize() {
     const vh = window.innerHeight;
     const sidebar = 300;
     const padH = 80;
-
     const availW = vw - sidebar;
     const availH = vh - padH;
-
     const wFactor = BOARD_SIZE - 0.5;
     const hFactor = ((BOARD_SIZE - 1) * 0.75 + 1) * 1.1547;
-
     const maxByW = availW / wFactor;
     const maxByH = availH / hFactor;
-
     return Math.max(60, Math.min(maxByW, maxByH, 180));
 }
 
-// ===== Shuffle =====
-function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-}
-
-// ===== Resize =====
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(renderBoard, 200);
-});
-
-// ==========================================
-// ===== BUZZER INTEGRATION MODULE ==========
-// ==========================================
-let buzzerSocket = null;
-let buzzerRoom = null;
-let isBuzzerLocked = false;
-let buzzerFirstTeam = null;   // أول فريق ضغط
-let buzzerTimerInterval = null;
-let buzzerTimeLeft = 0;
-
-// توليد كود جلسة فريد 6 أحرف
 function generateBuzzerCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
@@ -1230,145 +1283,104 @@ function generateBuzzerCode() {
     return code;
 }
 
-function openBuzzerModal() {
-    // ✅ أولاً وقبل كل شيء نفتح المودال حتى لو كان هناك خطأ لاحقاً
-    const modal = safeSetDisplay('buzzerShareModal', 'flex');
+function getBuzzerServerBase() {
+    if (teamSetup.buzzerServerUrl && teamSetup.buzzerServerUrl.trim() !== '') {
+        return teamSetup.buzzerServerUrl.trim();
+    }
+    return 'https://7roof-buzzer.vercel.app';
+}
 
+function ensureSocketLib(callback) {
+    if (typeof io !== 'undefined') { callback(); return; }
+    const base = getBuzzerServerBase();
+    const script = document.createElement('script');
+    script.src = `${base}/socket.io/socket.io.js`;
+    script.onload = () => callback();
+    script.onerror = () => showGameToast('⚠️ سيرفر الجرس غير متاح.');
+    document.head.appendChild(script);
+}
+
+function openBuzzerModal() {
+    const modal = safeSetDisplay('buzzerShareModal', 'flex');
     try {
-        // إغلاق القائمة المنسدلة إن كانت مفتوحة
         const menu = document.getElementById('gameDropdown');
         if (menu) menu.style.display = 'none';
-
-        // Generate a unique session code if not already present
-        if (!buzzerRoom) {
-            buzzerRoom = generateBuzzerCode();
-        }
-
-        const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D8%A3%D9%88%D9%84';
-        const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
-
-        const serverBase = 'https://buzzer-server-qaf.up.railway.app';
-
-        const buzzerUrl = `${serverBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
-
-        // Refresh code display
+        if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
+        const t1 = encodeURIComponent(teamSetup.team1.name);
+        const t2 = encodeURIComponent(teamSetup.team2.name);
+        const base = getBuzzerServerBase();
+        const url = `${base}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
         const codeTxt = document.getElementById('modalBuzzerCodeTxt');
         if (codeTxt) {
             codeTxt.textContent = buzzerRoom;
-            codeTxt.onclick = () => {
-                if (confirm('هل تريد توليد كود جديد للمسابقة؟ سيتوقف اتصال اللاعبين الحاليين.')) {
-                    buzzerRoom = generateBuzzerCode();
-                    openBuzzerModal(); // Refresh modal
-                    if (buzzerSocket) buzzerSocket.emit('host-join', buzzerRoom);
-                }
-            };
-            codeTxt.style.cursor = 'pointer';
-            codeTxt.title = 'اضغط لتغيير الكود';
+            codeTxt.onclick = () => { if (confirm('كود جديد؟')) { buzzerRoom=generateBuzzerCode(); openBuzzerModal(); } };
         }
-
-        // توليد QR Code
+        
         const qrBox = document.getElementById('modalQrcodeBox');
         if (qrBox) {
             qrBox.innerHTML = '';
-            try {
-                if (typeof QRCode !== 'undefined') {
-                    new QRCode(qrBox, {
-                        text: buzzerUrl,
-                        width: 140,
+            // The UI is on Vercel, but it will connect to the Railway backend
+            const vercelUiBase = 'https://7roof-buzzer.vercel.app';
+            const url = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
+            
+            console.log("Generating QR for Vercel UI:", url);
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    new QRCode(qrBox, { 
+                        text: url, 
+                        width: 140, 
                         height: 140,
-                        colorDark: '#4A2570',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.L
+                        correctLevel: 0 // QRCode.CorrectLevel.M or L (0 is L)
                     });
-                } else {
-                    qrBox.innerHTML = '<div style="color:#666;font-size:0.8rem;padding:10px;">QR غير متاح</div>';
+                } catch (e) {
+                    console.error("QR Error, trying simple generation", e);
+                    qrBox.innerHTML = '<div style="font-size:0.8rem; color:#fff;">فشل توليد الباركود. استخدم الكود المكتوب.</div>';
                 }
-            } catch (qrErr) {
-                console.error("QRCode generation failed:", qrErr);
-                qrBox.innerHTML = '<div style="color:#666;font-size:0.8rem;padding:10px;">خطأ في QR</div>';
             }
         }
-    } catch(e) {
-        console.error("Error in openBuzzerModal:", e);
-    }
-
-    // محاولة الاتصال بالسيرفر (اختياري — لا يوقف المودال)
-    try {
-        if (typeof io !== 'undefined' && !buzzerSocket) {
-            buzzerSocket = io(serverBase);
-
-            buzzerSocket.on('connect', () => {
-                console.log('✅ Connected to Buzzer Server');
+        ensureSocketLib(() => {
+            if (!buzzerSocket) {
+                buzzerSocket = io(getBuzzerServerBase());
+                buzzerSocket.on('connect', () => buzzerSocket.emit('host-join', buzzerRoom));
+                buzzerSocket.on('buzzed', (data) => {
+                    if (isBuzzerLocked) return;
+                    isBuzzerLocked = true;
+                    showGameToast(`⚡ ${data.name} ضغط أولاً!`);
+                    showBuzzerOverlay(data.name, data.team);
+                    startBuzzerCountdown(data.team, 3);
+                });
+                buzzerSocket.on('switch-team', (data) => {
+                    showBuzzerOverlay(data.nextTeamName, data.nextTeam);
+                    startBuzzerCountdown(data.nextTeam, 10, true);
+                });
+                buzzerSocket.on('buzzer-unlocked', () => {
+                    isBuzzerLocked = false;
+                    clearInterval(buzzerTimerInterval);
+                    const old = document.getElementById('buzzerLockOverlay');
+                    if (old) old.remove();
+                    showGameToast('الجرس متاح للجميع! 🔔');
+                });
+                buzzerSocket.on('disconnect', () => console.warn('Buzzer disconnected'));
+            } else {
                 buzzerSocket.emit('host-join', buzzerRoom);
-            });
-
-            buzzerSocket.on('buzzed', (data) => {
-                if (isBuzzerLocked) return;
-                isBuzzerLocked = true;
-                buzzerFirstTeam = data.team;
-                
-                // إشعار فوري في اللعبة
-                showGameToast(`⚡ ${data.name} ضغط الجرس أولاً!`);
-                
-                showBuzzerOverlay(data.name, data.team);
-                
-                // أول فريق يضغط له 3 ثوانٍ فقط للإجابة (ثابتة حسب طلب المستخدم)
-                startBuzzerCountdown(data.team, 3);
-                
-                if (teamSetup.sound === 'on') {
-                    const aud = document.getElementById('enterSound') || document.getElementById('correctSound');
-                    if (aud) { aud.currentTime = 0; aud.play().catch(() => {}); }
-                }
-            });
-
-            buzzerSocket.on('switch-team', (data) => {
-                showBuzzerOverlay(data.nextTeamName, data.nextTeam);
-                // الفريق الآخر له 10 ثوانٍ (ثابتة حسب طلب المستخدم)
-                startBuzzerCountdown(data.nextTeam, 10, true);
-            });
-
-            buzzerSocket.on('buzzer-unlocked', () => {
-                isBuzzerLocked = false;
-                buzzerFirstTeam = null;
-                clearInterval(buzzerTimerInterval);
-                const old = document.getElementById('buzzerLockOverlay');
-                if (old) old.remove();
-                
-                // إشعار بأن الجرس متاح للجميع
-                showGameToast('الجرس متاح للجميع مجدداً! 🔔');
-            });
-
-            buzzerSocket.on('reset', () => {
-                isBuzzerLocked = false;
-                buzzerFirstTeam = null;
-                clearInterval(buzzerTimerInterval);
-                const old = document.getElementById('buzzerLockOverlay');
-                if (old) old.remove();
-            });
-
-            buzzerSocket.on('disconnect', () => {
-                console.warn('Buzzer server disconnected');
-            });
-
-        } else if (buzzerSocket) {
-            buzzerSocket.emit('host-join', buzzerRoom);
-        }
-    } catch (e) {
-        console.warn('Buzzer connection failed:', e.message);
-    }
+            }
+        });
+    } catch(e) { console.error("Buzzer Modal error", e); }
 }
 
 // فتح رابط الجرس مباشرة
 function openBuzzerDirectly() {
     if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
+    const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%A3%D9%88%D9%84';
+    const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
     
-    const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D8%A3%D9%88%D9%84';
-    const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
-
-    const serverBase = 'https://buzzer-server-qaf.up.railway.app';
-    const buzzerUrl = `${serverBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
+    // Always use Vercel for the UI/Site, regardless of the backend base
+    const vercelUiBase = 'https://7roof-buzzer.vercel.app';
+    const buzzerUrl = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
     window.open(buzzerUrl, '_blank');
 }
+
 
 
 // عداد تنازلي مرئي مرتبط بفريق معين

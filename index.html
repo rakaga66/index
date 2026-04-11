@@ -101,21 +101,8 @@
     <!-- PDF.js for reading questions file -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-    <script src="pdfData.js"></script>
-    <!-- QRCode & Socket.IO for Buzzer Integration -->
+    <!-- QRCode library for Buzzer -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        // تحميل socket.io بشكل آمن — لا يوقف باقي الكود إذا فشل
-        (function () {
-            const s = document.createElement('script');
-            s.src = 'https://buzzer-server-qaf.up.railway.app/socket.io/socket.io.js';
-            s.onerror = function () {
-                console.warn('⚠️ Buzzer server not running on port 3000. Buzzer will be disabled.');
-                window._buzzerServerOffline = true;
-            };
-            document.head.appendChild(s);
-        })();
-    </script>
 </head>
 
 <body>
@@ -287,6 +274,13 @@
                 <div class="settings-control toggle-group" id="setThemeGroup">
                     <button class="toggle-btn selected" data-value="light">☀️ فاتح</button>
                     <button class="toggle-btn" data-value="dark">🌙 داكن</button>
+                </div>
+
+                <!-- Row 10: Buzzer Server -->
+                <div class="settings-label">سيرفر الجرس:</div>
+                <div class="settings-control">
+                    <input type="text" id="setBuzzerUrl" class="input-pill" placeholder="https://your-server.up.railway.app" style="direction: ltr; font-size: 0.9rem;">
+                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 5px; padding-right: 10px;">أبقِ الحقل فارغاً للكشف التلقائي (localhost)</div>
                 </div>
 
             </div>
@@ -516,7 +510,6 @@
     <!-- PDF Data and Questions Data -->
     <script src="js/pdfData.js"></script>
     <script src="js/questionsData.js"></script>
-    <script src="js/settings-storage.js"></script>
     <script src="js/script.js"></script>
 </body>
 
