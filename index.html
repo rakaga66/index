@@ -108,7 +108,7 @@
         // تحميل socket.io بشكل آمن — لا يوقف باقي الكود إذا فشل
         (function () {
             const s = document.createElement('script');
-            s.src = 'http://192.168.1.19:3000/socket.io/socket.io.js';
+            s.src = 'https://buzzer-server-qaf.up.railway.app/socket.io/socket.io.js';
             s.onerror = function () {
                 console.warn('⚠️ Buzzer server not running on port 3000. Buzzer will be disabled.');
                 window._buzzerServerOffline = true;
@@ -393,10 +393,6 @@
             <button class="bib-btn" onclick="shuffleBoard()">
                 <span class="bib-icon">🔀</span>
                 <span class="bib-label">خلط</span>
-            </button>
-            <button class="bib-btn" onclick="openBuzzerModal()">
-                <span class="bib-icon">🔔</span>
-                <span class="bib-label">جرس</span>
             </button>
             <button class="bib-btn" onclick="window.location.href='pages/playground.html'">
                 <span class="bib-icon">🎮</span>
