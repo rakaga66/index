@@ -1,4 +1,4 @@
-f// ===== Color Map =====
+ff// ===== Color Map =====
 const COLOR_MAP = {
     orange:    { bg: '#FF9800', bgLight: '#FFB74D', border: '#E65100', text: '#fff' },
     purple:    { bg: '#8B5FBF', bgLight: '#A07CC5', border: '#4A2570', text: '#fff' },
@@ -1320,7 +1320,7 @@ function openBuzzerModal() {
         if (qrBox) {
             qrBox.innerHTML = '';
             // The UI is on Vercel, but it will connect to the Railway backend
-            const vercelUiBase = 'https://buzzer-server-qaf-production.up.railway.app';
+            const vercelUiBase = 'https://7roof-buzzer.vercel.app';
             const url = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
             
             console.log("Generating QR for Vercel UI:", url);
@@ -1376,7 +1376,7 @@ function openBuzzerDirectly() {
     const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
     
     // Always use Vercel for the UI/Site, regardless of the backend base
-    const vercelUiBase = 'https://buzzer-server-qaf-production.up.railway.app';
+    const vercelUiBase = 'https://7roof-buzzer.vercel.app';
     const buzzerUrl = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
     window.open(buzzerUrl, '_blank');
 }
