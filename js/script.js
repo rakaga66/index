@@ -1,4 +1,4 @@
-ff// ===== Color Map =====
+// ===== Color Map =====
 const COLOR_MAP = {
     orange:    { bg: '#FF9800', bgLight: '#FFB74D', border: '#E65100', text: '#fff' },
     purple:    { bg: '#8B5FBF', bgLight: '#A07CC5', border: '#4A2570', text: '#fff' },
