@@ -1283,102 +1283,83 @@ function generateBuzzerCode() {
     return code;
 }
 
-function getBuzzerServerBase() {
-    if (teamSetup.buzzerServerUrl && teamSetup.buzzerServerUrl.trim() !== '') {
-        return teamSetup.buzzerServerUrl.trim();
-    }
-    return 'https://7roof-buzzer.vercel.app';
-}
+// ── Firebase Buzzer (بدون Railway - 100% Vercel) ─────────────────────────────
+let _fbApp   = null;
+let _fbDb    = null;
+let _fbUnsubscribe = null;
 
-function ensureSocketLib(callback) {
-    if (typeof io !== 'undefined') { callback(); return; }
-    const base = getBuzzerServerBase();
-    const script = document.createElement('script');
-    script.src = `${base}/socket.io/socket.io.js`;
-    script.onload = () => callback();
-    script.onerror = () => showGameToast('⚠️ سيرفر الجرس غير متاح.');
-    document.head.appendChild(script);
+async function ensureFirebase() {
+    if (_fbDb) return _fbDb;
+    const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getDatabase }    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const FB_CONFIG = {
+        apiKey:            'AIzaSyCV2ZAVYhMbzgVFPmNtooCHR6C4aMOE3A',
+        authDomain:        'buzzer-game-f2983.firebaseapp.com',
+        databaseURL:       'https://buzzer-game-f2983-default-rtdb.firebaseio.com',
+        projectId:         'buzzer-game-f2983',
+        storageBucket:     'buzzer-game-f2983.firebasestorage.app',
+        messagingSenderId: '125573747954',
+        appId:             '1:125573747954:web:8dac681836e326b8b2c6b'
+    };
+    _fbApp = initializeApp(FB_CONFIG, 'buzzer-host');
+    _fbDb  = getDatabase(_fbApp);
+    return _fbDb;
 }
 
 function openBuzzerModal() {
-    const modal = safeSetDisplay('buzzerShareModal', 'flex');
+    safeSetDisplay('buzzerShareModal', 'flex');
     try {
         const menu = document.getElementById('gameDropdown');
         if (menu) menu.style.display = 'none';
         if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
-        const base = getBuzzerServerBase();
-        const url = `${base}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
+        const url = `https://7roof-buzzer.vercel.app/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
+
         const codeTxt = document.getElementById('modalBuzzerCodeTxt');
         if (codeTxt) {
             codeTxt.textContent = buzzerRoom;
-            codeTxt.onclick = () => { if (confirm('كود جديد؟')) { buzzerRoom=generateBuzzerCode(); openBuzzerModal(); } };
+            codeTxt.onclick = () => { if (confirm('كود جديد؟')) { buzzerRoom = generateBuzzerCode(); openBuzzerModal(); } };
         }
-        
+
         const qrBox = document.getElementById('modalQrcodeBox');
         if (qrBox) {
             qrBox.innerHTML = '';
-            // The UI is on Vercel, but it will connect to the Railway backend
-            const vercelUiBase = 'https://7roof-buzzer.vercel.app';
-            const url = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
-            
-            console.log("Generating QR for Vercel UI:", url);
-
             if (typeof QRCode !== 'undefined') {
-                try {
-                    new QRCode(qrBox, { 
-                        text: url, 
-                        width: 140, 
-                        height: 140,
-                        correctLevel: 0 // QRCode.CorrectLevel.M or L (0 is L)
-                    });
-                } catch (e) {
-                    console.error("QR Error, trying simple generation", e);
-                    qrBox.innerHTML = '<div style="font-size:0.8rem; color:#fff;">فشل توليد الباركود. استخدم الكود المكتوب.</div>';
-                }
+                try { new QRCode(qrBox, { text: url, width: 140, height: 140, correctLevel: 0 }); }
+                catch (e) { qrBox.innerHTML = '<div style="font-size:0.8rem;color:#fff;">فشل الباركود — استخدم الكود.</div>'; }
             }
         }
-        ensureSocketLib(() => {
-            if (!buzzerSocket) {
-                buzzerSocket = io(getBuzzerServerBase());
-                buzzerSocket.on('connect', () => buzzerSocket.emit('host-join', buzzerRoom));
-                buzzerSocket.on('buzzed', (data) => {
-                    if (isBuzzerLocked) return;
-                    isBuzzerLocked = true;
-                    showGameToast(`⚡ ${data.name} ضغط أولاً!`);
-                    showBuzzerOverlay(data.name, data.team);
-                    startBuzzerCountdown(data.team, 3);
-                });
-                buzzerSocket.on('switch-team', (data) => {
-                    showBuzzerOverlay(data.nextTeamName, data.nextTeam);
-                    startBuzzerCountdown(data.nextTeam, 10, true);
-                });
-                buzzerSocket.on('buzzer-unlocked', () => {
-                    isBuzzerLocked = false;
-                    clearInterval(buzzerTimerInterval);
-                    const old = document.getElementById('buzzerLockOverlay');
-                    if (old) old.remove();
-                    showGameToast('الجرس متاح للجميع! 🔔');
-                });
-                buzzerSocket.on('disconnect', () => console.warn('Buzzer disconnected'));
-            } else {
-                buzzerSocket.emit('host-join', buzzerRoom);
-            }
-        });
-    } catch(e) { console.error("Buzzer Modal error", e); }
+
+        // Initialize Firebase and listen for buzzes
+        ensureFirebase().then(async (db) => {
+            const { ref, set, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+            // Create/reset room in Firebase
+            await set(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null, openedAt: Date.now() });
+
+            // Stop old listener if any
+            if (_fbUnsubscribe) { _fbUnsubscribe(); _fbUnsubscribe = null; }
+
+            // Listen for first buzz
+            _fbUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/buzzer`), (snap) => {
+                const data = snap.val();
+                if (!data || isBuzzerLocked) return;
+                isBuzzerLocked = true;
+                showGameToast(`⚡ ${data.name} ضغط أولاً!`);
+                showBuzzerOverlay(data.name, data.team);
+                startBuzzerCountdown(data.team, 3);
+            });
+        }).catch(err => console.error('Firebase host error:', err));
+    } catch(e) { console.error('Buzzer Modal error', e); }
 }
 
 // فتح رابط الجرس مباشرة
 function openBuzzerDirectly() {
     if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
-    const t1Name = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%A3%D9%88%D9%84';
-    const t2Name = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%8A';
-    
-    // Always use Vercel for the UI/Site, regardless of the backend base
-    const vercelUiBase = 'https://7roof-buzzer.vercel.app';
-    const buzzerUrl = `${vercelUiBase}/?room=${buzzerRoom}&team1=${t1Name}&team2=${t2Name}`;
-    window.open(buzzerUrl, '_blank');
+    const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
+    const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
+    window.open(`https://7roof-buzzer.vercel.app/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
 
 
@@ -1391,21 +1372,21 @@ function startBuzzerCountdown(team, seconds, isSecondChance = false) {
     const teamObj = team === 'team1' ? teamSetup.team1 : teamSetup.team2;
     updateBuzzerOverlayTimer(teamObj ? teamObj.name : '', buzzerTimeLeft);
 
-    buzzerTimerInterval = setInterval(() => {
+    buzzerTimerInterval = setInterval(async () => {
         buzzerTimeLeft--;
         if (teamObj) updateBuzzerOverlayTimer(teamObj.name, buzzerTimeLeft);
 
         if (buzzerTimeLeft <= 0) {
             clearInterval(buzzerTimerInterval);
-            // انتهى وقت هذا الفريق → أبلغ السيرفر
-            if (buzzerSocket && buzzerRoom) {
-                buzzerSocket.emit('team-timeout', {
-                    roomCode: buzzerRoom,
-                    timedOutTeam: team,
-                    team1Name: teamSetup.team1 ? teamSetup.team1.name : 'الأول',
-                    team2Name: teamSetup.team2 ? teamSetup.team2.name : 'الثاني',
-                    isFinal: isSecondChance
-                });
+            if (isSecondChance) {
+                // Final → فتح الجرس
+                clearBuzzerLock();
+            } else {
+                // فرصة الفريق الثاني
+                const nextTeam = team === 'team1' ? 'team2' : 'team1';
+                const nextTeamObj = nextTeam === 'team1' ? teamSetup.team1 : teamSetup.team2;
+                showBuzzerOverlay(nextTeamObj ? nextTeamObj.name : '', nextTeam);
+                startBuzzerCountdown(nextTeam, 10, true);
             }
         }
     }, 1000);
@@ -1471,9 +1452,14 @@ function clearBuzzerLock() {
     const old = document.getElementById('buzzerLockOverlay');
     if (old) old.remove();
 
-    if (buzzerSocket && buzzerRoom) {
-        buzzerSocket.emit('unlock-buzzer', buzzerRoom);
+    // Reset Firebase room (فتح الجرس لجميع اللاعبين)
+    if (buzzerRoom) {
+        ensureFirebase().then(async (db) => {
+            const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            update(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null });
+        });
     }
+    showGameToast('الجرس متاح للجميع! 🔔');
 }
 
 // ==========================================
