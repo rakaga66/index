@@ -1304,7 +1304,7 @@ async function ensureFirebase() {
     const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getDatabase }    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
     const FB_CONFIG = {
-        apiKey:            'AIzaSyCV2ZAVYW-H-hxbgZvFPmNtooCHR6C4aMOE3A',
+        apiKey:            'AIzaSyCV2ZAVYmHxhbgZvFPmNtooCHR6C4aMOE3A',
         authDomain:        'buzzer-game-f2983.firebaseapp.com',
         databaseURL:       'https://buzzer-game-f2983-default-rtdb.firebaseio.com',
         projectId:         'buzzer-game-f2983',
