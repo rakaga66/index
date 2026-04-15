@@ -1,27 +1,80 @@
-(function () {
-    const AUTH_SERVER = 'https://hojas-auth9-production.up.railway.app';
+(async function () {
+    const firebaseConfig = {
+        apiKey:            "AIzaSyCV2ZAVYhMbzgVFPmNtooCHR6C4aMOE3A",
+        authDomain:        "buzzer-game-f2983.firebaseapp.com",
+        databaseURL:       "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+        projectId:         "buzzer-game-f2983",
+        storageBucket:     "buzzer-game-f2983.firebasestorage.app",
+        messagingSenderId: "125573747954",
+        appId:             "1:125573747954:web:8dac681836e326b8b2c6b"
+    };
 
-    // 1. أولاً: حاول قراءة التوكن من الرابط إذا وجد (بعد العودة من سيرفر المصادقة)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
-    
-    if (tokenFromUrl) {
-        localStorage.setItem('hojas_token', tokenFromUrl);
-        // إعادة تحميل الصفحة فوراً بشكل نظيف لإخفاء التوكن من الرابط وتفعيل الجلسة
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.location.href = cleanUrl;
-        return; 
+    const loginUrl = window.location.origin + '/login.html';
+
+    // استثناء صفحات الدخول
+    if (window.location.href.includes('login.html') || window.location.href.includes('admin.html')) {
+        return;
     }
 
-    // 2. فحص الجلسة (التحقق من تسجيل الدخول)
-    const sessionToken = localStorage.getItem('hojas_auth_token') || localStorage.getItem('hojas_token');
-    const isLoginPage = window.location.pathname.includes('login.html');
+    try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const { getAuth, onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+        const { getDatabase, ref, onValue, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
 
-    if (!sessionToken && !isLoginPage) {
-        // إذا لم يكن هناك جلسة، يتم التوجيه لصفحة تسجيل الدخول الجديدة.
-        // تحديد المسار بناءً على موقع الصفحة الحالية (داخل مجلد pages أو في الجذر)
-        const inSubfolder = window.location.pathname.includes('/pages/');
-        const loginPath = inSubfolder ? '../hojas-auth/public/login.html' : 'hojas-auth/public/login.html';
-        window.location.href = loginPath;
+        const app = initializeApp(firebaseConfig, "root-auth-check");
+        const auth = getAuth(app);
+        const db  = getDatabase(app);
+
+        // مراقبة حالة جلسة Firebase
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // لا توجد جلسة أمنية -> تحويل للوجين
+                clearAndRedirect();
+                return;
+            }
+
+            // إذا وجد مستخدم، نربطه بحساب الجوال المسجل في sessionStorage
+            const token = sessionStorage.getItem('hojas_token');
+            const phone = sessionStorage.getItem('hojas_username');
+
+            if (!token || !phone) {
+                clearAndRedirect();
+                return;
+            }
+
+            const userRef = ref(db, `users/${phone}`);
+
+            // 1. مراقبة لحظية عبر القاعدة (سيتم الرفض إذا انتهت صلاحية الجلسة أو تغيرت البيانات)
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data.token !== token || data.isActivated === false) {
+                        clearAndRedirect();
+                    }
+                } else {
+                    clearAndRedirect();
+                }
+            }, (err) => {
+                // إذا رفضت القاعدة الطلب (Permission Denied)
+                console.warn('Access Denied by Security Rules');
+                clearAndRedirect();
+            });
+
+            // 2. Heartbeat (تحديث النشاط)
+            const heartbeatInterval = setInterval(() => {
+                set(ref(db, `users/${phone}/lastHeartbeat`), Date.now()).catch(() => {
+                    clearInterval(heartbeatInterval);
+                });
+            }, 30000);
+        });
+
+        async function clearAndRedirect() {
+            sessionStorage.clear();
+            await signOut(auth).catch(() => {});
+            window.location.href = loginUrl;
+        }
+
+    } catch (e) {
+        console.error('Critical Auth Error:', e);
     }
 })();

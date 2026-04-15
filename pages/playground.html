@@ -8,28 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
         rel="stylesheet" />
 
-    <script>
-        (function () {
-            const AUTH_SERVER = 'https://7roof-auth.vercel.app';
-
-            // 1. أولاً: حاول قراءة التوكن من الرابط إذا وجد
-            const urlParams = new URLSearchParams(window.location.search);
-            const tokenFromUrl = urlParams.get('token');
-            if (tokenFromUrl) {
-                localStorage.setItem('hojas_token', tokenFromUrl);
-                // إعادة تحميل الصفحة فوراً بشكل نظيف لتفعيل التوكن
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.location.href = cleanUrl;
-                return; // توقف عن تنفيذ باقي السكربت
-            }
-
-            // 2. ثانياً: افحص إذا كان المستخدم مسجلاً
-            const token = localStorage.getItem('hojas_token');
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-            // ملاحظة: صفحة المتجر (index.html) عامة
-        })();
-    </script>
+    <!-- Auth Check -->
+    <script src="../js/auth-check.js"></script>
 
     <style>
         @font-face {
@@ -754,7 +734,7 @@
                     </div>
 
                     <a href="javascript:void(0)" onclick="goToGame()" class="btn-start-game">العب الآن</a>
-                    <a href="https://salla.sa/maben-al8lob/vAoxxEZ" class="btn-play">🛒 اشتر الآن </a>
+                    <a href="https://salla.sa/maben-al8lob/QzyvKPG" class="btn-play">🛒 اشتر الآن </a>
                 </div>
             </div>
 

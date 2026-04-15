@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تسجيل الدخول — قاف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        @font-face {
+            font-family: 'HrofFont';
+            src: url('assets/حروف.ttf') format('truetype');
+        }
+
+        :root {
+            --bg: #fdfbf6;
+            --white: #ffffff;
+            --dark: #000000;
+            --border: #000000;
+            --shadow-solid: 6px 6px 0px #000000;
+            --shadow-solid-sm: 4px 4px 0px #000000;
+            --red: #e74c3c;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .card {
+            background: var(--white);
+            border: 4px solid var(--border);
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow-solid);
+            text-align: center;
+        }
+
+        .logo-img {
+            height: auto;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 24px;
+            transform: rotate(-3deg);
+            filter: drop-shadow(4px 4px 0px #000);
+        }
+
+        .label-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        input {
+            width: 100%;
+            background: var(--white);
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'HrofFont', sans-serif;
+            font-size: 1.8rem;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-solid-sm);
+            margin-bottom: 20px;
+        }
+
+        input:focus {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--shadow-solid);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--white);
+            color: var(--dark);
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: var(--shadow-solid-sm);
+            transition: all 0.1s;
+        }
+
+        .btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-solid);
+            background: #f0f0f0;
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4);
+        }
+
+        .error-msg {
+            margin-top: 16px;
+            padding: 12px;
+            border: 3px solid var(--dark);
+            border-radius: 10px;
+            background: #fde8e8;
+            font-weight: 800;
+            font-size: 1rem;
+            display: none;
+            box-shadow: 3px 3px 0px var(--dark);
+        }
+
+        .extra-links {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 2px dashed #ccc;
+            padding-top: 25px;
+        }
+
+        .extra-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 1.1rem;
+            padding: 12px;
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            background: var(--white);
+            box-shadow: var(--shadow-solid-sm);
+            transition: all 0.2s;
+        }
+
+        .extra-btn:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--shadow-solid);
+        }
+
+        .extra-btn.tiktok:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .extra-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <img src="assets/portal/qaf_logo.png" alt="Qaf Logo" class="logo-img">
+
+        <div class="label-text">أدخل رقم الجوال للمتابعة</div>
+
+        <input type="text" id="phone" placeholder="05********" autocomplete="off" inputmode="numeric" />
+
+        <button class="btn" id="loginBtn" onclick="doLogin()">دخول اللعبة</button>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="extra-links">
+            <a href="pages/playground.html" class="extra-btn">
+                <span>🎮</span> العاب قاف
+            </a>
+            <a href="https://www.tiktok.com/@ew7.223?is_from_webapp=1&sender_device=pc" target="_blank"
+                class="extra-btn tiktok">
+                <svg fill="currentColor" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" />
+                </svg>
+                حساب التيك توك
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // ── Firebase Config ──────────────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey:            "AIzaSyCV2ZAVYhMbzgVFPmNtooCHR6C4aMOE3A",
+            authDomain:        "buzzer-game-f2983.firebaseapp.com",
+            databaseURL:       "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+            projectId:         "buzzer-game-f2983",
+            storageBucket:     "buzzer-game-f2983.firebasestorage.app",
+            messagingSenderId: "125573747954",
+            appId:             "1:125573747954:web:8dac681836e326b8b2c6b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db  = getDatabase(app);
+
+        // ضبط الجلسة لتنتهي عند إغلاق المتصفح (بناءً على طلب المستخدم السابق)
+        setPersistence(auth, browserSessionPersistence);
+
+        window.doLogin = async function() {
+            const phone = document.getElementById('phone').value.trim();
+            const errEl = document.getElementById('errorMsg');
+            const btn = document.getElementById('loginBtn');
+
+            errEl.style.display = 'none';
+            if (!phone) return showError('يرجى إدخال رقم الجوال');
+
+            btn.disabled = true;
+            btn.textContent = 'جاري التحقق...';
+
+            try {
+                // 1. تسجيل دخول "مجهول" لإنشاء جلسة أمنية
+                await signInAnonymously(auth);
+
+                // 2. التحقق من الرقم في القاعدة (القواعد تسمح الآن لأن المستخدم authenticated)
+                const snapshot = await get(ref(db, `users/${phone}`));
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    
+                    if (userData.isActivated === false) {
+                        showError('هذا الحساب غير نشط حالياً، تواصل مع الإدارة');
+                    } else {
+                        // توليد توكن وتحديث الدخول
+                        const newToken = Math.random().toString(36).substring(2);
+                        await set(ref(db, `users/${phone}/token`), newToken);
+                        await set(ref(db, `users/${phone}/lastLogin`), Date.now());
+
+                        // حفظ البيانات في الجلسة لمطابقتها في auth-check.js
+                        sessionStorage.setItem('hojas_token', newToken);
+                        sessionStorage.setItem('hojas_username', phone);
+                        
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    showError('رقم الجوال غير مسجل في النظام');
+                }
+            } catch (e) {
+                console.error(e);
+                showError('تعذّر التحقق من الهوية أو الاتصال بالسيرفر');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'دخول اللعبة';
+            }
+        };
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        document.getElementById('phone').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doLogin();
+        });
+    </script>
+</body>
+
+</html>

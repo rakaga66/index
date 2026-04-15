@@ -41,7 +41,7 @@ let teamSetup = {
     otherTime: 10,
     presenter: 'ai',
     sound: 'on',
-    buzzerServerUrl: 'https://buzzer-server-production-8b8a.up.railway.app'
+    buzzerServerUrl: 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/'
 };
 
 // ===== Buzzer State =====
@@ -227,7 +227,18 @@ window.addEventListener('DOMContentLoaded', () => {
     setGamePresenter(teamSetup.presenter);
     
     // Load saved buzzer URL from localStorage if it exists
-    const savedBuzzerUrl = localStorage.getItem('buzzerServerUrl');
+    let savedBuzzerUrl = localStorage.getItem('buzzerServerUrl');
+    
+    // Aggressive Migration: If the saved URL is empty, old Railway, or a different Vercel link, force the new specific link
+    const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
+    const isDifferentBuzzer = savedBuzzerUrl && (savedBuzzerUrl.includes('vercel.app') || savedBuzzerUrl.includes('7roof-buzzer')) && !savedBuzzerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app');
+    
+    if (isOldRailway || isDifferentBuzzer) {
+        console.log('🔄 Forced migration of buzzer server URL to the specific Vercel link...');
+        savedBuzzerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+        localStorage.setItem('buzzerServerUrl', savedBuzzerUrl);
+    }
+
     if (savedBuzzerUrl) {
         teamSetup.buzzerServerUrl = savedBuzzerUrl;
         const input = document.getElementById('setBuzzerUrl');
@@ -1314,7 +1325,14 @@ function openBuzzerModal() {
         if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
-        const url = `https://7roof-buzzer.vercel.app/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
+        // Runtime safety: Force specific Vercel if Railway or wrong URL is still present
+        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
+            console.warn('⚠️ Correcting buzzer URL at runtime:', teamSetup.buzzerServerUrl);
+            teamSetup.buzzerServerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+        }
+        
+        const url = `${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
+        console.log('🔔 Generating QR for URL:', url);
 
         const codeTxt = document.getElementById('modalBuzzerCodeTxt');
         if (codeTxt) {
@@ -1373,7 +1391,11 @@ function openBuzzerDirectly() {
     if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
     const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
-    window.open(`https://7roof-buzzer.vercel.app/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
+    // Runtime safety
+    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
+        teamSetup.buzzerServerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+    }
+    window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
 
 
