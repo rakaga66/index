@@ -11,6 +11,7 @@
 
     const loginUrl = window.location.origin + '/login.html';
 
+    // استثناء صفحات الدخول
     if (window.location.href.includes('login.html') || window.location.href.includes('admin.html')) {
         return;
     }
@@ -20,16 +21,19 @@
         const { getAuth, onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
         const { getDatabase, ref, onValue, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
 
-        const app = initializeApp(firebaseConfig, "public-auth-check");
+        const app = initializeApp(firebaseConfig, "root-auth-check");
         const auth = getAuth(app);
         const db  = getDatabase(app);
 
+        // مراقبة حالة جلسة Firebase
         onAuthStateChanged(auth, (user) => {
             if (!user) {
+                // لا توجد جلسة أمنية -> تحويل للوجين
                 clearAndRedirect();
                 return;
             }
 
+            // إذا وجد مستخدم، نربطه بحساب الجوال المسجل في sessionStorage
             const token = sessionStorage.getItem('hojas_token');
             const phone = sessionStorage.getItem('hojas_username');
 
@@ -40,6 +44,7 @@
 
             const userRef = ref(db, `users/${phone}`);
 
+            // 1. مراقبة لحظية عبر القاعدة (سيتم الرفض إذا انتهت صلاحية الجلسة أو تغيرت البيانات)
             onValue(userRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
@@ -50,10 +55,12 @@
                     clearAndRedirect();
                 }
             }, (err) => {
+                // إذا رفضت القاعدة الطلب (Permission Denied)
                 console.warn('Access Denied by Security Rules');
                 clearAndRedirect();
             });
 
+            // 2. Heartbeat (تحديث النشاط)
             const heartbeatInterval = setInterval(() => {
                 set(ref(db, `users/${phone}/lastHeartbeat`), Date.now()).catch(() => {
                     clearInterval(heartbeatInterval);
