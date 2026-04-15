@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <script src="js/auth-check.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة الإدارة — قاف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #fdfbf6;
+            --white: #ffffff;
+            --dark: #000000;
+            --yellow-main: #FFD600;
+            --red-del: #ff4757;
+            --green-ok: #2ecc71;
+            --shadow-solid: 6px 6px 0px #000000;
+            --shadow-solid-sm: 4px 4px 0px #000000;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        /* شاشة الدخول */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--white);
+            border: 4px solid var(--dark);
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow-solid);
+            text-align: center;
+        }
+
+        .logo-img {
+            width: 100%;
+            max-width: 160px;
+            margin-bottom: 24px;
+            transform: rotate(-3deg);
+            filter: drop-shadow(4px 4px 0px #000);
+        }
+
+        .login-card h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 3px solid var(--dark);
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+            box-shadow: var(--shadow-solid-sm);
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--shadow-solid);
+        }
+
+        .btn-main {
+            background: var(--white);
+            color: var(--dark);
+            border: 3px solid var(--dark);
+            padding: 16px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: var(--shadow-solid-sm);
+            transition: all 0.1s;
+        }
+
+        .btn-main:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-solid);
+            background: #f0f0f0;
+        }
+
+        .btn-main:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--dark);
+        }
+
+        /* الهيدر */
+        nav {
+            background: var(--white);
+            border-bottom: 3px solid var(--dark);
+            padding: 0 40px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo-img {
+            height: 40px;
+            filter: drop-shadow(2px 2px 0px #000);
+            transform: rotate(-2deg);
+        }
+
+        .nav-title {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--dark);
+        }
+
+        .btn-logout,
+        .btn-nav {
+            background: var(--white);
+            color: var(--dark);
+            border: 3px solid var(--dark);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: 3px 3px 0 var(--dark);
+            transition: all 0.1s;
+        }
+
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-logout:hover,
+        .btn-nav:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--dark);
+            background: #f0f0f0;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 3px solid var(--dark);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: var(--shadow-solid);
+        }
+
+        .stat-num {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--dark);
+            line-height: 1;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-lbl {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* الأقسام */
+        .section {
+            background: var(--white);
+            border: 3px solid var(--dark);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-solid);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 8px;
+            height: 28px;
+            background: var(--dark);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* الجدول */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: right;
+            padding: 15px;
+            border-bottom: 3px solid var(--dark);
+            background: var(--white);
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--dark);
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 2px solid var(--dark);
+            font-size: 0.9rem;
+            font-weight: 900;
+            box-shadow: 2px 2px 0px var(--dark);
+            display: inline-block;
+        }
+
+        .status-on {
+            background: var(--white);
+        }
+
+        .status-on::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--green-ok);
+            border: 2px solid var(--dark);
+            margin-left: 6px;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        .status-off {
+            background: #e5e7eb;
+        }
+
+        .btn-del {
+            background: var(--white);
+            color: var(--red-del);
+            border: 2px solid var(--dark);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            box-shadow: 2px 2px 0px var(--dark);
+            transition: transform 0.1s;
+        }
+
+        .btn-del:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px var(--dark);
+            background: #ffe5e5;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            border: 3px solid var(--dark);
+            font-weight: 900;
+            box-shadow: 3px 3px 0px var(--dark);
+        }
+
+        .success {
+            display: block;
+            background: #e6f9f2;
+            color: var(--dark);
+            border-color: var(--dark);
+        }
+
+        .error {
+            display: block;
+            background: #fde8e8;
+            color: var(--dark);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(0.8);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                padding: 0 15px;
+            }
+
+            .nav-title {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="adminLogin" class="login-screen">
+        <div class="login-card">
+            <!-- سيتم تعديل المسار ليكون محلياً بعد النقل للمجلد العام -->
+            <img src="assets/portal/qaf_logo.png" alt="Qaf Logo" class="logo-img">
+            <h2 id="authTitle">لوحة الإدارة الآمنة</h2>
+            <div id="loginForm">
+                <input type="email" id="adminEmail" placeholder="البريد الإلكتروني" style="margin-bottom:12px;" />
+                <input type="password" id="adminPassword" placeholder="كلمة السر" style="margin-bottom:24px;" />
+                <button class="btn-main" style="width:100%; margin-bottom:12px;" onclick="handleAuth('login')">دخول المشرف</button>
+                <button class="btn-nav" id="toggleMode" style="width:100%; font-size:0.9rem; opacity:0.7;" onclick="toggleAuthMode()">إنشاء حساب جديد (للمرة الأولى فقط)</button>
+            </div>
+            <div id="loginErr" class="result-box error"></div>
+        </div>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+        <nav>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="assets/portal/qaf_logo.png" alt="Qaf Logo" class="nav-logo-img">
+                <span class="nav-title">إدارة قاف</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <span id="adminName" style="font-size:0.8rem; vertical-align:middle; color:#666; align-self:center;"></span>
+                <a href="pages/playground.html" class="btn-nav">المتجر</a>
+                <button class="btn-logout" onclick="logout()">خروج</button>
+            </div>
+        </nav>
+
+        <div class="page">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-num" id="s-total">0</span>
+                    <span class="stat-lbl">إجمالي المسجلين</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-num" id="s-activated" style="color:var(--green-ok)">0</span>
+                    <span class="stat-lbl">نشط (متصل أو دخل)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-num" id="s-pending" style="color:var(--dark)">0</span>
+                    <span class="stat-lbl">مسجل (لم يدخل بعد)</span>
+                </div>
+            </div>
+
+            <div id="rbacWarning" class="result-box error" style="margin-bottom:30px; display:none;">
+                ⚠️ أنت مسجل دخول ولكن ليس لديك صلاحية "أدمن". يرجى إضافة الـ UID الخاص بك في قاعدة البيانات تحت مسار /admins.
+                <br><br>
+                <b>UID الخاص بك:</b> <span id="myUid" style="user-select:all; background:#eee; padding:2px 5px;"></span>
+            </div>
+
+            <div id="adminContent" style="display:none;">
+                <div class="section">
+                    <div class="section-title">إضافة / تفعيل يدوي</div>
+                    <div class="form-grid">
+                        <input type="text" id="newUsername" placeholder="الاسم (مثال: راكان)" />
+                        <input type="text" id="newPhone" placeholder="رقم الجوال (05xxxxxxxx)" />
+                        <button class="btn-main" onclick="addUser()">إضافة الرقم</button>
+                    </div>
+                    <div id="actionResult" class="result-box"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">قائمة التراخيص</div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>رقم الجوال</th>
+                                    <th>الحالة</th>
+                                    <th>تاريخ الانضمام</th>
+                                    <th>آخر دخول</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTable">
+                                <tr><td colspan="6" style="text-align:center">جاري جلب البيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyCV2ZAVYhMbzgVFPmNtooCHR6C4aMOE3A",
+            authDomain:        "buzzer-game-f2983.firebaseapp.com",
+            databaseURL:       "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+            projectId:         "buzzer-game-f2983",
+            storageBucket:     "buzzer-game-f2983.firebasestorage.app",
+            messagingSenderId: "125573747954",
+            appId:             "1:125573747954:web:8dac681836e326b8b2c6b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let authMode = 'login';
+
+        window.toggleAuthMode = () => {
+            authMode = (authMode === 'login' ? 'signup' : 'login');
+            document.getElementById('authTitle').textContent = (authMode === 'login' ? 'دخول المشرف' : 'إنشاء حساب مسؤول');
+            document.getElementById('toggleMode').textContent = (authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ سجل دخولك');
+        };
+
+        window.handleAuth = async (mode = 'login') => {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            const errBox = document.getElementById('loginErr');
+            
+            try {
+                if (authMode === 'signup') {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (err) {
+                errBox.textContent = "خطأ: " + err.message;
+                errBox.style.display = 'block';
+            }
+        };
+
+        // مراقبة حالة الجلسة
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('adminName').textContent = user.email;
+                checkAdminRole(user.uid);
+            } else {
+                document.getElementById('adminLogin').style.display = 'flex';
+                document.getElementById('dashboard').style.display = 'none';
+            }
+        });
+
+        async function checkAdminRole(uid) {
+            const rbacRef = ref(db, `admins/${uid}`);
+            onValue(rbacRef, (snapshot) => {
+                if (snapshot.exists() && snapshot.val() === true) {
+                    document.getElementById('adminContent').style.display = 'block';
+                    document.getElementById('rbacWarning').style.display = 'none';
+                    initDashboard();
+                } else {
+                    document.getElementById('adminContent').style.display = 'none';
+                    document.getElementById('rbacWarning').style.display = 'block';
+                    document.getElementById('myUid').textContent = uid;
+                }
+            });
+        }
+
+        function initDashboard() {
+            const usersRef = ref(db, 'users');
+            onValue(usersRef, (snapshot) => {
+                const usersData = snapshot.val() || {};
+                const usersList = Object.keys(usersData).map(phone => ({ phone, ...usersData[phone] }));
+                updateStats(usersList);
+                renderUsersTable(usersList);
+            });
+        }
+
+        function updateStats(users) {
+            const total = users.length;
+            const activated = users.filter(u => u.lastLogin).length;
+            document.getElementById('s-total').textContent = total;
+            document.getElementById('s-activated').textContent = activated;
+            document.getElementById('s-pending').textContent = total - activated;
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('userTable');
+            users.sort((a, b) => b.createdAt - a.createdAt);
+            tbody.innerHTML = users.map(u => {
+                const isOnline = u.lastHeartbeat && (Date.now() - u.lastHeartbeat < 60000);
+                return `
+                <tr>
+                    <td><b>${u.username || 'بدون اسم'}</b></td>
+                    <td><span style="font-weight:900;">${u.phone}</span></td>
+                    <td>
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <span class="badge ${u.isActivated ? 'status-on' : 'status-off'}">${u.isActivated ? 'نشط' : 'معلق'}</span>
+                            ${isOnline ? '<span style="color:#2ecc71; font-size:0.75rem; font-weight:bold;">● متصل الآن</span>' : ''}
+                        </div>
+                    </td>
+                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-SA') : '-'}</td>
+                    <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : 'لم يدخل'}</td>
+                    <td><button class="btn-del" onclick="deleteUser('${u.phone}')">حذف</button></td>
+                </tr>
+            `}).join('');
+        }
+
+        window.addUser = async () => {
+             const username = document.getElementById('newUsername').value.trim();
+             const phone = document.getElementById('newPhone').value.trim();
+             if (!phone) return alert('أدخل الرقم');
+             await set(ref(db, `users/${phone}`), { username, phone, isActivated: true, createdAt: Date.now() });
+             alert('تمت الإضافة ✅');
+        };
+
+        window.deleteUser = async (phone) => {
+            if (confirm('حذف؟')) await remove(ref(db, `users/${phone}`));
+        };
+
+        window.logout = () => signOut(auth);
+    </script>
+</body>
+
+</html>
