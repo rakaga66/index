@@ -1322,13 +1322,27 @@ function openBuzzerModal() {
             codeTxt.onclick = () => { if (confirm('كود جديد؟')) { buzzerRoom = generateBuzzerCode(); openBuzzerModal(); } };
         }
 
+        // Update direct link button
+        const directBtn = document.getElementById('modalDirectLinkBtn');
+        if (directBtn) {
+            directBtn.onclick = () => window.open(url, '_blank');
+        }
+
         const qrBox = document.getElementById('modalQrcodeBox');
         if (qrBox) {
             qrBox.innerHTML = '';
-            if (typeof QRCode !== 'undefined') {
-                try { new QRCode(qrBox, { text: url, width: 140, height: 140, correctLevel: 0 }); }
-                catch (e) { qrBox.innerHTML = '<div style="font-size:0.8rem;color:#fff;">فشل الباركود — استخدم الكود.</div>'; }
-            }
+            const encoded = encodeURIComponent(url);
+            const img = document.createElement('img');
+            img.alt = 'QR Code';
+            img.style.cssText = 'width:136px;height:136px;border-radius:8px;display:block;';
+            // Primary: quickchart.io (fast & reliable)
+            img.src = `https://quickchart.io/qr?text=${encoded}&size=140&margin=1`;
+            // Fallback: api.qrserver.com
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=4&data=${encoded}`;
+            };
+            qrBox.appendChild(img);
         }
 
         // Initialize Firebase and listen for buzzes
