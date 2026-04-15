@@ -379,12 +379,11 @@
     <div id="adminLogin" class="login-screen">
         <div class="login-card">
             <img src="assets/portal/qaf_logo.png" alt="Qaf Logo" class="logo-img">
-            <h2 id="authTitle">لوحة الإدارة الآمنة</h2>
+            <h2 id="authTitle">لوحة الإدارة</h2>
             <div id="loginForm">
-                <input type="email" id="adminEmail" placeholder="البريد الإلكتروني" style="margin-bottom:12px;" />
+                <input type="text" id="adminUser" placeholder="اسم المستخدم" style="margin-bottom:12px;" />
                 <input type="password" id="adminPassword" placeholder="كلمة السر" style="margin-bottom:24px;" />
-                <button class="btn-main" style="width:100%; margin-bottom:12px;" onclick="handleAuth('login')">دخول المشرف</button>
-                <button class="btn-nav" id="toggleMode" style="width:100%; font-size:0.9rem; opacity:0.7;" onclick="toggleAuthMode()">إنشاء حساب جديد (للمرة الأولى فقط)</button>
+                <button class="btn-main" style="width:100%;" onclick="handleAuth()">دخول</button>
             </div>
             <div id="loginErr" class="result-box error"></div>
         </div>
@@ -488,54 +487,48 @@
             document.getElementById('toggleMode').textContent = (authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ سجل دخولك');
         };
 
-        window.handleAuth = async (mode = 'login') => {
-            const email = document.getElementById('adminEmail').value;
+        window.handleAuth = async () => {
+            const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPassword').value;
             const errBox = document.getElementById('loginErr');
             
-            try {
-                if (authMode === 'signup') {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                } else {
-                    await signInWithEmailAndPassword(auth, email, pass);
+            if (user === 'hojas01' && pass === 'Rr74417441') {
+                try {
+                    await signInAnonymously(auth);
+                    sessionStorage.setItem('isAdmin', 'true');
+                    document.getElementById('adminLogin').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    document.getElementById('adminName').textContent = 'المشرف: ' + user;
+                    initDashboard();
+                } catch (err) {
+                    errBox.textContent = "خطأ في الاتصال: " + err.message;
+                    errBox.style.display = 'block';
                 }
-            } catch (err) {
-                errBox.textContent = "خطأ: " + err.message;
+            } else {
+                errBox.textContent = "اسم المستخدم أو كلمة السر غير صحيحة!";
                 errBox.style.display = 'block';
             }
         };
 
-        // مراقبة حالة الجلسة
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
+        onAuthStateChanged(auth, async (fbUser) => {
+            const isStoredAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            if (fbUser && isStoredAdmin) {
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('adminName').textContent = user.email;
-                checkAdminRole(user.uid);
+                document.getElementById('adminName').textContent = 'المشرف المتصل';
+                initDashboard();
             } else {
                 document.getElementById('adminLogin').style.display = 'flex';
                 document.getElementById('dashboard').style.display = 'none';
             }
         });
 
-        async function checkAdminRole(uid) {
-            const rbacRef = ref(db, `admins/${uid}`);
-            onValue(rbacRef, (snapshot) => {
-                if (snapshot.exists() && snapshot.val() === true) {
-                    document.getElementById('adminContent').style.display = 'block';
-                    document.getElementById('rbacWarning').style.display = 'none';
-                    initDashboard();
-                } else {
-                    document.getElementById('adminContent').style.display = 'none';
-                    document.getElementById('rbacWarning').style.display = 'block';
-                    document.getElementById('myUid').textContent = uid;
-                }
-            });
-        }
 
         function initDashboard() {
             const usersRef = ref(db, 'users');
             onValue(usersRef, (snapshot) => {
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('rbacWarning').style.display = 'none';
                 const usersData = snapshot.val() || {};
                 const usersList = Object.keys(usersData).map(phone => ({ phone, ...usersData[phone] }));
                 updateStats(usersList);
