@@ -9,7 +9,7 @@
         rel="stylesheet" />
 
     <!-- Auth Check -->
-    <script src="../js/auth-check.js"></script>
+
 
     <style>
         @font-face {
@@ -616,7 +616,12 @@
             }
 
             .games-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .card-body {
+                padding: 14px;
             }
         }
     </style>
