@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "مآبين آلقلوب 2",
             desc: "لعبة بطابع عاطفي واجتماعي (29 SAR)",
             image: "maben_alqlub_2.png",
-            link: "https://salla.sa/maben-al8lob/vAoxxEZ",
+            link: "https://salla.sa/maben-al8lob/qGedWrK",
             btnText: "اشتر الآن"
         },
         {
