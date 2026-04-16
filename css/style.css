@@ -1,7 +1,6 @@
-/* ===== Custom Font ===== */
 @font-face {
     font-family: 'HrofFont';
-    src: url('../assets/حروف.ttf') format('truetype');
+    src: url('../public/assets/حروف.ttf') format('truetype');
 }
 
 /* Force HrofFont on the entire site */
@@ -724,11 +723,10 @@ body {
     font-family: 'HrofFont', sans-serif !important;
 }
 
-/* ===== SIDEBAR ===== */
 .sidebar {
     width: 320px;
     min-width: 300px;
-    background-image: url('../assets/sidebar.png');
+    background-image: url('../public/assets/sidebar.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

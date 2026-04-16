@@ -1,0 +1,14 @@
+{
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "routes": [
+        {
+            "src": "/hojas-auth/(.*)",
+            "dest": "/hojas-auth/public/$1"
+        },
+        {
+            "src": "/buzzer-server/(.*)",
+            "dest": "/buzzer-server/public/$1"
+        }
+    ]
+}

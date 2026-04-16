@@ -8,9 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
         rel="stylesheet" />
 
-    <!-- Auth Check -->
-    <script src="../js/auth-check.js"></script>
-
     <style>
         @font-face {
             font-family: 'HrofFont';
@@ -623,18 +620,11 @@
     <script>
         function goToGame() {
             try {
-                const AUTH_SERVER = 'https://hojas-auth9-production.up.railway.app';
-                const gameURL = '../index.html';
-                const token = localStorage.getItem('hojas_token');
-
-                if (token) {
-                    window.location.href = gameURL;
-                } else {
-                    window.location.href = AUTH_SERVER + '/?redirect=' + encodeURIComponent(gameURL);
-                }
+                // Redirect to the local login page
+                window.location.href = '../login.html';
             } catch (e) {
-                console.error("Auth Error:", e);
-                window.location.href = 'game.html'; // Fallback
+                console.error("Navigation Error:", e);
+                window.location.href = '../index.html'; // Fallback
             }
         }
     </script>
@@ -644,7 +634,7 @@
 
     <nav>
         <a class="nav-logo" href="#">
-            <img src="../assets/portal/qaf_logo.png" alt="Qaf Logo"
+            <img src="../public/assets/portal/qaf_logo.png" alt="Qaf Logo"
                 style="height: 48px; width: auto; transform: rotate(-4deg); filter: drop-shadow(2px 2px 0px #000);">
         </a>
     </nav>
@@ -652,7 +642,7 @@
     <section class="hero">
         <div class="hero-left">
             <div class="hero-badge">متجر قاف</div>
-            <img src="../assets/portal/qaf_logo.png" alt="Qaf Games Logo"
+            <img src="../public/assets/portal/qaf_logo.png" alt="Qaf Games Logo"
                 style="height: auto; width: 100%; max-width: 250px; display: block; margin-bottom: 24px; transform: rotate(-2deg); filter: drop-shadow(4px 4px 0px #000);">
             <p class="hero-desc">تجارب تفاعلية صُنعت بالحب — اختر لعبتك وابدأ المتعة مع أصدقائك في أي مكان.</p>
             <a href="#games" class="hero-cta">استعرض الألعاب ↓</a>
@@ -698,7 +688,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../assets/portal/hroof_game.png" alt="لعبة حروف"
+                        <img src="../public/assets/portal/hroof_game.png" alt="لعبة حروف"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -746,7 +736,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../assets/portal/tahadi_suwar.png" alt="تحدي الصور"
+                        <img src="../public/assets/portal/tahadi_suwar.png" alt="تحدي الصور"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -792,7 +782,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../assets/portal/bold_card.png" alt="كرت جريء"
+                        <img src="../public/assets/portal/bold_card.png" alt="كرت جريء"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -838,7 +828,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../assets/portal/maben_alqlub_1.png" alt="مآبين آلقلوب 1"
+                        <img src="../public/assets/portal/maben_alqlub_1.png" alt="مآبين آلقلوب 1"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -884,7 +874,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../assets/portal/maben_alqlub_2.png" alt="مآبين آلقلوب 2"
+                        <img src="../public/assets/portal/maben_alqlub_2.png" alt="مآبين آلقلوب 2"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
