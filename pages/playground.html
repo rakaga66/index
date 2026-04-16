@@ -620,11 +620,11 @@
     <script>
         function goToGame() {
             try {
-                // Redirect to the local login page
-                window.location.href = '../login.html';
+                // Redirect to the unified login route on Vercel
+                window.location.href = '/auth';
             } catch (e) {
                 console.error("Navigation Error:", e);
-                window.location.href = '../index.html'; // Fallback
+                window.location.href = '/game'; // Fallback
             }
         }
     </script>

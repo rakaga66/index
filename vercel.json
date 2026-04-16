@@ -1,14 +1,13 @@
 {
-    "cleanUrls": true,
-    "trailingSlash": false,
-    "routes": [
-        {
-            "src": "/hojas-auth/(.*)",
-            "dest": "/hojas-auth/public/$1"
-        },
-        {
-            "src": "/buzzer-server/(.*)",
-            "dest": "/buzzer-server/public/$1"
-        }
-    ]
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/pages/playground.html" },
+    { "source": "/admin", "destination": "/hojas-auth/public/admin.html" },
+    { "source": "/auth", "destination": "/login.html" },
+    { "source": "/game", "destination": "/index.html" },
+    { "source": "/questions", "destination": "/pages/q702.html" },
+    { "source": "/buzzer", "destination": "/buzzer-server/public/index.html" }
+  ]
 }
