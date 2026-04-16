@@ -1304,13 +1304,13 @@ async function ensureFirebase() {
     const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getDatabase }    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
     const FB_CONFIG = {
-        apiKey:            'AIzaSyCV2ZAVYmHxhbgZvFPmNtooCHR6C4aMOE3A',
-        authDomain:        'buzzer-game-f2983.firebaseapp.com',
-        databaseURL:       'https://buzzer-game-f2983-default-rtdb.firebaseio.com',
-        projectId:         'buzzer-game-f2983',
-        storageBucket:     'buzzer-game-f2983.firebasestorage.app',
-        messagingSenderId: '125573747954',
-        appId:             '1:125573747954:web:8dac681836e326b8b2c6b'
+        apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
+        authDomain: "buzzer-game-f2983.firebaseapp.com",
+        databaseURL: "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+        projectId: "buzzer-game-f2983",
+        storageBucket: "buzzer-game-f2983.firebasestorage.app",
+        messagingSenderId: "125573747954",
+        appId: "1:125573747954:web:8dac68183e6e326b8b2c6b"
     };
     _fbApp = initializeApp(FB_CONFIG, 'buzzer-host');
     _fbDb  = getDatabase(_fbApp);

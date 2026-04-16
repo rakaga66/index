@@ -1,15 +1,17 @@
 (async function () {
     const firebaseConfig = {
-        apiKey:            "AIzaSyCV2ZAVYmHxhbgZvFPmNtooCHR6C4aMOE3A",
-        authDomain:        "buzzer-game-f2983.firebaseapp.com",
-        databaseURL:       "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
-        projectId:         "buzzer-game-f2983",
-        storageBucket:     "buzzer-game-f2983.firebasestorage.app",
+        apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
+        authDomain: "buzzer-game-f2983.firebaseapp.com",
+        databaseURL: "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+        projectId: "buzzer-game-f2983",
+        storageBucket: "buzzer-game-f2983.firebasestorage.app",
         messagingSenderId: "125573747954",
-        appId:             "1:125573747954:web:8dac681836e326b8b2c6b"
+        appId: "1:125573747954:web:8dac68183e6e326b8b2c6b"
     };
 
-    const loginUrl = window.location.origin + '/login.html';
+    // تحديد مسار صفحة الدخول بناءً على موقع الصفحة الحالية
+    const inSubfolder = window.location.pathname.includes('/pages/');
+    const loginUrl = inSubfolder ? '../login.html' : 'login.html';
 
     // استثناء صفحات الدخول
     if (window.location.href.includes('login.html') || window.location.href.includes('admin.html')) {
