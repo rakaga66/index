@@ -1301,7 +1301,7 @@ let _fbUnsubscribe = null;
 
 async function ensureFirebase() {
     if (_fbDb) return _fbDb;
-    const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { initializeApp, getApps }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getDatabase }    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
     const FB_CONFIG = {
         apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
@@ -1312,7 +1312,7 @@ async function ensureFirebase() {
         messagingSenderId: "125573747954",
         appId: "1:125573747954:web:8dac68183e6e326b8b2c6b"
     };
-    _fbApp = initializeApp(FB_CONFIG, 'buzzer-host');
+    _fbApp = getApps().length === 0 ? initializeApp(FB_CONFIG) : getApps()[0];
     _fbDb  = getDatabase(_fbApp);
     return _fbDb;
 }
