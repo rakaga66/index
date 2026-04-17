@@ -300,9 +300,9 @@
 
         <!-- Questions Portal (Bawaba) - Visible only in Human mode -->
         <div id="humanPortalArea" style="display:none; margin-top:10px; padding: 0 10px;">
-            <a href="pages/q702.html" target="_blank" class="portal-link-btn">
+            <button onclick="showPortalQR()" class="portal-link-btn" style="width:100%; text-align:center; display:block;">
                 <span>🚪 بوابة الأسئلة</span>
-            </a>
+            </button>
         </div>
 
         <div class="logo" onclick="window.location.href='pages/playground.html'" style="cursor: pointer;">
@@ -318,14 +318,18 @@
             <span class="round-total" id="roundTotal"></span>
         </div>
 
-        <div class="scores">
-            <div class="score-box" id="scoreBox1">
-                <span class="score-name" id="name1">الفريق ١</span>
-                <span class="score-num" id="score1">0</span>
+        <div class="scores" id="sidebarScores">
+            <div class="score-box team-1" id="scoreBox1" onclick="assignTeam('team1')">
+                <div class="score-hex-wrap">
+                    <span class="score-num" id="score1">0</span>
+                </div>
+                <span class="score-name" id="name1">الفريق الأول</span>
             </div>
-            <div class="score-box" id="scoreBox2">
-                <span class="score-name" id="name2">الفريق ٢</span>
-                <span class="score-num" id="score2">0</span>
+            <div class="score-box team-2" id="scoreBox2" onclick="assignTeam('team2')">
+                <div class="score-hex-wrap">
+                    <span class="score-num" id="score2">0</span>
+                </div>
+                <span class="score-name" id="name2">الفريق الثاني</span>
             </div>
         </div>
 
@@ -428,14 +432,6 @@
         </div>
 
         <!-- Team Picker Panel -->
-        <div class="team-picker" id="teamPicker" style="display:none;">
-            <span class="picker-label">اختر الفريق:</span>
-            <button class="pick-btn" id="pickBtn1" onclick="assignTeam('team1')">الفريق الأول</button>
-            <button class="pick-btn" id="pickBtn2" onclick="assignTeam('team2')">الفريق الثاني</button>
-            <button class="pick-btn" onclick="unclaimCell()"
-                style="background: rgba(255,255,255,0.2); color: #fff; margin-right: 8px;">↺ إرجاع الحرف</button>
-            <button class="pick-btn pick-cancel" onclick="cancelSelect()">✕ إلغاء</button>
-        </div>
 
     </main>
 
@@ -503,6 +499,38 @@
             <!-- Footer Hint -->
             <div style="color: rgba(255,255,255,0.4); font-size: 0.95rem; margin-top: 20px; font-weight: 600;">
                 <span style="color: #FFD600;">💡 نصيحة:</span> شارك الشاشة أو الكود مع المتسابقين للبدء.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PORTAL SHARE MODAL ===== -->
+    <div id="portalShareModal" class="transition-screen"
+        style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
+        
+        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.7); border: 2.5px solid rgba(255, 214, 0, 0.3); border-radius: 45px; padding: 50px 40px; width: 95%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 50px rgba(139, 95, 191, 0.2); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            
+            <button onclick="document.getElementById('portalShareModal').style.display='none'"
+                style="position:absolute; top: 25px; left: 25px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; width:45px; height:45px; border-radius:15px; cursor:pointer; font-size:1.6rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10;"
+                onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
+
+            <h2 style="font-family: 'Cairo', sans-serif; font-weight: 900; color: #fff; font-size: 2.3rem; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.4); letter-spacing: -1px;">
+                بوابة الأسئلة
+            </h2>
+            <div style="color: rgba(255,255,255,0.7); margin-bottom: 25px; font-weight: 600; font-size: 1.1rem;">
+                اقرأ الباركود لفتح الأسئلة بجوالك الخاص لكي لا تتعارض جلستك هنا
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
+                <div id="modalPortalQrcodeBox" style="background:#fff; padding:12px; border-radius:20px; display:flex; align-items:center; justify-content:center; width: 180px; height: 180px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 5px solid rgba(255,255,255,0.1);">
+                </div>
+
+                <button onclick="window.open('pages/q702.html', '_blank')"
+                    style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 18px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-family: 'Cairo', sans-serif; font-weight: 800; cursor: pointer; font-size: 1rem; transition: all 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    أو الدخول مباشرة (من هذا الجهاز)
+                </button>
             </div>
         </div>
     </div>

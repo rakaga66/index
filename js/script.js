@@ -257,7 +257,8 @@ document.addEventListener('click', (e) => {
     
     // 2. Play general click sound if sound is on
     if (teamSetup.sound === 'on') {
-        const isTeamAssignBtn = e.target.closest('.pick-btn') && !e.target.closest('.pick-cancel');
+        const isTeamAssignBtn = e.target.closest('.pick-btn') || e.target.closest('.score-box');
+        
         if (!isTeamAssignBtn) {
             const clickAudio = document.getElementById('clickSound');
             if (clickAudio) {
@@ -675,7 +676,7 @@ function stopTimer() {
 }
 
 // ===== Custom Toast Notification =====
-function showGameToast(msg) {
+function showGameToast(msg, silent = false) {
     let toast = document.getElementById('gameToast');
     if (!toast) {
         toast = document.createElement('div');
@@ -685,8 +686,8 @@ function showGameToast(msg) {
     toast.textContent = msg;
     toast.classList.add('show');
     
-    // Play the alert sound if sound is on
-    if (teamSetup.sound === 'on') {
+    // Play the alert sound if sound is on and not silent
+    if (teamSetup.sound === 'on' && !silent) {
         const delAudio = document.getElementById('deleteSound');
         if (delAudio) {
             delAudio.currentTime = 0;
@@ -789,18 +790,8 @@ function applyTeamColors() {
     // Score boxes
     const sb1 = document.getElementById('scoreBox1');
     const sb2 = document.getElementById('scoreBox2');
-    sb1.style.background = c1.bg;
-    sb2.style.background = c2.bg;
-
-    // Pick buttons
-    const pb1 = document.getElementById('pickBtn1');
-    const pb2 = document.getElementById('pickBtn2');
-    pb1.textContent = teamSetup.team1.name;
-    pb1.style.background = c1.bg;
-    pb1.style.color = c1.text;
-    pb2.textContent = teamSetup.team2.name;
-    pb2.style.background = c2.bg;
-    pb2.style.color = c2.text;
+    if (sb1) sb1.style.background = c1.bg;
+    if (sb2) sb2.style.background = c2.bg;
 }
 
 // ===== Update Sidebar =====
@@ -908,26 +899,36 @@ function renderBoard() {
 
 // ===== Hex Click =====
 function onHexClick(row, col, cellEl) {
+    // If clicking an already claimed cell -> Unclaim it immediately
+    if (board[row][col] !== 0) {
+        selectedCell = { row, col, el: cellEl };
+        unclaimCell();
+        return;
+    }
+
+    // Toggle Selection for empty cells
+    if (selectedCell && selectedCell.el === cellEl) {
+        cancelSelect();
+        return;
+    }
+
     if (selectedCell) {
         selectedCell.el.classList.remove('selected');
     }
 
     cellEl.classList.add('selected');
     selectedCell = { row, col, el: cellEl };
-    document.getElementById('teamPicker').style.display = 'flex';
     
-    // Only start timer if the cell is unclaimed
-    if (board[row][col] === 0) {
-        // Unlock buzzers for everyone when a new unclaimed letter is chosen
-        if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
-        
-        // Show question panel in AI presenter mode
-        if (teamSetup.presenter === 'ai') {
-            const targetedLetter = cellLetters[row][col];
-            showQuestionPanel(targetedLetter, cellEl);
-        }
-    } else {
-        stopTimer();
+    // Pulse the sidebar to show it's ready for assignment
+    updateSidebarReady(true);
+    
+    // Unlock buzzers for everyone silently when a new unclaimed letter is chosen
+    if (typeof clearBuzzerLock === 'function') clearBuzzerLock(false);
+    
+    // Show question panel in AI presenter mode
+    if (teamSetup.presenter === 'ai') {
+        const targetedLetter = cellLetters[row][col];
+        showQuestionPanel(targetedLetter, cellEl);
     }
 }
 
@@ -958,8 +959,8 @@ function unclaimCell() {
     
     stopTimer();
     el.classList.remove('selected');
-    document.getElementById('teamPicker').style.display = 'none';
     selectedCell = null;
+    updateSidebarReady(false);
     
     // Unlock buzzers if we are connected
     if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
@@ -992,7 +993,7 @@ function assignTeam(team) {
     // Score incremented only on round win (not per cell)
 
     selectedCell = null;
-    document.getElementById('teamPicker').style.display = 'none';
+    updateSidebarReady(false);
 
     // Check win for this team
     if (checkWin(team)) {
@@ -1014,7 +1015,14 @@ function cancelSelect() {
         selectedCell.el.classList.remove('selected');
         selectedCell = null;
     }
-    document.getElementById('teamPicker').style.display = 'none';
+    updateSidebarReady(false);
+}
+
+// تحديث حالة الاستعداد في القائمة الجانبية (الوميض)
+function updateSidebarReady(isReady) {
+    document.querySelectorAll('.score-box').forEach(box => {
+        box.classList.toggle('ready', isReady);
+    });
 }
 
 // ===== Hex Neighbors (pointy-top, row-offset grid) =====
@@ -1284,7 +1292,13 @@ function getHexSize() {
     const hFactor = ((BOARD_SIZE - 1) * 0.75 + 1) * 1.1547;
     const maxByW = availW / wFactor;
     const maxByH = availH / hFactor;
-    return Math.max(60, Math.min(maxByW, maxByH, 180));
+    let size = Math.max(60, Math.min(maxByW, maxByH, 180));
+    
+    // Enlarge by 25% if in presentation mode
+    if (document.body.classList.contains('presentation-mode')) {
+        return size * 1.25;
+    }
+    return size;
 }
 
 function generateBuzzerCode() {
@@ -1398,6 +1412,31 @@ function openBuzzerDirectly() {
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
 
+// عرض باركود لبوابة الأسئلة
+function showPortalQR() {
+    const modal = document.getElementById('portalShareModal');
+    if (modal) modal.style.display = 'flex';
+
+    // مسار بوابة الأسئلة ثابت على السيرفر ليعمل الباركود حتى لو كنت تلعب من ملف محلي (بدون سيرفر)
+    const url = 'https://7roof-main.vercel.app/pages/q702.html';
+
+    const qrBox = document.getElementById('modalPortalQrcodeBox');
+    if (qrBox) {
+        qrBox.innerHTML = '';
+        const encoded = encodeURIComponent(url);
+        const img = document.createElement('img');
+        img.alt = 'QR Code';
+        img.style.cssText = 'width:156px;height:156px;border-radius:12px;display:block;';
+        // Primary: quickchart.io
+        img.src = `https://quickchart.io/qr?text=${encoded}&size=160&margin=1`;
+        // Fallback: api.qrserver.com
+        img.onerror = function() {
+            this.onerror = null;
+            this.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=${encoded}`;
+        };
+        qrBox.appendChild(img);
+    }
+}
 
 
 // عداد تنازلي مرئي مرتبط بفريق معين
@@ -1481,7 +1520,7 @@ function showBuzzerOverlay(name, teamId) {
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
-function clearBuzzerLock() {
+function clearBuzzerLock(showToast = true) {
     isBuzzerLocked = false;
     buzzerFirstTeam = null;
     clearInterval(buzzerTimerInterval);
@@ -1495,7 +1534,7 @@ function clearBuzzerLock() {
             update(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null });
         });
     }
-    showGameToast('الجرس متاح للجميع! 🔔');
+    if (showToast) showGameToast('الجرس متاح للجميع! 🔔', true);
 }
 
 // ==========================================
@@ -1573,13 +1612,3 @@ function updateScoreBoard() {
     syncGameViewUI();
 }
 
-// Add CSS update for Hex Size calculation in Presentation Mode
-const originalGetHexSize = getHexSize;
-getHexSize = function() {
-    let size = originalGetHexSize();
-    if (document.body.classList.contains('presentation-mode')) {
-        // Enlarge by 25% if in presentation mode
-        return size * 1.25;
-    }
-    return size;
-};

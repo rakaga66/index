@@ -318,14 +318,18 @@
             <span class="round-total" id="roundTotal"></span>
         </div>
 
-        <div class="scores">
-            <div class="score-box" id="scoreBox1">
-                <span class="score-name" id="name1">الفريق ١</span>
-                <span class="score-num" id="score1">0</span>
+        <div class="scores" id="sidebarScores">
+            <div class="score-box team-1" id="scoreBox1" onclick="assignTeam('team1')">
+                <div class="score-hex-wrap">
+                    <span class="score-num" id="score1">0</span>
+                </div>
+                <span class="score-name" id="name1">الفريق الأول</span>
             </div>
-            <div class="score-box" id="scoreBox2">
-                <span class="score-name" id="name2">الفريق ٢</span>
-                <span class="score-num" id="score2">0</span>
+            <div class="score-box team-2" id="scoreBox2" onclick="assignTeam('team2')">
+                <div class="score-hex-wrap">
+                    <span class="score-num" id="score2">0</span>
+                </div>
+                <span class="score-name" id="name2">الفريق الثاني</span>
             </div>
         </div>
 

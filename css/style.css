@@ -253,18 +253,18 @@ h1, h2, h3, .game-title {
     display: none;
 }
 
-/* ===== FLOATING AI QUESTION PANEL (Compact Bottom version) ===== */
+/* ===== FLOATING AI QUESTION PANEL (Compact version) ===== */
 .sidebar-question.in-main {
     position: fixed;   
-    width: 60%;        /* More compact horizontal layout */
-    max-width: 800px;
+    width: 85%;        /* Wider for a better 'Lower Third' look */
+    max-width: 900px;
     left: 50%;
-    bottom: 90px;      /* Positioned at the bottom area (empty spot) */
-    top: auto;         /* Remove centering */
+    top: auto;         
+    bottom: 160px;     /* Positioned at the bottom area to avoid overlapping the team scores */
     transform: translateX(-50%);
     background: rgba(18, 8, 35, 0.95);
     border: 2px solid #FFD600;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 214, 0, 0.2);
     border-radius: 20px;
     z-index: 10000;
     backdrop-filter: blur(15px);
@@ -874,9 +874,8 @@ body {
 /* Scores */
 .scores {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 20px;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
     margin-top: auto;
     padding: 0 10px;
@@ -884,42 +883,95 @@ body {
 
 .score-box {
     display: flex;
-    flex-direction: column;
+    flex-direction: row-reverse; /* Put score on the right, name in middle */
     align-items: center;
-    border-radius: 16px;
-    padding: 10px 16px;
-    gap: 6px;
+    justify-content: space-between;
+    border-radius: 50px;
+    padding: 6px 15px;
+    padding-left: 10px;
     flex: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.05);
+    opacity: 0.85;
+    filter: brightness(0.7); /* Start dark as requested */
 }
 
-.score-box.orange {
-    background: var(--orange);
+/* Brighten on hover or when ready */
+.score-box:hover, .score-box.ready {
+    filter: brightness(1.2);
+    opacity: 1;
+    border-color: rgba(255,255,255,0.2);
 }
 
-.score-box.purple {
-    background: var(--purple-light);
-    border: 2px solid rgba(255,255,255,0.2);
+.score-box.ready {
+    animation: pulseReady 1.5s infinite alternate;
+}
+
+@keyframes pulseReady {
+    from { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+    to { box-shadow: 0 0 15px rgba(255,140,0,0.4); }
+}
+
+.score-box.team-1 {
+    background: #2a2a35; /* Dark gray/purple pill */
+    border: 2px solid #3d3d4d;
+}
+
+.score-box.team-2 {
+    background: #4a1c2c; /* Dark reddish pill */
+    border: 2px solid #5d2535;
 }
 
 .score-name {
-    font-family: 'Cairo', sans-serif;
+    font-family: 'HrofFont', sans-serif !important;
     font-weight: 900;
-    font-size: 1.1rem;
-    color: #fff;
+    font-size: 1.6rem;
+    margin-right: 15px;
+    letter-spacing: 1px;
+    -webkit-text-stroke: 1.5px #000;
+    paint-order: stroke fill;
+    /* Glossy Bubble Text Shadow */
+    text-shadow: 
+        0 1px 0 #000,
+        0 2px 0 #000,
+        0 3px 0 #000,
+        0 4px 10px rgba(0,0,0,0.5);
 }
 
+.score-box.team-1 .score-name { color: #4ADE80; } /* Team 1 Green */
+.score-box.team-2 .score-name { color: #FB923C; } /* Team 2 Orange */
+
+/* Hexagon Wrap for the number */
+.score-hex-wrap {
+    width: 60px;
+    height: 60px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: rgba(0,0,0,0.4);
+    padding: 3px;
+}
+
+.score-box.team-1 .score-hex-wrap { background: #4ADE80; }
+.score-box.team-2 .score-hex-wrap { background: #FB923C; }
+
 .score-num {
-    font-family: "Cairo", sans-serif;
-    font-size: 2rem;
-    color: #fff;
-    font-weight: 800;
-    text-shadow: none;
-    -webkit-text-stroke: 0px;
-    background: rgba(255,255,255,0.4);
-    border-radius: 10px;
     width: 100%;
-    text-align: center;
-    padding: 6px 0;
+    height: 100%;
+    background: #000;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-size: 2.2rem;
+    color: #fff;
+    font-weight: 950;
+    line-height: 1;
+    padding-top: 2px;
 }
 
 /* ===== MAIN AREA ===== */
