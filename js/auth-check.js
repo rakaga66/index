@@ -64,9 +64,10 @@
 
             // 2. Heartbeat (تحديث النشاط)
             const heartbeatInterval = setInterval(() => {
-                set(ref(db, `users/${phone}/sessions/${token}`), Date.now()).catch(() => {
-                    clearInterval(heartbeatInterval);
-                });
+                const now = Date.now();
+                // تحديث الجلسة المحددة + النبض العام للمستخدم
+                set(ref(db, `users/${phone}/sessions/${token}`), now).catch(() => {});
+                set(ref(db, `users/${phone}/lastHeartbeat`), now).catch(() => {});
             }, 30000);
         });
 
