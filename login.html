@@ -236,6 +236,7 @@
 
             errEl.style.display = 'none';
             if (!phone) return showError('يرجى إدخال رقم الجوال');
+            if (!phone.startsWith('05')) return showError('للمتابعة يرجى التأكد من أن الرقم يبدأ بـ 05');
 
             btn.disabled = true;
             btn.textContent = 'جاري التحقق...';
@@ -252,10 +253,30 @@
                     if (userData.isActivated === false) {
                         showError('هذا الحساب غير نشط حالياً، تواصل مع الإدارة');
                     } else {
+                        // فلترة الجلسات الميتة وحساب الجلسات النشطة
+                        const now = Date.now();
+                        const sessions = userData.sessions || {};
+                        const activeSessions = {};
+                        let activeCount = 0;
+                        
+                        for (let tok in sessions) {
+                            if (now - sessions[tok] < 60000) { // النبضة خلال آخر 60 ثانية تعتبر نشطة
+                                activeSessions[tok] = sessions[tok];
+                                activeCount++;
+                            }
+                        }
+
+                        if (activeCount >= 2) {
+                            showError('تم بلوغ الحد الأقصى للأجهزة. يرجى إغلاق اللعبة في جوال آخر للتمكن من الدخول هنا.');
+                            return;
+                        }
+
                         // توليد توكن وتحديث الدخول
                         const newToken = Math.random().toString(36).substring(2);
-                        await set(ref(db, `users/${phone}/token`), newToken);
-                        await set(ref(db, `users/${phone}/lastLogin`), Date.now());
+                        activeSessions[newToken] = now;
+                        
+                        await set(ref(db, `users/${phone}/sessions`), activeSessions);
+                        await set(ref(db, `users/${phone}/lastLogin`), now);
 
                         // حفظ البيانات في الجلسة لمطابقتها في auth-check.js
                         sessionStorage.setItem('hojas_token', newToken);

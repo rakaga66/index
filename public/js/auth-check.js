@@ -48,7 +48,7 @@
             onValue(userRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    if (data.token !== token || data.isActivated === false) {
+                    if (!data.sessions || !data.sessions[token] || data.isActivated === false) {
                         clearAndRedirect();
                     }
                 } else {
@@ -62,7 +62,7 @@
 
             // 2. Heartbeat (تحديث النشاط)
             const heartbeatInterval = setInterval(() => {
-                set(ref(db, `users/${phone}/lastHeartbeat`), Date.now()).catch(() => {
+                set(ref(db, `users/${phone}/sessions/${token}`), Date.now()).catch(() => {
                     clearInterval(heartbeatInterval);
                 });
             }, 30000);
