@@ -162,13 +162,49 @@ body.presentation-mode .game-view-scores {
     text-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
-/* Animations */
-@keyframes slideDownFade {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
+/* Mobile Optimization for Presentation Mode */
+@media (max-width: 768px) {
+    body.presentation-mode .main-area {
+        padding-top: 60px !important;
+    }
 
-@keyframes slideUpFade {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    body.presentation-mode .board-wrap {
+        transform: scale(0.85); /* Shrink board for mobile */
+    }
+
+    body.presentation-mode .game-view-header {
+        height: 120px;
+        padding: 0 15px;
+    }
+
+    .gv-logo-container {
+        transform: scale(0.65);
+    }
+
+    .gv-current-round {
+        font-size: 1.2rem;
+        padding: 5px 15px;
+        gap: 8px;
+    }
+
+    .game-view-scores {
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        gap: 10px;
+    }
+
+    .gv-score-card {
+        padding: 10px 15px;
+        min-width: 120px;
+        border-radius: 16px;
+    }
+
+    .gv-score-num {
+        font-size: 2.2rem;
+    }
+
+    .gv-team-name {
+        font-size: 0.7rem;
+    }
 }

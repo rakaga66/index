@@ -311,6 +311,42 @@ h1, h2, h3, .game-title {
     font-size: 0.85rem;
 }
 
+/* Mobile Optimization for Question Panel */
+@media (max-width: 768px) {
+    .sidebar-question.in-main {
+        width: 95%;
+        bottom: 100px;
+        flex-direction: column;
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .sidebar-question.in-main .sq-header {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-right: 0;
+        margin-right: 0;
+        margin-bottom: 5px;
+        min-width: auto;
+    }
+    
+    .sidebar-question.in-main .sq-text {
+        font-size: 1.1rem;
+        padding: 5px;
+    }
+    
+    .sidebar-question.in-main .sq-actions {
+        width: 100%;
+        justify-content: space-around;
+        gap: 4px;
+    }
+    
+    .sidebar-question.in-main .sq-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+}
+
 
 .sq-btn-reveal {
     background: linear-gradient(135deg, #FFD600, #FF8C00);
