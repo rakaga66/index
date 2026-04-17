@@ -270,6 +270,8 @@
                         activeSessions[newToken] = now;
                         
                         await set(ref(db, `users/${phone}/sessions`), activeSessions);
+                        await set(ref(db, `users/${phone}/token`), newToken); // Fallback
+                        await set(ref(db, `users/${phone}/lastHeartbeat`), now); // Fallback
                         await set(ref(db, `users/${phone}/lastLogin`), now);
                         
                         sessionStorage.setItem('hojas_token', newToken);

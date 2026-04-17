@@ -276,6 +276,8 @@
                         activeSessions[newToken] = now;
                         
                         await set(ref(db, `users/${phone}/sessions`), activeSessions);
+                        await set(ref(db, `users/${phone}/token`), newToken); // Fallback for cached browsers
+                        await set(ref(db, `users/${phone}/lastHeartbeat`), now); // Fallback
                         await set(ref(db, `users/${phone}/lastLogin`), now);
 
                         // حفظ البيانات في الجلسة لمطابقتها في auth-check.js
