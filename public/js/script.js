@@ -371,12 +371,12 @@ function saveSettings() {
 function startGame() {
     document.getElementById('homeScreen').style.display = 'none';
     
-    // Reset buzzer session for a unique code per game
-    buzzerRoom = null;
-    if (buzzerSocket) {
-        buzzerSocket.disconnect();
-        buzzerSocket = null;
-    }
+    // Generate unique session code for this game
+    if (buzzerSocket) { buzzerSocket.disconnect(); buzzerSocket = null; }
+    buzzerRoom = generateBuzzerCode();
+    const bw = document.getElementById('sessionBadgeWrap');
+    const bc = document.getElementById('sessionBadgeCode');
+    if (bw && bc) { bw.style.display = 'block'; bc.textContent = buzzerRoom; }
     
     
     teamSetup.currentRound = 1;
@@ -1384,8 +1384,12 @@ function openBuzzerModal() {
         ensureFirebase().then(async (db) => {
             const { ref, set, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
 
-            // Create/reset room in Firebase
-            await set(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null, openedAt: Date.now() });
+            // Create/reset room in Firebase with team names
+            await set(ref(db, `rooms/${buzzerRoom}`), {
+                locked: false, buzzer: null, openedAt: Date.now(),
+                team1Name: (teamSetup.team1 && teamSetup.team1.name) ? teamSetup.team1.name : 'الفريق الأول',
+                team2Name: (teamSetup.team2 && teamSetup.team2.name) ? teamSetup.team2.name : 'الفريق الثاني'
+            });
 
             // Stop old listener if any
             if (_fbUnsubscribe) { _fbUnsubscribe(); _fbUnsubscribe = null; }
@@ -1463,34 +1467,42 @@ function showBuzzerOverlay(name, teamId) {
 
     const html = `
         <div id="buzzerLockOverlay" style="
-            position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 999999;
-            background: linear-gradient(135deg, ${color.bg}, #1a0b2e); 
-            padding: 30px 60px; border-radius: 40px;
-            text-align: center; border: 3px solid #FFD600;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.8), 0 0 40px rgba(255, 214, 0, 0.2);
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            animation: buzzerPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            min-width: 320px;
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 999999;
+            background: linear-gradient(145deg, ${color.bg} 0%, #1a0b2e 100%);
+            padding: 22px 36px; border-radius: 16px;
+            text-align: center;
+            border: 2px solid rgba(255,214,0,0.55);
+            border-bottom: 5px solid rgba(255,214,0,0.55);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 30px rgba(255,214,0,0.12);
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            animation: buzzerPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: max-content; max-width: min(400px, 90vw); min-width: 260px;
         ">
             <style>
                 @keyframes buzzerPop {
-                    0% { transform: translate(-50%, -50px) scale(0.8); opacity: 0; }
-                    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+                    0%   { transform: translate(-50%, -40px) scale(0.85); opacity: 0; }
+                    100% { transform: translate(-50%, 0)     scale(1);    opacity: 1; }
                 }
             </style>
-            <div style="font-size:1.1rem; color:#FFD600; font-weight:900; text-transform:uppercase; letter-spacing:2px;">⚡ أسرع ضغطة ⚡</div>
-            <div style="font-family:'Lalezar', cursive; font-size:4rem; color:#fff; line-height:1; text-shadow:0 5px 15px rgba(0,0,0,0.5);">${name}</div>
-            <div style="font-size:1.4rem; color:rgba(255,255,255,0.9); font-weight:700; margin-bottom:10px;">${teamObj ? teamObj.name : ''}</div>
-            
-            <div id="buzzerOverlayTimer" style="font-family:'Lalezar', cursive; font-size:2.5rem; color:#FFD600; background:rgba(0,0,0,0.3); padding:5px 25px; border-radius:20px; border:1px solid rgba(255,214,0,0.2);"></div>
-            
+            <div style="font-size:0.82rem; color:rgba(255,214,0,0.8); font-weight:900; letter-spacing:2px; text-transform:uppercase;">⚡ أسرع ضغطة ⚡</div>
+            <div style="font-family:'Lalezar','HrofFont',cursive; font-size:clamp(2.6rem,7vw,3.8rem); color:#fff; line-height:1.05; text-shadow:0 4px 12px rgba(0,0,0,0.5);">${name}</div>
+            <div style="font-size:1rem; color:rgba(255,255,255,0.75); font-weight:700;">${teamObj ? teamObj.name : ''}</div>
+            <div id="buzzerOverlayTimer" style="
+                font-family:'Lalezar','HrofFont',cursive; font-size:1.9rem; color:#FFD600;
+                background:rgba(0,0,0,0.35); padding:5px 20px;
+                border-radius:8px; border:1px solid rgba(255,214,0,0.25);
+                margin: 6px 0;
+            "></div>
             <button onclick="clearBuzzerLock()" style="
-                margin-top:20px; padding:15px 40px; border:none; border-radius:50px;
-                background:#fff; color:#1a1a1a; font-weight:900; font-size:1.2rem;
-                cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.3);
-                transition: all 0.2s;
-            " onmouseover="this.style.transform='translateY(-3px)'; this.style.background='#FFD600'"
-               onmouseout="this.style.transform='translateY(0)'; this.style.background='#fff'">
+                margin-top:8px; padding:12px 30px; border:none; border-radius:10px;
+                background:#FFD600; color:#1a1a1a; font-weight:900; font-size:1rem;
+                cursor:pointer; font-family:'HrofFont','Cairo',sans-serif;
+                box-shadow: 0 5px 0 rgba(150,85,0,0.55), 0 8px 18px rgba(0,0,0,0.3);
+                transition: transform 0.1s, box-shadow 0.1s;
+            "
+            onmousedown="this.style.transform='translateY(4px)';this.style.boxShadow='0 1px 0 rgba(150,85,0,0.55),0 3px 8px rgba(0,0,0,0.2)'"
+            onmouseup="this.style.transform='';this.style.boxShadow='0 5px 0 rgba(150,85,0,0.55),0 8px 18px rgba(0,0,0,0.3)'"
+            onmouseleave="this.style.transform='';this.style.boxShadow='0 5px 0 rgba(150,85,0,0.55),0 8px 18px rgba(0,0,0,0.3)'">
                ✅ فتح الجرس مجدداً
             </button>
         </div>

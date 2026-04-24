@@ -24,14 +24,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             padding: 12px 8px;
-            background: rgba(18, 8, 35, 0.92);
+            background: rgba(18, 8, 35, 0.93);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-right: 1px solid rgba(139, 95, 191, 0.35);
-            border-radius: 0 18px 18px 0;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4);
+            border-right: 3px solid rgba(255, 214, 0, 0.4);
+            border-radius: 0 10px 10px 0;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .bib-btn {
@@ -40,26 +40,30 @@
             align-items: center;
             justify-content: center;
             gap: 3px;
-            background: rgba(59, 27, 90, 0.6);
-            border: 1px solid rgba(139, 95, 191, 0.4);
-            border-radius: 14px;
+            background: rgba(59, 27, 90, 0.55);
+            border: 1px solid rgba(139, 95, 191, 0.35);
+            border-radius: 6px;
+            border-bottom: 2px solid rgba(255,214,0,0.3);
             padding: 10px 12px 8px;
             cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.18s ease;
             min-width: 54px;
             color: #fff;
             font-family: 'Cairo', sans-serif;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
         }
 
         .bib-btn:hover {
             background: rgba(139, 95, 191, 0.55);
             border-color: rgba(255, 214, 0, 0.5);
-            transform: translateX(3px);
-            box-shadow: 4px 0 20px rgba(139, 95, 191, 0.35);
+            border-bottom-color: #FFD600;
+            transform: translateX(4px);
+            box-shadow: 4px 3px 0 rgba(0,0,0,0.3), 6px 0 20px rgba(139, 95, 191, 0.35);
         }
 
         .bib-btn:active {
-            transform: translateX(0px) scale(0.96);
+            transform: translateX(2px) translateY(2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
         }
 
         .bib-icon {
@@ -143,9 +147,9 @@
         </div>
 
         <!-- Version Tag -->
-        <div
-            style="position: absolute; bottom: 20px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); font-family: 'Cairo', sans-serif;">
-            نسخة: V 1.1
+        <div style="position: absolute; bottom: 15px; font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
+            <span>v 1.2</span>
+            <span style="font-size: 0.75rem; background: rgba(74, 222, 128, 0.2); color: #4ADE80; padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(74, 222, 128, 0.3);">تحديث جديد</span>
         </div>
     </div>
 
@@ -245,6 +249,14 @@
                 <div class="settings-label">مؤقت الجرس:</div>
                 <div class="settings-control timers-grid">
                     <div class="timer-box">
+                        <span class="timer-title">مؤقت يدوي</span>
+                        <div class="timer-stepper">
+                            <button class="step-btn" onclick="adjTime('manualTime', 1)">+</button>
+                            <div class="step-val"><span id="manualTimeVal">5</span> ثانية</div>
+                            <button class="step-btn" onclick="adjTime('manualTime', -1)">-</button>
+                        </div>
+                    </div>
+                    <div class="timer-box">
                         <span class="timer-title">وقت الإجابة</span>
                         <div class="timer-stepper">
                             <button class="step-btn" onclick="adjTime('ansTime', 1)">+</button>
@@ -324,12 +336,22 @@
                     <span class="score-num" id="score1">0</span>
                 </div>
                 <span class="score-name" id="name1">الفريق الأول</span>
+                <!-- Manual Timer Trigger -->
+                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team1')" title="بدء مؤقت يدوي">
+                    <span>مؤقت</span>
+                    ⏱️
+                </button>
             </div>
             <div class="score-box team-2" id="scoreBox2" onclick="assignTeam('team2')">
                 <div class="score-hex-wrap">
                     <span class="score-num" id="score2">0</span>
                 </div>
                 <span class="score-name" id="name2">الفريق الثاني</span>
+                <!-- Manual Timer Trigger -->
+                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team2')" title="بدء مؤقت يدوي">
+                    <span>مؤقت</span>
+                    ⏱️
+                </button>
             </div>
         </div>
 
@@ -363,6 +385,14 @@
 
     <!-- ===== MAIN AREA ===== -->
     <main class="main-area">
+
+        <!-- Session Code Badge -->
+        <div id="sessionBadgeWrap" style="display:none; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:200; pointer-events:none;">
+            <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,214,0,0.25); border-radius:7px; padding:4px 13px; backdrop-filter:blur(8px); display:flex; align-items:center; gap:7px;">
+                <span style="font-size:0.68rem; color:rgba(255,255,255,0.38);">جلسة</span>
+                <span id="sessionBadgeCode" style="font-size:0.82rem; font-weight:900; letter-spacing:3px; color:rgba(255,214,0,0.7);">—</span>
+            </div>
+        </div>
 
         <!-- Timer Display (floating) -->
         <div class="timer-display" id="timerDisplay" style="display:none;">
@@ -447,11 +477,11 @@
     <div id="buzzerShareModal" class="transition-screen"
         style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
         
-        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.7); border: 2.5px solid rgba(255, 214, 0, 0.3); border-radius: 45px; padding: 50px 40px; width: 95%; max-width: 550px; text-align: center; position: relative; box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 50px rgba(139, 95, 191, 0.2); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1); border-left: 5px solid rgba(255, 214, 0, 0.7); border-radius: 16px; padding: 40px 36px; width: 95%; max-width: 550px; text-align: center; position: relative; box-shadow: 0 10px 0 rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.7); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
             
             <!-- Close Button -->
             <button onclick="document.getElementById('buzzerShareModal').style.display='none'"
-                style="position:absolute; top: 25px; left: 25px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; width:45px; height:45px; border-radius:15px; cursor:pointer; font-size:1.6rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10;"
+                style="position:absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.15); color:#fff; width:42px; height:42px; border-radius:8px; cursor:pointer; font-size:1.4rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
                 onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
                 onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
 
@@ -461,8 +491,8 @@
 
             <div style="display: flex; gap: 25px; margin-bottom: 35px; flex-wrap: wrap;">
                 <!-- Right: Session Code -->
-                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: transform 0.3s;"
-                     onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,214,0,0.3)'"
+                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: all 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,214,0,0.4)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'">
                     
                     <div style="font-size: 2.8rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">🔗</div>
@@ -475,8 +505,8 @@
                 </div>
 
                 <!-- Left: QRCode -->
-                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: transform 0.3s;"
-                     onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,214,0,0.3)'"
+                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: all 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,214,0,0.4)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'">
                     
                     <div style="font-size: 2.8rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">📱</div>
@@ -484,13 +514,13 @@
                         مسح الباركود
                     </div>
                     
-                    <div id="modalQrcodeBox" style="background:#fff; padding:12px; border-radius:20px; display:flex; align-items:center; justify-content:center; width: 160px; height: 160px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 5px solid rgba(255,255,255,0.1);">
+                    <div id="modalQrcodeBox" style="background:#fff; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; width: 160px; height: 160px; box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);">
                     </div>
 
                     <button id="modalDirectLinkBtn" onclick="openBuzzerDirectly()"
-                        style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 18px; background: linear-gradient(135deg, #FFD600, #F57C00); border: none; color: #1a1a1a; font-family: 'Cairo', sans-serif; font-weight: 900; cursor: pointer; font-size: 1rem; transition: all 0.3s; box-shadow: 0 6px 0 #b36b00;"
-                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 0 #b36b00'"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 0 #b36b00'">
+                        style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 8px; background: linear-gradient(135deg, #FFD600, #F57C00); border: none; border-bottom: 3px solid #b36b00; color: #1a1a1a; font-family: 'Cairo', sans-serif; font-weight: 900; cursor: pointer; font-size: 1rem; transition: all 0.15s; box-shadow: 0 5px 0 #7a4400;"
+                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 0 #7a4400'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 0 #7a4400'">
                         🚀 الدخول مباشرة
                     </button>
                 </div>
@@ -507,10 +537,10 @@
     <div id="portalShareModal" class="transition-screen"
         style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
         
-        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.7); border: 2.5px solid rgba(255, 214, 0, 0.3); border-radius: 45px; padding: 50px 40px; width: 95%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 50px rgba(139, 95, 191, 0.2); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            
+        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1); border-left: 5px solid rgba(255, 214, 0, 0.7); border-radius: 16px; padding: 40px 36px; width: 95%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 0 rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.7); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+
             <button onclick="document.getElementById('portalShareModal').style.display='none'"
-                style="position:absolute; top: 25px; left: 25px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; width:45px; height:45px; border-radius:15px; cursor:pointer; font-size:1.6rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10;"
+                style="position:absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.15); color:#fff; width:42px; height:42px; border-radius:8px; cursor:pointer; font-size:1.4rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
                 onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
                 onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
 
@@ -521,14 +551,14 @@
                 اقرأ الباركود لفتح الأسئلة بجوالك الخاص لكي لا تتعارض جلستك هنا
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
-                <div id="modalPortalQrcodeBox" style="background:#fff; padding:12px; border-radius:20px; display:flex; align-items:center; justify-content:center; width: 180px; height: 180px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 5px solid rgba(255,255,255,0.1);">
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 5px 0 rgba(0,0,0,0.25);">
+                <div id="modalPortalQrcodeBox" style="background:#fff; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; width: 180px; height: 180px; box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);">
                 </div>
 
                 <button onclick="window.open('pages/q702.html', '_blank')"
-                    style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 18px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-family: 'Cairo', sans-serif; font-weight: 800; cursor: pointer; font-size: 1rem; transition: all 0.3s;"
-                    onmouseover="this.style.background='rgba(255,255,255,0.2)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-bottom: 2px solid rgba(255,255,255,0.25); color: #fff; font-family: 'Cairo', sans-serif; font-weight: 800; cursor: pointer; font-size: 1rem; transition: all 0.2s; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
+                    onmouseover="this.style.background='rgba(255,255,255,0.18)'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
                     أو الدخول مباشرة (من هذا الجهاز)
                 </button>
             </div>

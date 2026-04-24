@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المقدم | حروف</title>
+    <style>
+        @font-face {
+            font-family: 'HrofFont';
+            src: url('../public/assets/حروف.ttf') format('truetype');
+        }
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'HrofFont', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        :root {
+            --bg1: #1e0840; --bg2: #4a1c75;
+            --yellow: #FFD600; --orange: #FF8C00;
+            --green: #4ADE80; --red: #F87171; --purple: #ba8fed;
+            --card: rgba(255,255,255,0.07);
+            --border: rgba(255,255,255,0.1);
+        }
+        body {
+            background: linear-gradient(145deg, var(--bg1) 0%, var(--bg2) 100%);
+            min-height: 100vh; min-height: 100dvh;
+            color: #fff; overflow-x: hidden; position: relative;
+        }
+        body::before {
+            content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+            background-image:
+                linear-gradient(45deg,rgba(255,255,255,.025) 1px,transparent 1px),
+                linear-gradient(-45deg,rgba(255,255,255,.025) 1px,transparent 1px),
+                linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
+                linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+            background-size: 40px 40px,40px 40px,80px 80px,80px 80px;
+        }
+
+        /* ══════ OVERLAY SCREENS ══════ */
+        .overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: linear-gradient(145deg, var(--bg1), var(--bg2));
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 24px;
+        }
+        .overlay.hidden { display: none; }
+
+        .brand-logo { font-size: 3.6rem; color: var(--yellow); line-height: 1;
+                      text-shadow: 0 4px 20px rgba(0,0,0,.5), 0 0 40px rgba(255,214,0,.2); }
+        .brand-sub  { font-size: 1.35rem; color: var(--orange); margin-top: -10px; }
+
+        /* PIN card */
+        .pin-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-bottom: 4px solid rgba(255,214,0,.45);
+            border-radius: 14px; padding: 28px 22px; width: min(320px,92vw);
+            display: flex; flex-direction: column; gap: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.4);
+            backdrop-filter: blur(14px);
+        }
+        .pin-label { font-size: .88rem; color: rgba(255,255,255,.6); text-align: center; }
+        .pin-dots  { display: flex; justify-content: center; gap: 14px; }
+        .pin-dot   { width: 18px; height: 18px; border-radius: 4px;
+                     background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.18); transition: all .2s; }
+        .pin-dot.on { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 10px rgba(255,214,0,.5); }
+        .numpad { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+        .nk {
+            padding: 16px; border: none; border-radius: 10px;
+            background: rgba(255,255,255,.08); border-bottom: 3px solid rgba(255,255,255,.12);
+            color: #fff; font-size: 1.3rem; font-weight: 700; cursor: pointer;
+            transition: transform .1s, background .15s;
+        }
+        .nk:active { transform: translateY(3px); }
+        .nk.del { color: var(--red); }
+        .nk.clr { color: rgba(255,255,255,.38); }
+        .pin-err { font-size: .8rem; color: var(--red); text-align: center; min-height: 16px; }
+
+        /* Session join card */
+        .join-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-bottom: 4px solid rgba(255,214,0,.45);
+            border-radius: 14px; padding: 28px 22px; width: min(340px,92vw);
+            display: flex; flex-direction: column; gap: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.4);
+            backdrop-filter: blur(14px);
+        }
+        .join-label { font-size: .88rem; color: rgba(255,255,255,.65); text-align: center; line-height: 1.5; }
+        .join-input {
+            padding: 16px 18px; border-radius: 10px; text-align: center;
+            background: rgba(0,0,0,.3); color: #fff; outline: none;
+            border: 1px solid rgba(255,255,255,.1);
+            border-bottom: 2px solid rgba(255,214,0,.4);
+            font-size: 1.6rem; font-weight: 900; letter-spacing: 5px;
+            text-transform: uppercase;
+            transition: border-color .2s;
+        }
+        .join-input:focus { border-bottom-color: var(--yellow); }
+        .join-input::placeholder { font-size: .95rem; letter-spacing: 1px; color: rgba(255,255,255,.25); }
+        .join-btn {
+            padding: 15px; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            color: #1a1a1a; font-size: 1.15rem; font-weight: 900; cursor: pointer;
+            box-shadow: 0 6px 0 rgba(150,80,0,.5), 0 10px 20px rgba(255,140,0,.2);
+            transition: transform .1s, box-shadow .1s;
+        }
+        .join-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(150,80,0,.5); }
+        .join-err { font-size: .8rem; color: var(--red); text-align: center; min-height: 16px; }
+
+        /* ══════ HEADER ══════ */
+        .hdr {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px; padding: 13px 18px;
+            background: rgba(0,0,0,.35); border-bottom: 2px solid rgba(255,214,0,.28);
+            backdrop-filter: blur(14px);
+        }
+        .hdr-brand .logo { font-size: 1.8rem; color: var(--yellow); line-height: 1; }
+        .hdr-brand .sub  { font-size: .8rem; color: rgba(255,255,255,.45); }
+        .hdr-right { display: flex; align-items: center; gap: 10px; }
+        .conn-pill {
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+            padding: 6px 12px; border-radius: 8px; font-size: .8rem; color: rgba(255,255,255,.55);
+        }
+        #connDot { width: 9px; height: 9px; border-radius: 3px; background: #555; transition: all .3s; }
+        #connDot.on  { background: var(--green); box-shadow: 0 0 8px rgba(74,222,128,.6); }
+        #connDot.off { background: var(--red); }
+        .sess-pill {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,214,0,.1); border: 1px solid rgba(255,214,0,.3);
+            padding: 6px 14px; border-radius: 8px;
+        }
+        .sess-code { font-size: 1rem; font-weight: 900; letter-spacing: 3px; color: var(--yellow); }
+        .change-btn {
+            padding: 6px 12px; border: none; border-radius: 7px;
+            background: rgba(255,255,255,.07); border-bottom: 2px solid rgba(255,255,255,.1);
+            color: rgba(255,255,255,.55); font-size: .78rem; font-weight: 700; cursor: pointer;
+        }
+        .change-btn:hover { background: rgba(255,255,255,.12); }
+
+        /* ══════ LAYOUT ══════ */
+        .page { position: relative; z-index: 10; max-width: 960px; margin: 0 auto; padding: 16px 14px 50px; display: flex; flex-direction: column; gap: 14px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* ══════ CARD ══════ */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; backdrop-filter: blur(12px); overflow: hidden; }
+        .card-hd {
+            display: flex; align-items: center; gap: 9px;
+            padding: 11px 16px; background: rgba(0,0,0,.22); border-bottom: 1px solid var(--border);
+        }
+        .card-hd-icon { font-size: .95rem; }
+        .card-hd-title { font-size: .88rem; font-weight: 900; letter-spacing: .5px; }
+        .card-hd-right { margin-right: auto; display: flex; align-items: center; gap: 8px; }
+        .card-bd { padding: 14px 16px; }
+
+        /* ══════ TEAMS (read-only) ══════ */
+        .teams-display { display: flex; gap: 10px; }
+        .team-box {
+            flex: 1; padding: 12px 14px; border-radius: 10px;
+            background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.08);
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .team-box-lbl { font-size: .7rem; color: rgba(255,255,255,.4); letter-spacing: 1px; }
+        .team-box-name { font-size: 1.05rem; font-weight: 900; }
+        .team-box.t1 { border-right: 3px solid var(--orange); }
+        .team-box.t2 { border-right: 3px solid var(--purple); }
+
+        /* ══════ STATUS ROW ══════ */
+        .status-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-chip {
+            display: flex; align-items: center; gap: 7px;
+            padding: 8px 14px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.1);
+            background: rgba(0,0,0,.2); font-size: .82rem;
+        }
+        .status-chip .dot { width: 9px; height: 9px; border-radius: 3px; background: #555; }
+        .status-chip.active .dot { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,.5); }
+        .status-chip.active { border-color: rgba(74,222,128,.25); background: rgba(74,222,128,.07); color: var(--green); }
+        .status-chip.inactive { color: rgba(255,255,255,.4); }
+
+        /* ══════ LETTERS ══════ */
+        .letters { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+        .l-btn {
+            width: 42px; height: 42px; border: none; border-radius: 8px;
+            background: rgba(255,255,255,.08); border-bottom: 2px solid rgba(255,255,255,.12);
+            color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all .15s;
+        }
+        .l-btn:hover  { background: rgba(255,214,0,.18); color: var(--yellow); }
+        .l-btn.active { background: var(--yellow); color: #1a1a1a; box-shadow: 0 4px 0 rgba(150,90,0,.5); border-bottom-color: rgba(150,90,0,.5); }
+
+        /* ══════ QUESTION ══════ */
+        .q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .q-tag  { background: rgba(255,214,0,.14); border: 1px solid rgba(255,214,0,.4); padding: 3px 12px; border-radius: 6px; font-size: .8rem; font-weight: 700; color: var(--yellow); }
+        .q-shuffle {
+            margin-right: auto; padding: 5px 12px; border: none; border-radius: 7px;
+            background: rgba(255,255,255,.08); border-bottom: 2px solid rgba(255,255,255,.12);
+            color: rgba(255,255,255,.65); font-size: .8rem; font-weight: 700; cursor: pointer;
+        }
+        .q-shuffle:active { transform: translateY(2px); }
+        #qText { font-size: 1.1rem; font-weight: 700; line-height: 1.7; color: rgba(255,255,255,.9); min-height: 52px; }
+        .divider { height: 1px; background: rgba(255,255,255,.07); margin: 12px 0; }
+        .a-label { font-size: .72rem; font-weight: 900; color: var(--green); letter-spacing: 1.5px; margin-bottom: 6px; }
+        #aText {
+            font-size: 1.2rem; font-weight: 900; color: var(--green);
+            background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.18);
+            border-right: 4px solid rgba(74,222,128,.5);
+            padding: 10px 14px; border-radius: 8px;
+        }
+        .placeholder { color: rgba(255,255,255,.25); font-style: italic; font-size: .88rem; text-align: center; padding: 16px 0; }
+
+        /* ══════ CONTROLS ══════ */
+        .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ctrl-btn {
+            padding: 14px 10px; border: none; border-radius: 10px;
+            font-size: .92rem; font-weight: 900; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: transform .1s, box-shadow .1s;
+        }
+        .ctrl-btn:active { transform: translateY(4px); }
+        .ctrl-btn:disabled { opacity: .35; cursor: not-allowed; }
+        .ctrl-btn:disabled:active { transform: none; }
+        .btn-reveal {
+            background: var(--green); color: #0d3018;
+            box-shadow: 0 5px 0 rgba(20,120,60,.5), 0 8px 18px rgba(74,222,128,.12);
+        }
+        .btn-reveal:active { box-shadow: 0 1px 0 rgba(20,120,60,.5); }
+        .btn-reveal.done { background: rgba(74,222,128,.1); color: var(--green); border: 1px solid rgba(74,222,128,.25); box-shadow: none; cursor: default; }
+        .btn-next {
+            background: var(--yellow); color: #1a1a1a;
+            box-shadow: 0 5px 0 rgba(150,90,0,.5), 0 8px 18px rgba(255,214,0,.12);
+        }
+        .btn-next:active { box-shadow: 0 1px 0 rgba(150,90,0,.5); }
+        .btn-buzz-open {
+            grid-column: 1/-1;
+            background: rgba(248,113,113,.1); color: var(--red);
+            border: 1px solid rgba(248,113,113,.28); border-bottom: 3px solid rgba(248,113,113,.38);
+        }
+        .btn-buzz-open:hover:not(:disabled) { background: rgba(248,113,113,.18); }
+
+        /* ══════ BUZZER STATUS ══════ */
+        .bz-empty { text-align: center; padding: 18px; color: rgba(255,255,255,.28); font-size: .88rem; }
+        #bzCard {
+            display: none; align-items: center; gap: 14px;
+            background: rgba(255,214,0,.08); border: 1px solid rgba(255,214,0,.22);
+            border-right: 4px solid rgba(255,214,0,.6);
+            padding: 13px 15px; border-radius: 10px;
+        }
+        .bz-icon { font-size: 2rem; }
+        .bz-name { font-size: 1.3rem; font-weight: 900; }
+        .bz-team { font-size: .8rem; color: rgba(255,255,255,.55); margin-top: 2px; }
+        .bz-time { margin-right: auto; font-size: .7rem; color: rgba(255,255,255,.32); text-align: center; }
+
+        /* ══════ LINKS (no QR) ══════ */
+        .link-row { display: flex; gap: 8px; align-items: center; }
+        .link-label { font-size: .75rem; color: rgba(255,255,255,.45); margin-bottom: 5px; }
+        .link-text {
+            flex: 1; padding: 9px 12px; border-radius: 8px;
+            background: rgba(0,0,0,.3); color: rgba(255,255,255,.5);
+            border: 1px solid rgba(255,255,255,.08); border-bottom: 2px solid rgba(255,214,0,.25);
+            font-size: .72rem; outline: none; min-width: 0;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .copy-btn {
+            padding: 9px 14px; border: none; border-radius: 8px;
+            background: rgba(255,214,0,.13); border-bottom: 2px solid rgba(255,214,0,.38);
+            color: var(--yellow); font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+        }
+        .copy-btn:hover { background: rgba(255,214,0,.22); }
+        .links-stack { display: flex; flex-direction: column; gap: 12px; }
+
+        /* ══════ TOAST ══════ */
+        #toast {
+            position: fixed; bottom: 18px; left: 50%;
+            transform: translateX(-50%) translateY(50px);
+            background: #1e0840; color: #fff;
+            padding: 10px 20px; border-radius: 8px; font-size: .85rem; font-weight: 700;
+            border: 1px solid rgba(255,255,255,.1); border-bottom: 3px solid rgba(255,214,0,.4);
+            box-shadow: 0 8px 24px rgba(0,0,0,.5); z-index: 900; opacity: 0;
+            transition: opacity .3s, transform .3s; pointer-events: none; white-space: nowrap;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 580px) {
+            .two-col { grid-template-columns: 1fr; }
+            .ctrl-grid { grid-template-columns: 1fr; }
+            .btn-buzz-open { grid-column: unset; }
+            .teams-display { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ PIN SCREEN ══ -->
+<div id="pinScreen" class="overlay">
+    <div style="text-align:center">
+        <div class="brand-logo">حروف</div>
+        <div class="brand-sub">لوحة المقدم</div>
+    </div>
+    <div class="pin-card">
+        <div class="pin-label">أدخل كود الدخول</div>
+        <div class="pin-dots">
+            <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+            <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+        </div>
+        <div class="numpad">
+            <button class="nk" onclick="pk('1')">1</button><button class="nk" onclick="pk('2')">2</button><button class="nk" onclick="pk('3')">3</button>
+            <button class="nk" onclick="pk('4')">4</button><button class="nk" onclick="pk('5')">5</button><button class="nk" onclick="pk('6')">6</button>
+            <button class="nk" onclick="pk('7')">7</button><button class="nk" onclick="pk('8')">8</button><button class="nk" onclick="pk('9')">9</button>
+            <button class="nk clr" onclick="pc()">C</button><button class="nk" onclick="pk('0')">0</button><button class="nk del" onclick="pb()">⌫</button>
+        </div>
+        <div class="pin-err" id="pinErr"></div>
+    </div>
+</div>
+
+<!-- ══ SESSION JOIN SCREEN ══ -->
+<div id="joinScreen" class="overlay hidden">
+    <div style="text-align:center">
+        <div class="brand-logo">حروف</div>
+        <div class="brand-sub">لوحة المقدم</div>
+    </div>
+    <div class="join-card">
+        <div class="join-label">أدخل كود الجلسة من شاشة اللعبة، أو أنشئ جلسة مستقلة</div>
+
+        <input id="joinInput" class="join-input" maxlength="8" placeholder="كود الجلسة" autocomplete="off"
+               oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doJoin()">
+
+        <button class="join-btn" onclick="doJoin()">انضمام لجلسة موجودة ⚡</button>
+
+        <div style="display:flex; align-items:center; gap:10px; opacity:.4;">
+            <div style="flex:1; height:1px; background:rgba(255,255,255,.3);"></div>
+            <span style="font-size:.8rem;">أو</span>
+            <div style="flex:1; height:1px; background:rgba(255,255,255,.3);"></div>
+        </div>
+
+        <!-- New standalone session -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+                <input id="newT1" style="flex:1; padding:10px 12px; border-radius:8px;
+                    background:rgba(0,0,0,.3); color:#fff; outline:none;
+                    border:1px solid rgba(255,255,255,.1); border-bottom:2px solid rgba(255,140,0,.35);
+                    font-size:.88rem; font-weight:700;" placeholder="الفريق الأول">
+                <input id="newT2" style="flex:1; padding:10px 12px; border-radius:8px;
+                    background:rgba(0,0,0,.3); color:#fff; outline:none;
+                    border:1px solid rgba(255,255,255,.1); border-bottom:2px solid rgba(186,143,237,.35);
+                    font-size:.88rem; font-weight:700;" placeholder="الفريق الثاني">
+            </div>
+            <button onclick="doCreateNew()" style="
+                padding:13px; border:none; border-radius:10px;
+                background:rgba(255,255,255,.09); border-bottom:3px solid rgba(255,255,255,.15);
+                color:rgba(255,255,255,.8); font-size:.95rem; font-weight:900; cursor:pointer;">
+                ✨ إنشاء جلسة جديدة
+            </button>
+        </div>
+
+        <div class="join-err" id="joinErr"></div>
+    </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<div class="hdr">
+    <div class="hdr-brand">
+        <div class="logo">حروف</div>
+        <div class="sub">لوحة المقدم</div>
+    </div>
+    <div class="hdr-right">
+        <div class="conn-pill"><div id="connDot"></div><span id="connLabel">جاري الاتصال...</span></div>
+        <div class="sess-pill"><span class="sess-code" id="sessDisp">------</span></div>
+        <button class="change-btn" onclick="leaveSession()">تغيير الجلسة</button>
+    </div>
+</div>
+
+<!-- ══ PAGE ══ -->
+<div class="page">
+
+    <!-- Teams (read-only) + status -->
+    <div class="card">
+        <div class="card-hd">
+            <span class="card-hd-icon">👥</span>
+            <span class="card-hd-title">الجلسة الحالية</span>
+        </div>
+        <div class="card-bd" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="teams-display">
+                <div class="team-box t1">
+                    <div class="team-box-lbl">الفريق الأول 🟠</div>
+                    <div class="team-box-name" id="t1Disp">—</div>
+                </div>
+                <div class="team-box t2">
+                    <div class="team-box-lbl">الفريق الثاني 🟣</div>
+                    <div class="team-box-name" id="t2Disp">—</div>
+                </div>
+            </div>
+            <div class="status-row">
+                <div class="status-chip inactive" id="chipQ">
+                    <div class="dot"></div><span>السؤال ظاهر للجمهور</span>
+                </div>
+                <div class="status-chip inactive" id="chipA">
+                    <div class="dot"></div><span>الإجابة ظاهرة للجمهور</span>
+                </div>
+                <div class="status-chip inactive" id="chipBuzz">
+                    <div class="dot"></div><span>الجرس مفتوح</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-col: Letters + Controls -->
+    <div class="two-col">
+        <div class="card">
+            <div class="card-hd">
+                <span class="card-hd-icon">🔤</span>
+                <span class="card-hd-title">اختر الحرف</span>
+                <div class="card-hd-right">
+                    <span style="font-size:.72rem; color:rgba(255,255,255,.35);">الضغط يرسل للجمهور فوراً</span>
+                </div>
+            </div>
+            <div class="card-bd">
+                <div class="letters" id="lettersGrid"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-hd">
+                <span class="card-hd-icon">🎛️</span>
+                <span class="card-hd-title">أزرار التحكم</span>
+            </div>
+            <div class="card-bd">
+                <div class="ctrl-grid">
+                    <button class="ctrl-btn btn-reveal" id="revealBtn" onclick="doReveal()" disabled>🔍 كشف الإجابة</button>
+                    <button class="ctrl-btn btn-next"   id="nextBtn"   onclick="doNext()" disabled>⏭ سؤال جديد</button>
+                    <button class="ctrl-btn btn-buzz-open" onclick="doResetBuzzer()">🔔 فتح الجرس من جديد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question (admin only) -->
+    <div class="card">
+        <div class="card-hd">
+            <span class="card-hd-icon">👁️</span>
+            <span class="card-hd-title">السؤال والإجابة — للمقدم فقط</span>
+        </div>
+        <div class="card-bd">
+            <div class="q-meta">
+                <div class="q-tag" id="qTag">—</div>
+                <button class="q-shuffle" onclick="doShuffle()">🔀 سؤال آخر</button>
+            </div>
+            <div id="qText"><span class="placeholder">اختر حرفاً لعرض السؤال</span></div>
+            <div class="divider"></div>
+            <div class="a-label">✅ الإجابة الصحيحة</div>
+            <div id="aText"><span class="placeholder" style="color:rgba(74,222,128,.22)">—</span></div>
+        </div>
+    </div>
+
+    <!-- Two-col: Buzzer + Links -->
+    <div class="two-col">
+        <div class="card">
+            <div class="card-hd">
+                <span class="card-hd-icon">⚡</span>
+                <span class="card-hd-title">حالة الجرس</span>
+            </div>
+            <div class="card-bd">
+                <div class="bz-empty" id="bzEmpty">لم يضغط أحد بعد</div>
+                <div id="bzCard">
+                    <div class="bz-icon" id="bzIcon">🟠</div>
+                    <div>
+                        <div class="bz-name" id="bzName">—</div>
+                        <div class="bz-team" id="bzTeam">—</div>
+                    </div>
+                    <div class="bz-time" id="bzTime">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-hd">
+                <span class="card-hd-icon">🔗</span>
+                <span class="card-hd-title">روابط الجلسة</span>
+            </div>
+            <div class="card-bd">
+                <div class="links-stack">
+                    <div>
+                        <div class="link-label">🔔 رابط الجرس للمتسابقين</div>
+                        <div class="link-row">
+                            <input class="link-text" id="urlBuzzer" readonly>
+                            <button class="copy-btn" onclick="doCopy('urlBuzzer')">📋 نسخ</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="link-label">📺 رابط شاشة الجمهور</div>
+                        <div class="link-row">
+                            <input class="link-text" id="urlAudience" readonly>
+                            <button class="copy-btn" onclick="doCopy('urlAudience')">📋 نسخ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════ SCRIPT ══════════════ -->
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const PIN        = "7878";
+const BUZZER_SRV = "https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/";
+const AUD_URL    = (() => { const u = new URL(location.href); return u.origin + u.pathname.replace('admin.q702.html','q702.html'); })();
+const LETTERS    = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+
+// ── Firebase ─────────────────────────────────────────────────────────────────
+const db = getDatabase(getApps().length ? getApps()[0] : initializeApp({
+    apiKey:"AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
+    authDomain:"buzzer-game-f2983.firebaseapp.com",
+    databaseURL:"https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+    projectId:"buzzer-game-f2983",
+    storageBucket:"buzzer-game-f2983.firebasestorage.app",
+    messagingSenderId:"125573747954",
+    appId:"1:125573747954:web:8dac68183e6e326b8b2c6b"
+}));
+
+onValue(ref(db,'.info/connected'), s => {
+    const on = !!s.val();
+    document.getElementById('connDot').className    = on ? 'on' : 'off';
+    document.getElementById('connLabel').textContent = on ? '● متصل' : '○ منقطع';
+});
+
+// ── State ────────────────────────────────────────────────────────────────────
+let sess='', letter='', allQ=[], curQ=null, revealed=false, buzzerLocked=false;
+let unsubs=[], pinBuf='';
+
+// ── PIN ──────────────────────────────────────────────────────────────────────
+window.pk = d => {
+    if (pinBuf.length >= 4) return;
+    pinBuf += d;
+    document.getElementById('d'+(pinBuf.length-1)).classList.add('on');
+    if (pinBuf.length === 4) {
+        if (pinBuf === PIN) {
+            setTimeout(() => {
+                document.getElementById('pinScreen').classList.add('hidden');
+                document.getElementById('joinScreen').classList.remove('hidden');
+                loadQuestions();
+                buildLetters();
+            }, 280);
+        } else {
+            document.getElementById('pinErr').textContent = '❌ كود خاطئ';
+            setTimeout(() => { pinBuf=''; syncDots(); document.getElementById('pinErr').textContent=''; }, 700);
+        }
+    }
+};
+window.pb = () => { pinBuf = pinBuf.slice(0,-1); syncDots(); };
+window.pc = () => { pinBuf=''; syncDots(); document.getElementById('pinErr').textContent=''; };
+function syncDots() { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('on',i<pinBuf.length); }
+
+// ── Session Join ─────────────────────────────────────────────────────────────
+window.doJoin = async function() {
+    const code = document.getElementById('joinInput').value.trim().toUpperCase();
+    if (code.length < 4) { document.getElementById('joinErr').textContent = '⚠️ أدخل كود الجلسة'; return; }
+    document.getElementById('joinErr').textContent = 'جاري الاتصال...';
+
+    // Check room exists
+    const snap = await get(ref(db, `rooms/${code}`));
+    if (!snap.exists()) {
+        document.getElementById('joinErr').textContent = '❌ لم يتم العثور على هذه الجلسة';
+        return;
+    }
+
+    sess = code;
+    const data = snap.val();
+    document.getElementById('t1Disp').textContent = data.team1Name || 'الفريق الأول';
+    document.getElementById('t2Disp').textContent = data.team2Name || 'الفريق الثاني';
+    document.getElementById('sessDisp').textContent = sess;
+    updateLinks();
+    document.getElementById('joinScreen').classList.add('hidden');
+    subscribe();
+    toast('✅ انضممت للجلسة: ' + sess);
+};
+
+window.doCreateNew = async function() {
+    const t1 = document.getElementById('newT1').value.trim() || 'الفريق الأول';
+    const t2 = document.getElementById('newT2').value.trim() || 'الفريق الثاني';
+    const code = genCode();
+    document.getElementById('joinErr').textContent = '⏳ جاري إنشاء الجلسة...';
+
+    await set(ref(db, `rooms/${code}`), {
+        locked: false, buzzer: null, openedAt: Date.now(),
+        team1Name: t1, team2Name: t2
+    });
+
+    sess = code;
+    document.getElementById('t1Disp').textContent = t1;
+    document.getElementById('t2Disp').textContent = t2;
+    document.getElementById('sessDisp').textContent = sess;
+    updateLinks();
+    document.getElementById('joinScreen').classList.add('hidden');
+    subscribe();
+    toast('✅ جلسة جديدة: ' + sess);
+};
+
+window.leaveSession = () => {
+    unsubs.forEach(f=>f()); unsubs=[];
+    sess=''; letter=''; curQ=null; revealed=false;
+    document.getElementById('joinInput').value = '';
+    document.getElementById('joinErr').textContent = '';
+    document.getElementById('joinScreen').classList.remove('hidden');
+    clearBuzzerUI(); resetStatusChips();
+};
+
+// ── Questions ─────────────────────────────────────────────────────────────────
+async function loadQuestions() {
+    const paths = [
+        '../data/questions%20(1).json',
+        '../data/questions (1).json',
+        '/data/questions%20(1).json',
+        '/data/questions (1).json'
+    ];
+    for (const p of paths) {
+        try {
+            const r = await fetch(p);
+            if (r.ok) { allQ = await r.json(); console.log('✅ Questions loaded:', allQ.length, 'from', p); return; }
+        } catch {}
+    }
+    console.warn('⚠️ Questions failed to load');
+    allQ = [];
+}
+function buildLetters() {
+    const g = document.getElementById('lettersGrid');
+    if (g.children.length) return;
+    LETTERS.forEach(l => {
+        const b = document.createElement('button');
+        b.className='l-btn'; b.textContent=l;
+        b.onclick = () => selectLetter(l);
+        g.appendChild(b);
+    });
+}
+
+function selectLetter(l) {
+    letter = l;
+    document.querySelectorAll('.l-btn').forEach(b => b.classList.toggle('active', b.textContent===l));
+    document.getElementById('qTag').textContent = l;
+    if (allQ.length === 0) {
+        loadQuestions().then(() => pickQ(l));
+    } else {
+        pickQ(l);
+    }
+}
+
+function pickQ(l) {
+    const norm = s => s.replace(/[أإآ]/g,'ا');
+    let pool = allQ.filter(q => norm(q.letter||'') === norm(l));
+    if (!pool.length) pool = allQ;
+    curQ = pool[Math.floor(Math.random()*pool.length)] || null;
+    renderQ();
+    if (curQ && sess) pushQ(false);
+}
+
+function renderQ() {
+    const qEl=document.getElementById('qText'), aEl=document.getElementById('aText');
+    if (!curQ) {
+        qEl.innerHTML='<span class="placeholder">اختر حرفاً لعرض السؤال</span>';
+        aEl.innerHTML='<span class="placeholder" style="color:rgba(74,222,128,.22)">—</span>';
+        document.getElementById('revealBtn').disabled=true;
+        document.getElementById('nextBtn').disabled=true;
+        return;
+    }
+    qEl.textContent = curQ.question || curQ.q || '';
+    aEl.textContent = curQ.answer   || curQ.a || '';
+    revealed = false;
+    const rb = document.getElementById('revealBtn');
+    rb.textContent='🔍 كشف الإجابة'; rb.className='ctrl-btn btn-reveal'; rb.disabled=false;
+    document.getElementById('nextBtn').disabled=false;
+}
+
+// ── Firebase Writes ───────────────────────────────────────────────────────────
+function q702r(p='') { return ref(db, `q702/${sess}${p?'/'+p:''}`); }
+function buzr(p='')  { return ref(db, `rooms/${sess}${p?'/'+p:''}`); }
+
+function pushQ(rev) {
+    if (!curQ || !sess) return;
+    update(q702r(), {
+        q: curQ.question||curQ.q||'',
+        a: curQ.answer  ||curQ.a||'',
+        letter, revealed: rev, updatedAt: Date.now()
+    });
+    setChip('chipQ', true);
+    setChip('chipA', rev);
+}
+
+window.doReveal = () => {
+    if (!curQ || revealed) return;
+    revealed = true;
+    const rb = document.getElementById('revealBtn');
+    rb.textContent = '✅ تمت الكشف'; rb.className = 'ctrl-btn btn-reveal done';
+    if (sess) { update(q702r(), {revealed:true}); setChip('chipA', true); toast('🔍 الإجابة ظاهرة للجمهور الآن'); }
+    else toast('🔍 الإجابة مكشوفة (غير متصل بجلسة)');
+};
+window.doNext    = () => { if (!letter) return; pickQ(letter); toast('⏭ سؤال جديد'); };
+window.doShuffle = () => { if (!letter) return; pickQ(letter); toast('🔀 تم تغيير السؤال'); };
+
+window.doResetBuzzer = () => {
+    update(buzr(), { locked:false, buzzer:null });
+    clearBuzzerUI();
+    setChip('chipBuzz', true);
+    toast('🔔 الجرس مفتوح للجميع');
+};
+
+// ── Firebase Listeners ────────────────────────────────────────────────────────
+function subscribe() {
+    unsubs.forEach(f=>f()); unsubs=[];
+
+    // Buzzer state
+    unsubs.push(onValue(buzr('buzzer'), snap => {
+        const d = snap.val();
+        if (d) { showBuzzer(d); setChip('chipBuzz', false); }
+        else   { clearBuzzerUI(); setChip('chipBuzz', true); }
+    }));
+
+    // Room locked state
+    unsubs.push(onValue(buzr('locked'), snap => {
+        buzzerLocked = !!snap.val();
+    }));
+
+    // q702 state (track what audience sees)
+    unsubs.push(onValue(q702r(), snap => {
+        const d = snap.val();
+        if (!d) return;
+        setChip('chipQ', !!d.q);
+        setChip('chipA', !!d.revealed);
+        // Sync revealed state if changed externally
+        if (d.revealed && !revealed) {
+            revealed=true;
+            const rb=document.getElementById('revealBtn');
+            rb.textContent='✅ تمت الكشف'; rb.className='ctrl-btn btn-reveal done';
+        }
+    }));
+}
+
+function showBuzzer(d) {
+    const teams = {team1:'الفريق الأول 🟠', team2:'الفريق الثاني 🟣'};
+    document.getElementById('bzEmpty').style.display='none';
+    const c=document.getElementById('bzCard'); c.style.display='flex';
+    document.getElementById('bzIcon').textContent = d.team==='team2' ? '🟣' : '🟠';
+    document.getElementById('bzName').textContent = d.name||'—';
+    document.getElementById('bzTeam').textContent = teams[d.team]||d.team||'—';
+    document.getElementById('bzTime').textContent = d.time ? new Date(d.time).toLocaleTimeString('ar-SA') : '—';
+}
+function clearBuzzerUI() {
+    document.getElementById('bzCard').style.display='none';
+    document.getElementById('bzEmpty').style.display='block';
+}
+
+// ── Status chips ─────────────────────────────────────────────────────────────
+function setChip(id, active) {
+    const el=document.getElementById(id);
+    if (!el) return;
+    el.className = 'status-chip ' + (active ? 'active' : 'inactive');
+}
+function resetStatusChips() {
+    ['chipQ','chipA','chipBuzz'].forEach(id => setChip(id, false));
+}
+
+// ── Links ─────────────────────────────────────────────────────────────────────
+function updateLinks() {
+    const t1 = encodeURIComponent(document.getElementById('t1Disp').textContent||'الفريق الأول');
+    const t2 = encodeURIComponent(document.getElementById('t2Disp').textContent||'الفريق الثاني');
+    document.getElementById('urlBuzzer').value   = `${BUZZER_SRV}?room=${sess}&team1=${t1}&team2=${t2}`;
+    document.getElementById('urlAudience').value = `${AUD_URL}?room=${sess}`;
+}
+window.doCopy = id => {
+    const v = document.getElementById(id).value;
+    navigator.clipboard.writeText(v).then(()=>toast('📋 تم النسخ')).catch(()=>toast('📋 انسخ يدوياً'));
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let _tt;
+window.toast = msg => {
+    const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+    clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'), 2600);
+};
+</script>
+</body>
+</html>

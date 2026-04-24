@@ -6,8 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة الأسئلة الشاملة | نسخة راكان</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'HrofFont';
+            src: url('../public/assets/حروف.ttf') format('truetype');
+        }
+        body, button, input, * { font-family: 'HrofFont', 'Tajawal', sans-serif !important; }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
         :root {
             --main-bg: #4a1c75;
@@ -81,6 +89,30 @@
             border: 1px dashed var(--accent-yellow);
         }
 
+        /* ── Firebase live badge ── */
+        #liveBadge {
+            display: none;
+            align-items: center; gap: 8px;
+            background: rgba(74,222,128,0.12);
+            border: 1px solid rgba(74,222,128,0.35);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 0.82rem; font-weight: 700;
+            color: #4ADE80;
+            margin-bottom: 16px;
+        }
+        #liveBadge .live-dot {
+            width: 8px; height: 8px; border-radius: 3px;
+            background: #4ADE80;
+            animation: livePulse 1.5s infinite;
+        }
+        @keyframes livePulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:0.4; transform:scale(1.3); }
+        }
+        /* Answer reveal animation wrapper */
+        #answerText { transform-origin: top center; }
+
         .letters-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -128,7 +160,7 @@
             border: none;
             font-weight: 700;
             cursor: pointer;
-            font-family: 'Tajawal';
+            font-family: 'HrofFont', 'Tajawal', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -155,16 +187,64 @@
 </head>
 
 <body>
+
+    <!-- ══ SESSION CONNECT OVERLAY ══ -->
+    <div id="connectOverlay" style="
+        display:none; position:fixed; inset:0; z-index:500;
+        background:linear-gradient(145deg,#1e0840,#4a1c75);
+        align-items:center; justify-content:center; flex-direction:column; gap:22px;">
+
+        <div style="font-family:'HrofFont',sans-serif; font-size:3.2rem; color:#FFD600;
+                    text-shadow:0 4px 16px rgba(0,0,0,.5); line-height:1;">حروف</div>
+        <div style="font-family:'HrofFont',sans-serif; font-size:1.3rem; color:#FF8C00; margin-top:-12px;">بوابة الأسئلة</div>
+
+        <div style="background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1);
+                    border-bottom:4px solid rgba(255,214,0,.45); border-radius:14px;
+                    padding:26px 22px; width:min(320px,92vw);
+                    display:flex; flex-direction:column; gap:14px;
+                    box-shadow:0 20px 40px rgba(0,0,0,.4); backdrop-filter:blur(14px);">
+
+            <div style="font-family:'HrofFont',sans-serif; font-size:.88rem;
+                        color:rgba(255,255,255,.6); text-align:center; line-height:1.5;">
+                أدخل كود الجلسة للانضمام للمسابقة
+            </div>
+
+            <input id="connectInput"
+                style="padding:15px 18px; border-radius:10px; text-align:center;
+                       background:rgba(0,0,0,.3); color:#fff; outline:none;
+                       border:1px solid rgba(255,255,255,.1);
+                       border-bottom:2px solid rgba(255,214,0,.4);
+                       font-family:'HrofFont',sans-serif; font-size:1.6rem;
+                       font-weight:900; letter-spacing:5px; text-transform:uppercase;
+                       width:100%;"
+                maxlength="8" placeholder="مثال: AB12CD" autocomplete="off"
+                oninput="this.value=this.value.toUpperCase()"
+                onkeydown="if(event.key==='Enter') connectToSession()">
+
+            <button onclick="connectToSession()"
+                style="padding:14px; border:none; border-radius:10px;
+                       background:linear-gradient(135deg,#FFD600,#FF8C00);
+                       color:#1a1a1a; font-family:'HrofFont',sans-serif;
+                       font-size:1.1rem; font-weight:900; cursor:pointer;
+                       box-shadow:0 6px 0 rgba(150,80,0,.5), 0 10px 20px rgba(255,140,0,.2);">
+                انضمام ⚡
+            </button>
+            <div id="connectErr" style="font-size:.8rem; color:#F87171; text-align:center; min-height:16px;"></div>
+        </div>
+    </div>
+
     <div class="container">
-        <h1><i class="fa-solid fa-lightbulb"></i>بوابة الأسئلة</h1>
+        <div id="liveBadge">
+            <span class="live-dot"></span>
+            <span>متصل بلوحة المقدم — الشاشة تتحدث تلقائياً</span>
+        </div>
         <div class="question-box">
             <div id="questionText">اختر حرفاً من الأسفل لعرض الأسئلة</div>
             <div id="answerText"></div>
         </div>
         <div class="controls">
-            <button class="btn btn-answer" onclick="showAnswer()"><i class="fa-solid fa-eye"></i> عرض الإجابة</button>
-            <button class="btn btn-next" onclick="getNewQuestion()"><i class="fa-solid fa-rotate-right"></i> سؤال
-                جديد</button>
+            <button class="btn btn-answer" id="showAnswerBtn" onclick="showAnswer()">عرض الإجابة</button>
+            <button class="btn btn-next" onclick="getNewQuestion()">سؤال جديد</button>
         </div>
         <div class="letters-grid" id="lettersGrid"></div>
     </div>
@@ -778,8 +858,125 @@
 
         function showAnswer() {
             const ansBox = document.getElementById('answerText');
-            if (ansBox.innerText !== "") ansBox.style.display = 'block';
+            if (ansBox.innerText !== "") {
+                ansBox.style.display = 'block';
+                if (typeof gsap !== 'undefined') {
+                    gsap.fromTo(ansBox,
+                        { opacity:0, scaleY:0.6, y:-10 },
+                        { opacity:1, scaleY:1,   y:0, duration:0.55, ease:'back.out(1.6)' }
+                    );
+                }
+            }
         }
+
+        // ── Firebase Live Mode ──────────────────────────────────────────────
+        const FB_CFG = {
+            apiKey:"AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
+            authDomain:"buzzer-game-f2983.firebaseapp.com",
+            databaseURL:"https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+            projectId:"buzzer-game-f2983",
+            storageBucket:"buzzer-game-f2983.firebasestorage.app",
+            messagingSenderId:"125573747954",
+            appId:"1:125573747954:web:8dac68183e6e326b8b2c6b"
+        };
+
+        let _db = null, _unsub = null, _lastQ = '';
+
+        async function getDB() {
+            if (_db) return _db;
+            const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+            const { getDatabase } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            const app = getApps().length ? getApps()[0] : initializeApp(FB_CFG);
+            _db = getDatabase(app);
+            return _db;
+        }
+
+        async function startLiveSession(roomCode) {
+            const { ref, onValue, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            const db = await getDB();
+
+            // Verify session exists
+            const snap = await get(ref(db, `q702/${roomCode}`));
+            if (!snap.exists()) {
+                document.getElementById('connectErr').textContent = '❌ لم يتم العثور على هذه الجلسة — تأكد من الكود';
+                return false;
+            }
+
+            // Hide connect overlay, show live badge, hide manual controls
+            document.getElementById('connectOverlay').style.display = 'none';
+            document.getElementById('liveBadge').style.display      = 'flex';
+            document.getElementById('showAnswerBtn').style.display   = 'none';
+            _lastQ = '';
+
+            if (_unsub) _unsub();
+            _unsub = onValue(ref(db, `q702/${roomCode}`), snap => {
+                const d = snap.val();
+                if (!d) return;
+
+                const qEl = document.getElementById('questionText');
+                const aEl = document.getElementById('answerText');
+
+                // Question changed
+                if (d.q && d.q !== _lastQ) {
+                    _lastQ = d.q;
+                    aEl.style.display = 'none';
+                    aEl.style.opacity = '1';
+                    aEl.style.transform = '';
+                    aEl.innerText = d.a || '';
+
+                    if (typeof gsap !== 'undefined') {
+                        gsap.fromTo(qEl,
+                            { opacity:0, x:30 },
+                            { opacity:1, x:0, duration:0.45, ease:'power2.out',
+                              onStart: () => { qEl.innerText = d.q; } }
+                        );
+                    } else { qEl.innerText = d.q; }
+
+                    // Update active letter button
+                    document.querySelectorAll('.letter-btn').forEach(b =>
+                        b.classList.toggle('active', b.innerText === d.letter));
+                }
+
+                // Reveal answer
+                if (d.revealed && aEl.style.display !== 'block') {
+                    aEl.innerText = d.a || '';
+                    aEl.style.display = 'block';
+                    if (typeof gsap !== 'undefined') {
+                        gsap.fromTo(aEl,
+                            { opacity:0, scaleY:0.5, y:-16 },
+                            { opacity:1, scaleY:1,   y:0, duration:0.6, ease:'elastic.out(1, 0.6)' }
+                        );
+                    }
+                }
+
+                // Hide answer on new question
+                if (!d.revealed && aEl.style.display === 'block') {
+                    if (typeof gsap !== 'undefined') {
+                        gsap.to(aEl, { opacity:0, scaleY:0.7, duration:0.22,
+                            onComplete: () => { aEl.style.display='none'; aEl.style.opacity='1'; aEl.style.transform=''; } });
+                    } else { aEl.style.display = 'none'; }
+                }
+            });
+            return true;
+        }
+
+        window.connectToSession = async function() {
+            const code = document.getElementById('connectInput').value.trim().toUpperCase();
+            if (!code) { document.getElementById('connectErr').textContent = '⚠️ أدخل الكود أولاً'; return; }
+            document.getElementById('connectErr').textContent = '⏳ جاري الاتصال...';
+            await startLiveSession(code);
+        };
+
+        // Auto-connect if ?room= in URL
+        (async function autoConnect() {
+            const code = new URLSearchParams(location.search).get('room');
+            if (code) {
+                await startLiveSession(code);
+            } else {
+                // Show connect overlay
+                document.getElementById('connectOverlay').style.display = 'flex';
+            }
+        })();
     </script>
 </body>
 
