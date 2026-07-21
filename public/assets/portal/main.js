@@ -8,35 +8,35 @@ document.addEventListener('DOMContentLoaded', () => {
             desc: "لعبة تحدي بالصور ممتعة وسهلة الفهم، تظهر على الشاشة صور تلمّح لاسم معين، وعلى اللاعبين تخمين الإجابة بأسرع وقت.",
             image: "tahadi_suwar.png",
             link: "https://salla.sa/maben-al8lob/azPxNZl",
-            btnText: "اشتر الآن"
+            btnText: "العب الآن"
         },
         {
             title: "كرت جريء",
             desc: "🎯 جاوب بصراحة أو استعد تنكشف! 😈 تحديات جريئة واعترافات خطيرة للي عنده الجرأة يواجه الحقيقة.",
             image: "bold_card.png",
             link: "https://salla.sa/maben-al8lob/vAoxxEZ",
-            btnText: "اشتر الآن"
+            btnText: "العب الآن"
         },
         {
             title: "مآبين آلقلوب 1",
             desc: "لعبة أسئلة عاطفية وعميقة (14.99 SAR)",
             image: "maben_alqlub_1.png",
             link: "https://salla.sa/maben-al8lob/qGedWrK",
-            btnText: "اشتر الآن"
+            btnText: "العب الآن"
         },
         {
             title: "مآبين آلقلوب 2",
             desc: "لعبة بطابع عاطفي واجتماعي (29 SAR)",
             image: "maben_alqlub_2.png",
             link: "https://salla.sa/maben-al8lob/qGedWrK",
-            btnText: "اشتر الآن"
+            btnText: "العب الآن"
         },
         {
             title: "حروف هوجاس",
             desc: "لعبة الحروف العربية الممتعة مع تحديات ذكية وتفاعل مباشر.",
             image: "hroof_game.png",
             link: "old.html",
-            btnText: "اشتر الآن"
+            btnText: "العب الآن"
         },
         {
             title: "Neon Nexus",
