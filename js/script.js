@@ -580,6 +580,7 @@ function saveSettings() {
 }
 
 function startGame() {
+    window.qafTrackGameStart?.();
     document.getElementById('homeScreen').style.display = 'none';
     localStorage.setItem(UI_SCREEN_KEY, 'game');
     localStorage.removeItem(SETTINGS_SOURCE_KEY);
@@ -994,6 +995,7 @@ function startGameFromSetup() {
     teamSetup.team1.score = 0;
     teamSetup.team2.score = 0;
     gameIsActive = true;
+    window.qafTrackGameStart?.();
 
     // Apply team colors to CSS variables
     applyTeamColors();

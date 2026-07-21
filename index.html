@@ -690,7 +690,19 @@
             onerror="this.onerror=null; var s=document.createElement('script'); s.src='js/qrcode.min.js'; document.head.appendChild(s);"></script>
     <script src="js/pdfData.js"></script>
     <script src="js/questionsData.js"></script>
-    <script src="js/script.js?v=settings-persist-25"></script>
+    <script>
+        window.qafAnalyticsPendingStarts = 0;
+        window.qafTrackGameStart = () => { window.qafAnalyticsPendingStarts += 1; };
+    </script>
+    <script src="js/script.js?v=analytics-26"></script>
+    <script type="module">
+        import { trackSection, trackGameStart } from './js/qaf-analytics.js?v=1';
+        trackSection('game');
+        window.qafTrackGameStart = trackGameStart;
+        const pendingStarts = window.qafAnalyticsPendingStarts || 0;
+        window.qafAnalyticsPendingStarts = 0;
+        for (let index = 0; index < pendingStarts; index += 1) trackGameStart();
+    </script>
 </body>
 
 </html>

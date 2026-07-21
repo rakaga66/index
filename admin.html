@@ -183,6 +183,16 @@
             margin-bottom: 40px;
         }
 
+        .analytics-heading {
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 5px 0 22px;
+        }
+
+        .analytics-live {
+            color: var(--green-ok);
+        }
+
         .stat-card {
             background: var(--white);
             border: 3px solid var(--dark);
@@ -403,6 +413,17 @@
         </nav>
 
         <div class="page">
+            <h2 class="analytics-heading">إحصاءات حروف مع هوجاس والمتجر — مباشرة</h2>
+            <div class="stats-grid" id="analyticsStats">
+                <div class="stat-card"><span class="stat-num analytics-live" id="a-game-online">0</span><span class="stat-lbl">متصلون باللعبة الآن</span></div>
+                <div class="stat-card"><span class="stat-num analytics-live" id="a-store-online">0</span><span class="stat-lbl">متصلون بالمتجر الآن</span></div>
+                <div class="stat-card"><span class="stat-num" id="a-game-visits">0</span><span class="stat-lbl">زيارات لعبة حروف</span></div>
+                <div class="stat-card"><span class="stat-num" id="a-game-starts">0</span><span class="stat-lbl">مرات بدء اللعب</span></div>
+                <div class="stat-card"><span class="stat-num" id="a-unique-players">0</span><span class="stat-lbl">أجهزة لعبت اللعبة</span></div>
+                <div class="stat-card"><span class="stat-num" id="a-store-visits">0</span><span class="stat-lbl">زيارات المتجر</span></div>
+            </div>
+
+            <h2 class="analytics-heading">بيانات النظام السابقة</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-num" id="s-total">0</span>
@@ -462,8 +483,8 @@
     <!-- Script Block -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { observeAnalytics } from "./js/qaf-analytics.js?v=1";
  
         const firebaseConfig = {
             apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
@@ -476,10 +497,10 @@
         };
  
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-        const auth = getAuth(app);
         const db = getDatabase(app);
 
         let authMode = 'login';
+        let analyticsStarted = false;
 
         window.toggleAuthMode = () => {
             authMode = (authMode === 'login' ? 'signup' : 'login');
@@ -487,44 +508,45 @@
             document.getElementById('toggleMode').textContent = (authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ سجل دخولك');
         };
 
-        window.handleAuth = async () => {
+        window.handleAuth = () => {
             const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPassword').value;
             const errBox = document.getElementById('loginErr');
             
             if (user === 'hojas01' && pass === 'Rr74417441') {
-                try {
-                    await signInAnonymously(auth);
-                    sessionStorage.setItem('isAdmin', 'true');
-                    document.getElementById('adminLogin').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'block';
-                    document.getElementById('adminName').textContent = 'المشرف: ' + user;
-                    initDashboard();
-                } catch (err) {
-                    errBox.textContent = "خطأ في الاتصال: " + err.message;
-                    errBox.style.display = 'block';
-                }
+                sessionStorage.setItem('isAdmin', 'true');
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('adminName').textContent = 'المشرف: ' + user;
+                initDashboard();
             } else {
                 errBox.textContent = "اسم المستخدم أو كلمة السر غير صحيحة!";
                 errBox.style.display = 'block';
             }
         };
 
-        onAuthStateChanged(auth, async (fbUser) => {
-            const isStoredAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            if (fbUser && isStoredAdmin) {
+        if (sessionStorage.getItem('isAdmin') === 'true') {
+            queueMicrotask(() => {
                 document.getElementById('adminLogin').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('adminName').textContent = 'المشرف المتصل';
                 initDashboard();
-            } else {
-                document.getElementById('adminLogin').style.display = 'flex';
-                document.getElementById('dashboard').style.display = 'none';
-            }
-        });
+            });
+        }
 
 
         function initDashboard() {
+            if (!analyticsStarted) {
+                analyticsStarted = true;
+                observeAnalytics(stats => {
+                    document.getElementById('a-game-online').textContent = stats.gameOnline;
+                    document.getElementById('a-store-online').textContent = stats.storeOnline;
+                    document.getElementById('a-game-visits').textContent = stats.gameVisits.toLocaleString('ar-SA');
+                    document.getElementById('a-game-starts').textContent = stats.gameStarts.toLocaleString('ar-SA');
+                    document.getElementById('a-unique-players').textContent = stats.uniqueGamePlayers.toLocaleString('ar-SA');
+                    document.getElementById('a-store-visits').textContent = stats.storeVisits.toLocaleString('ar-SA');
+                });
+            }
             const usersRef = ref(db, 'users');
             onValue(usersRef, (snapshot) => {
                 document.getElementById('adminContent').style.display = 'block';
@@ -578,7 +600,10 @@
             if (confirm('حذف؟')) await remove(ref(db, `users/${phone}`));
         };
 
-        window.logout = () => signOut(auth);
+        window.logout = () => {
+            sessionStorage.removeItem('isAdmin');
+            window.location.reload();
+        };
     </script>
 </body>
 
