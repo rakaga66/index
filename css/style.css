@@ -3680,3 +3680,197 @@ body.dark-mode #darkModeToggleBtn {
         display: none;
     }
 }
+
+/* ===== FINAL RESULT — COMPACT CELEBRATION ===== */
+.game-over-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90000;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    direction: rtl;
+    background: rgba(10, 4, 24, 0.78);
+    backdrop-filter: blur(8px) saturate(0.75);
+}
+
+.game-over-card {
+    box-sizing: border-box;
+    position: relative;
+    width: min(92vw, 480px);
+    padding: 24px;
+    overflow: hidden;
+    text-align: center;
+    color: #fff;
+    border: 2px solid rgba(255, 214, 0, 0.78);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(139, 95, 191, 0.48), transparent 42%),
+        linear-gradient(160deg, #29104d 0%, #19082f 100%);
+    box-shadow: 0 18px 55px rgba(0,0,0,0.55), 0 0 0 5px rgba(255,214,0,0.06);
+    animation: gameOverIn 0.38s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.game-over-card::before,
+.game-over-card::after {
+    content: '';
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,214,0,0.06);
+    pointer-events: none;
+}
+
+.game-over-card::before { top: -72px; right: -48px; }
+.game-over-card::after { bottom: -88px; left: -38px; }
+
+@keyframes gameOverIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.game-over-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 66px;
+    height: 66px;
+    margin: 0 auto 10px;
+    font-size: 2.35rem;
+    border: 1px solid rgba(255,214,0,0.46);
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255,214,0,0.2), rgba(255,255,255,0.05));
+    box-shadow: 0 8px 22px rgba(0,0,0,0.28);
+}
+
+.game-over-kicker {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2px;
+    color: rgba(255,255,255,0.58);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.game-over-title {
+    position: relative;
+    z-index: 1;
+    color: #FFD600;
+    font-size: clamp(1.65rem, 4vw, 2.2rem);
+    line-height: 1.15;
+    -webkit-text-stroke: 0;
+    text-shadow: 0 4px 14px rgba(0,0,0,0.38);
+}
+
+.game-over-subtitle {
+    position: relative;
+    z-index: 1;
+    margin: 5px 0 16px;
+    color: rgba(255,255,255,0.72);
+    font-size: 0.78rem;
+}
+
+.game-over-scores {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.game-over-team {
+    position: relative;
+    min-width: 0;
+    padding: 10px 12px 9px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.075);
+}
+
+.game-over-team::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: var(--team-color);
+}
+
+.game-over-team.is-winner {
+    border-color: color-mix(in srgb, var(--team-color), white 28%);
+    background: color-mix(in srgb, var(--team-color) 30%, transparent);
+}
+
+.game-over-team-name {
+    overflow: hidden;
+    color: rgba(255,255,255,0.82);
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game-over-team-score {
+    margin-top: 2px;
+    color: #fff;
+    font-family: 'Lalezar', sans-serif;
+    font-size: 2.25rem;
+    line-height: 1;
+    -webkit-text-stroke: 0;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.35);
+}
+
+.game-over-new-btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 190px;
+    min-height: 48px;
+    padding: 10px 26px;
+    color: #24103f;
+    font-size: 1rem;
+    border: 0;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #FFE24D, #FFD000);
+    box-shadow: 0 7px 0 #a77f00, 0 12px 24px rgba(255,214,0,0.18);
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.game-over-new-btn:hover { transform: translateY(-2px); }
+.game-over-new-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 3px 0 #a77f00, 0 7px 14px rgba(255,214,0,0.14);
+}
+
+.game-over-new-btn span {
+    font-family: sans-serif !important;
+    font-size: 1.25rem;
+}
+
+@media (max-width: 600px), (max-height: 600px) {
+    .game-over-card {
+        width: min(90vw, 430px);
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .game-over-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 6px;
+        font-size: 1.75rem;
+    }
+
+    .game-over-title { font-size: 1.45rem; }
+    .game-over-subtitle { margin-bottom: 10px; }
+    .game-over-scores { margin-bottom: 11px; }
+    .game-over-team { padding: 7px 9px 6px; }
+    .game-over-team-score { font-size: 1.75rem; }
+    .game-over-new-btn { min-height: 40px; padding: 7px 20px; }
+}
