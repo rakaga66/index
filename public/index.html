@@ -2,16 +2,33 @@
 <html lang="ar" dir="rtl">
 
 <head>
-    <script src="js/auth-check.js"></script>
+    <script src="js/auth-check.js?v=free-access-1"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حروف مع هوجاس</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>حروف مع هوجاس | لعبة حروف جماعية من قاف</title>
+    <meta name="description" content="حروف مع هوجاس من قاف: لعبة حروف وتحديات جماعية ممتعة للجلسات والمنافسات بين الأصدقاء والعائلة.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#4b2370">
+    <link rel="canonical" href="https://7roof-main.vercel.app/game">
+    <meta property="og:locale" content="ar_SA">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="قاف للألعاب">
+    <meta property="og:title" content="حروف مع هوجاس | لعبة حروف جماعية من قاف">
+    <meta property="og:description" content="النسخة الكاملة المجانية من لعبة حروف مع هوجاس للجلسات والمنافسات الجماعية.">
+    <meta property="og:url" content="https://7roof-main.vercel.app/game">
+    <meta property="og:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="حروف مع هوجاس | قاف للألعاب">
+    <meta name="twitter:description" content="لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة.">
+    <meta name="twitter:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/qaf-favicon.png?v=1">
+    <link rel="shortcut icon" type="image/png" href="assets/qaf-favicon.png?v=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/game-view.css">
+    <link rel="stylesheet" href="css/style.css?v=settings-contained-31">
+    <link rel="stylesheet" href="css/game-view.css?v=presentation-interactive-4">
     <style>
         /* ===== LEFT ICON BAR ===== */
         .bottom-icon-bar {
@@ -24,14 +41,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             padding: 12px 8px;
-            background: rgba(18, 8, 35, 0.92);
+            background: rgba(18, 8, 35, 0.93);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-right: 1px solid rgba(139, 95, 191, 0.35);
-            border-radius: 0 18px 18px 0;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4);
+            border-right: 3px solid rgba(255, 214, 0, 0.4);
+            border-radius: 0 10px 10px 0;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .bib-btn {
@@ -40,26 +57,30 @@
             align-items: center;
             justify-content: center;
             gap: 3px;
-            background: rgba(59, 27, 90, 0.6);
-            border: 1px solid rgba(139, 95, 191, 0.4);
-            border-radius: 14px;
+            background: rgba(59, 27, 90, 0.55);
+            border: 1px solid rgba(139, 95, 191, 0.35);
+            border-radius: 6px;
+            border-bottom: 2px solid rgba(255,214,0,0.3);
             padding: 10px 12px 8px;
             cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.18s ease;
             min-width: 54px;
             color: #fff;
             font-family: 'Cairo', sans-serif;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
         }
 
         .bib-btn:hover {
             background: rgba(139, 95, 191, 0.55);
             border-color: rgba(255, 214, 0, 0.5);
-            transform: translateX(3px);
-            box-shadow: 4px 0 20px rgba(139, 95, 191, 0.35);
+            border-bottom-color: #FFD600;
+            transform: translateX(4px);
+            box-shadow: 4px 3px 0 rgba(0,0,0,0.3), 6px 0 20px rgba(139, 95, 191, 0.35);
         }
 
         .bib-btn:active {
-            transform: translateX(0px) scale(0.96);
+            transform: translateX(2px) translateY(2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
         }
 
         .bib-icon {
@@ -107,6 +128,20 @@
 
 <body>
 
+    <!-- Mobile portrait gate: the game is designed to be played in landscape. -->
+    <div class="rotate-device" role="status" aria-live="polite">
+        <div class="rotate-device__glow" aria-hidden="true"></div>
+        <div class="rotate-device__phone" aria-hidden="true">
+            <span class="rotate-device__screen">
+                <i></i><i></i><i></i>
+            </span>
+        </div>
+        <div class="rotate-device__arrow" aria-hidden="true">&#8635;</div>
+        <h1>&#1575;&#1602;&#1604;&#1576; &#1580;&#1608;&#1575;&#1604;&#1603;</h1>
+        <p>&#1604;&#1571;&#1601;&#1590;&#1604; &#1578;&#1580;&#1585;&#1576;&#1577;&#1548; &#1575;&#1587;&#1578;&#1582;&#1583;&#1605; &#1575;&#1604;&#1604;&#1593;&#1576;&#1577; &#1576;&#1575;&#1604;&#1593;&#1585;&#1590;</p>
+        <span class="rotate-device__hint">&#1587;&#1578;&#1592;&#1607;&#1585; &#1575;&#1604;&#1604;&#1593;&#1576;&#1577; &#1578;&#1604;&#1602;&#1575;&#1574;&#1610;&#1611;&#1575; &#1576;&#1593;&#1583; &#1575;&#1604;&#1578;&#1583;&#1608;&#1610;&#1585;</span>
+    </div>
+
     <!-- ===== HOME SCREEN ===== -->
     <div class="home-screen" id="homeScreen">
         <!-- Background Pattern -->
@@ -123,7 +158,7 @@
         <div class="home-buttons">
             <button class="btn-pill" onclick="startGame()">بدء اللعبة</button>
             <button class="btn-pill" onclick="showSettings()">إعدادات</button>
-            <button class="btn-pill" onclick="alert('خروج')">خروج</button>
+            <button class="btn-pill" onclick="openRulesModal()">القوانين</button>
         </div>
 
         <!-- New Home Extra Links -->
@@ -136,16 +171,67 @@
                 onclick="window.open('https://www.tiktok.com/@hojas.1?is_from_webapp=1&sender_device=pc', '_blank')">
                 <svg fill="currentColor" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
                     <path
-                        d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" />
+                        d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" />
                 </svg>
                 حساب التيك توك
             </button>
         </div>
 
         <!-- Version Tag -->
-        <div
-            style="position: absolute; bottom: 20px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); font-family: 'Cairo', sans-serif;">
-            نسخة: V 1.1
+        <div style="position: absolute; bottom: 15px; font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.85rem; background: rgba(74, 222, 128, 0.18); color: #4ADE80; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(74, 222, 128, 0.35);">النسخة الكاملة المجانية</span>
+            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.2</span>
+        </div>
+    </div>
+
+    <!-- ===== HOW TO PLAY / RULES ===== -->
+    <div class="site-confirm rules-modal" id="rulesModal" role="dialog" aria-modal="true"
+        aria-labelledby="rulesTitle" aria-hidden="true"
+        onclick="if (event.target === this) closeRulesModal()">
+        <div class="site-confirm__card rules-card">
+            <div class="rules-heading">
+                <div class="rules-icon" aria-hidden="true">📖</div>
+                <div>
+                    <h2 id="rulesTitle">القوانين وكيف تلعب</h2>
+                    <p>شرح سريع قبل بدء الجولة</p>
+                </div>
+            </div>
+
+            <div class="rules-grid">
+                <section class="rules-section">
+                    <h3><span>1</span> كيف تلعب؟</h3>
+                    <ol>
+                        <li>اختر خلية من لوحة الحروف.</li>
+                        <li>يُطرح سؤال تبدأ إجابته بالحرف المختار.</li>
+                        <li>الفريق الأسرع يضغط الجرس ويجيب.</li>
+                        <li>عند الإجابة الصحيحة اضغط بطاقة الفريق لمنحه الخلية.</li>
+                    </ol>
+                </section>
+
+                <section class="rules-section">
+                    <h3><span>2</span> كيف تفوز؟</h3>
+                    <ul>
+                        <li>الفريق الأول يصل خلاياه من اليمين إلى اليسار.</li>
+                        <li>الفريق الثاني يصل خلاياه من الأعلى إلى الأسفل.</li>
+                        <li>أول فريق يصنع مسارًا متصلًا يفوز بالجولة.</li>
+                        <li>عدد جولات الفوز يُحدد من الإعدادات.</li>
+                    </ul>
+                </section>
+
+                <section class="rules-section rules-section-cancel">
+                    <h3><span>↺</span> اخترت خلية بالخطأ؟</h3>
+                    <div class="rules-tip">
+                        <strong>قبل منحها لفريق:</strong>
+                        اضغط الخلية المحددة نفسها مرة ثانية لإلغاء الاختيار.
+                    </div>
+                    <div class="rules-tip">
+                        <strong>بعد منحها للفريق الخطأ:</strong>
+                        اضغط الخلية الملوّنة مرة واحدة وستعود خلية فارغة.
+                    </div>
+                </section>
+            </div>
+
+            <button type="button" class="rules-close-btn" onclick="closeRulesModal()">فهمت، ابدأ اللعب</button>
         </div>
     </div>
 
@@ -164,41 +250,57 @@
             <div class="settings-layout">
 
                 <!-- Row 1: Competition Name -->
-                <div class="settings-label">اسم المسابقة:</div>
-                <div class="settings-control">
-                    <input type="text" id="setCompName" class="input-pill" value="هوجاس">
+                <div class="setting-card setting-card-comp">
+                    <div class="settings-label">اسم المسابقة:</div>
+                    <div class="settings-live-logo" aria-label="اسم المسابقة" aria-live="polite">
+                        <span class="settings-live-logo__word">حروف</span>
+                        <span class="settings-live-logo__with">مع</span>
+                        <span class="settings-live-logo__name" id="settingsLiveCompName">هوجاس</span>
+                    </div>
+                    <div class="settings-control">
+                        <input type="text" id="setCompName" class="input-pill" value="هوجاس">
+                    </div>
                 </div>
 
                 <!-- Row 2: Team 1 Name -->
-                <div class="settings-label">اسم الفريق الأول:</div>
-                <div class="settings-control">
-                    <input type="text" id="setTeam1Name" class="input-pill" value="الفريق الأول">
+                <div class="setting-card setting-card-team1">
+                    <div class="settings-label">اسم الفريق الأول:</div>
+                    <div class="settings-control">
+                        <input type="text" id="setTeam1Name" class="input-pill" value="الفريق الأول">
+                    </div>
                 </div>
 
                 <!-- Row 3: Team 2 Name -->
-                <div class="settings-label">اسم الفريق الثاني:</div>
-                <div class="settings-control">
-                    <input type="text" id="setTeam2Name" class="input-pill" value="الفريق الثاني">
+                <div class="setting-card setting-card-team2">
+                    <div class="settings-label">اسم الفريق الثاني:</div>
+                    <div class="settings-control">
+                        <input type="text" id="setTeam2Name" class="input-pill" value="الفريق الثاني">
+                    </div>
                 </div>
 
                 <!-- Row 4: Winning Rounds -->
-                <div class="settings-label">عدد جولات الفوز:</div>
-                <div class="settings-control toggle-group" id="setRoundsGroup">
-                    <button class="toggle-btn selected" data-value="3">ثلاث جولات</button>
-                    <button class="toggle-btn" data-value="2">جولتين</button>
-                    <button class="toggle-btn" data-value="1">جولة</button>
+                <div class="setting-card setting-card-rounds">
+                    <div class="settings-label">عدد جولات الفوز:</div>
+                    <div class="settings-control toggle-group" id="setRoundsGroup">
+                        <button class="toggle-btn selected" data-value="3">ثلاث جولات</button>
+                        <button class="toggle-btn" data-value="2">جولتين</button>
+                        <button class="toggle-btn" data-value="1">جولة</button>
+                    </div>
                 </div>
 
                 <!-- Row 5: Presenter Type -->
-                <div class="settings-label">نوع المقدم:</div>
-                <div class="settings-control toggle-group" id="setPresenterGroup">
-                    <button class="toggle-btn selected" data-value="ai">مقدم آلي</button>
-                    <button class="toggle-btn" data-value="human">مقدم بشري</button>
+                <div class="setting-card setting-card-presenter">
+                    <div class="settings-label">نوع المقدم:</div>
+                    <div class="settings-control toggle-group" id="setPresenterGroup">
+                        <button class="toggle-btn selected" data-value="ai">مقدم آلي</button>
+                        <button class="toggle-btn" data-value="human">مقدم بشري</button>
+                    </div>
                 </div>
 
                 <!-- Row 6: Cell Colors -->
-                <div class="settings-label">لون الخلايا:</div>
-                <div class="settings-control colors-grid" id="setColorsGroup">
+                <div class="setting-card setting-card-wide setting-card-colors">
+                    <div class="settings-label">لون الخلايا:</div>
+                    <div class="settings-control colors-grid" id="setColorsGroup">
                     <!-- Pair 1 -->
                     <button class="color-pair selected" data-c1="orange" data-c2="purple">
                         <div class="c-hex" style="background:#FF9800;"></div>
@@ -239,11 +341,21 @@
                         <div class="c-hex" style="background:#a855f7;"></div>
                         <div class="c-hex" style="background:#fde047;"></div>
                     </button>
+                    </div>
                 </div>
 
                 <!-- Row 7: Bell Timers -->
-                <div class="settings-label">مؤقت الجرس:</div>
-                <div class="settings-control timers-grid">
+                <div class="setting-card setting-card-wide setting-card-timers">
+                    <div class="settings-label">مؤقت الجرس:</div>
+                    <div class="settings-control timers-grid">
+                    <div class="timer-box">
+                        <span class="timer-title">مؤقت يدوي</span>
+                        <div class="timer-stepper">
+                            <button class="step-btn" onclick="adjTime('manualTime', 1)">+</button>
+                            <div class="step-val"><span id="manualTimeVal">5</span> ثانية</div>
+                            <button class="step-btn" onclick="adjTime('manualTime', -1)">-</button>
+                        </div>
+                    </div>
                     <div class="timer-box">
                         <span class="timer-title">وقت الإجابة</span>
                         <div class="timer-stepper">
@@ -260,28 +372,29 @@
                             <button class="step-btn" onclick="adjTime('otherTime', -1)">-</button>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- Row 8: Sound -->
-                <div class="settings-label">الصوت:</div>
-                <div class="settings-control toggle-group" id="setSoundGroup">
-                    <button class="toggle-btn selected" data-value="on">تشغيل</button>
-                    <button class="toggle-btn" data-value="off">إيقاف</button>
+                <div class="setting-card setting-card-sound">
+                    <div class="settings-label">الصوت:</div>
+                    <div class="settings-control toggle-group" id="setSoundGroup">
+                        <button class="toggle-btn selected" data-value="on">تشغيل</button>
+                        <button class="toggle-btn" data-value="off">إيقاف</button>
+                    </div>
                 </div>
 
                 <!-- Row 9: Dark Mode -->
-                <div class="settings-label">مظهر الشاشة:</div>
-                <div class="settings-control toggle-group" id="setThemeGroup">
-                    <button class="toggle-btn selected" data-value="light">☀️ فاتح</button>
-                    <button class="toggle-btn" data-value="dark">🌙 داكن</button>
+                <div class="setting-card setting-card-theme">
+                    <div class="settings-label">مظهر الشاشة:</div>
+                    <div class="settings-control toggle-group" id="setThemeGroup">
+                        <button class="toggle-btn selected" data-value="light">☀️ فاتح</button>
+                        <button class="toggle-btn" data-value="dark">🌙 داكن</button>
+                    </div>
                 </div>
 
-                <!-- Row 10: Buzzer Server -->
-                <div class="settings-label">سيرفر الجرس:</div>
-                <div class="settings-control">
-                    <input type="text" id="setBuzzerUrl" class="input-pill" placeholder="https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/" style="direction: ltr; font-size: 0.9rem;">
-                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 5px; padding-right: 10px;">أبقِ الحقل فارغاً للكشف التلقائي (Vercel)</div>
-                </div>
+                <!-- Internal buzzer connection; intentionally hidden from players. -->
+                <input type="hidden" id="setBuzzerUrl" value="https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/">
 
             </div>
 
@@ -300,9 +413,9 @@
 
         <!-- Questions Portal (Bawaba) - Visible only in Human mode -->
         <div id="humanPortalArea" style="display:none; margin-top:10px; padding: 0 10px;">
-            <a href="pages/q702.html" target="_blank" class="portal-link-btn">
+            <button onclick="showPortalQR()" class="portal-link-btn" style="width:100%; text-align:center; display:block;">
                 <span>🚪 بوابة الأسئلة</span>
-            </a>
+            </button>
         </div>
 
         <div class="logo" onclick="window.location.href='pages/playground.html'" style="cursor: pointer;">
@@ -324,12 +437,22 @@
                     <span class="score-num" id="score1">0</span>
                 </div>
                 <span class="score-name" id="name1">الفريق الأول</span>
+                <!-- Manual Timer Trigger -->
+                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team1')" title="بدء مؤقت يدوي">
+                    <span>مؤقت</span>
+                    ⏱️
+                </button>
             </div>
             <div class="score-box team-2" id="scoreBox2" onclick="assignTeam('team2')">
                 <div class="score-hex-wrap">
                     <span class="score-num" id="score2">0</span>
                 </div>
                 <span class="score-name" id="name2">الفريق الثاني</span>
+                <!-- Manual Timer Trigger -->
+                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team2')" title="بدء مؤقت يدوي">
+                    <span>مؤقت</span>
+                    ⏱️
+                </button>
             </div>
         </div>
 
@@ -363,6 +486,21 @@
 
     <!-- ===== MAIN AREA ===== -->
     <main class="main-area">
+
+        <button class="game-home-btn" type="button" onclick="returnToHomeWithWarning()"
+            aria-label="العودة إلى الشاشة الرئيسية" title="العودة إلى الشاشة الرئيسية">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10.8 12 3l9 7.8v9.1a1.1 1.1 0 0 1-1.1 1.1h-5.2v-6.2H9.3V21H4.1A1.1 1.1 0 0 1 3 19.9z"/>
+            </svg>
+        </button>
+
+        <!-- Session Code Badge -->
+        <div id="sessionBadgeWrap" style="display:none; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:200; pointer-events:none;">
+            <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,214,0,0.25); border-radius:7px; padding:4px 13px; backdrop-filter:blur(8px); display:flex; align-items:center; gap:7px;">
+                <span style="font-size:0.68rem; color:rgba(255,255,255,0.38);">جلسة</span>
+                <span id="sessionBadgeCode" style="font-size:0.82rem; font-weight:900; letter-spacing:3px; color:rgba(255,214,0,0.7);">—</span>
+            </div>
+        </div>
 
         <!-- Timer Display (floating) -->
         <div class="timer-display" id="timerDisplay" style="display:none;">
@@ -421,27 +559,37 @@
 
         <!-- Presentation Mode Scores -->
         <div id="gameViewScores" class="game-view-scores">
-            <div class="gv-score-card team-1">
+            <div class="gv-score-card team-1" role="button" tabindex="0"
+                onclick="assignTeam('team1')"
+                onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); assignTeam('team1'); }">
                 <span class="gv-team-name" id="gvTeam1Name">الفريق الأول</span>
                 <span class="gv-score-num" id="gvTeam1Score">0</span>
             </div>
-            <div class="gv-score-card team-2">
+            <div class="gv-score-card team-2" role="button" tabindex="0"
+                onclick="assignTeam('team2')"
+                onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); assignTeam('team2'); }">
                 <span class="gv-team-name" id="gvTeam2Name">الفريق الثاني</span>
                 <span class="gv-score-num" id="gvTeam2Score">0</span>
             </div>
         </div>
 
         <!-- Team Picker Panel -->
-        <div class="team-picker" id="teamPicker" style="display:none;">
-            <span class="picker-label">اختر الفريق:</span>
-            <button class="pick-btn" id="pickBtn1" onclick="assignTeam('team1')">الفريق الأول</button>
-            <button class="pick-btn" id="pickBtn2" onclick="assignTeam('team2')">الفريق الثاني</button>
-            <button class="pick-btn" onclick="unclaimCell()"
-                style="background: rgba(255,255,255,0.2); color: #fff; margin-right: 8px;">↺ إرجاع الحرف</button>
-            <button class="pick-btn pick-cancel" onclick="cancelSelect()">✕ إلغاء</button>
-        </div>
 
     </main>
+
+    <div class="site-confirm" id="returnHomeModal" role="dialog" aria-modal="true"
+        aria-labelledby="returnHomeTitle" aria-describedby="returnHomeText" aria-hidden="true"
+        onclick="if (event.target === this) closeReturnHomeWarning()">
+        <div class="site-confirm__card">
+            <div class="site-confirm__icon" aria-hidden="true">!</div>
+            <h2 id="returnHomeTitle">حذف الجولة؟</h2>
+            <p id="returnHomeText">سيتم حذف الجولة الحالية والعودة إلى الشاشة الرئيسية.</p>
+            <div class="site-confirm__actions">
+                <button type="button" class="site-confirm__cancel" onclick="closeReturnHomeWarning()">إلغاء</button>
+                <button type="button" class="site-confirm__delete" onclick="confirmReturnHome()">حذف الجولة والعودة</button>
+            </div>
+        </div>
+    </div>
 
 
     <audio id="enterSound" src="assets/sound/الدخول لخليه الحروف.mp4"></audio>
@@ -455,22 +603,22 @@
     <div id="buzzerShareModal" class="transition-screen"
         style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
         
-        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.7); border: 2.5px solid rgba(255, 214, 0, 0.3); border-radius: 45px; padding: 50px 40px; width: 95%; max-width: 550px; text-align: center; position: relative; box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 50px rgba(139, 95, 191, 0.2); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div class="buzzer-modal-card buzzer-share-card" style="background: rgba(30, 15, 55, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1); border-left: 5px solid rgba(255, 214, 0, 0.7); border-radius: 16px; padding: 40px 36px; width: 95%; max-width: 550px; text-align: center; position: relative; box-shadow: 0 10px 0 rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.7); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
             
             <!-- Close Button -->
-            <button onclick="document.getElementById('buzzerShareModal').style.display='none'"
-                style="position:absolute; top: 25px; left: 25px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; width:45px; height:45px; border-radius:15px; cursor:pointer; font-size:1.6rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10;"
+            <button class="buzzer-modal-close" onclick="document.getElementById('buzzerShareModal').style.display='none'"
+                style="position:absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.15); color:#fff; width:42px; height:42px; border-radius:8px; cursor:pointer; font-size:1.4rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
                 onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
                 onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
 
-            <h2 style="font-family: 'Cairo', sans-serif; font-weight: 900; color: #fff; font-size: 2.5rem; margin-bottom: 35px; text-shadow: 0 5px 15px rgba(0,0,0,0.4); letter-spacing: -1px;">
+            <h2 class="buzzer-modal-title" style="font-family: 'Cairo', sans-serif; font-weight: 900; color: #fff; font-size: 2.5rem; margin-bottom: 35px; text-shadow: 0 5px 15px rgba(0,0,0,0.4); letter-spacing: -1px;">
                 جرس الجلسة
             </h2>
 
-            <div style="display: flex; gap: 25px; margin-bottom: 35px; flex-wrap: wrap;">
+            <div class="buzzer-modal-grid" style="display: flex; gap: 25px; margin-bottom: 35px; flex-wrap: wrap;">
                 <!-- Right: Session Code -->
-                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: transform 0.3s;"
-                     onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,214,0,0.3)'"
+                <div class="buzzer-modal-panel buzzer-code-panel" style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: all 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,214,0,0.4)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'">
                     
                     <div style="font-size: 2.8rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">🔗</div>
@@ -483,8 +631,8 @@
                 </div>
 
                 <!-- Left: QRCode -->
-                <div style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 35px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: transform 0.3s;"
-                     onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,214,0,0.3)'"
+                <div class="buzzer-modal-panel buzzer-qr-panel" style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; transition: all 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(255,214,0,0.4)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'">
                     
                     <div style="font-size: 2.8rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">📱</div>
@@ -492,21 +640,47 @@
                         مسح الباركود
                     </div>
                     
-                    <div id="modalQrcodeBox" style="background:#fff; padding:12px; border-radius:20px; display:flex; align-items:center; justify-content:center; width: 160px; height: 160px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 5px solid rgba(255,255,255,0.1);">
+                    <div id="modalQrcodeBox" style="background:#fff; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; width: 160px; height: 160px; box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);">
                     </div>
 
                     <button id="modalDirectLinkBtn" onclick="openBuzzerDirectly()"
-                        style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 18px; background: linear-gradient(135deg, #FFD600, #F57C00); border: none; color: #1a1a1a; font-family: 'Cairo', sans-serif; font-weight: 900; cursor: pointer; font-size: 1rem; transition: all 0.3s; box-shadow: 0 6px 0 #b36b00;"
-                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 0 #b36b00'"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 0 #b36b00'">
+                        style="margin-top: 15px; width: 100%; padding: 12px; border-radius: 8px; background: linear-gradient(135deg, #FFD600, #F57C00); border: none; border-bottom: 3px solid #b36b00; color: #1a1a1a; font-family: 'Cairo', sans-serif; font-weight: 900; cursor: pointer; font-size: 1rem; transition: all 0.15s; box-shadow: 0 5px 0 #7a4400;"
+                        onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 0 #7a4400'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 0 #7a4400'">
                         🚀 الدخول مباشرة
                     </button>
                 </div>
             </div>
 
             <!-- Footer Hint -->
-            <div style="color: rgba(255,255,255,0.4); font-size: 0.95rem; margin-top: 20px; font-weight: 600;">
+            <div class="buzzer-modal-hint" style="color: rgba(255,255,255,0.4); font-size: 0.95rem; margin-top: 20px; font-weight: 600;">
                 <span style="color: #FFD600;">💡 نصيحة:</span> شارك الشاشة أو الكود مع المتسابقين للبدء.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PORTAL SHARE MODAL ===== -->
+    <div id="portalShareModal" class="transition-screen"
+        style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
+
+        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1); border-left: 5px solid rgba(255, 214, 0, 0.7); border-radius: 16px; padding: 40px 36px; width: 95%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 0 rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.7); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+
+            <button onclick="document.getElementById('portalShareModal').style.display='none'"
+                style="position:absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.15); color:#fff; width:42px; height:42px; border-radius:8px; cursor:pointer; font-size:1.4rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
+                onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
+
+            <h2 style="font-family: 'Cairo', sans-serif; font-weight: 900; color: #fff; font-size: 2.3rem; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.4); letter-spacing: -1px;">
+                بوابة الأسئلة
+            </h2>
+            <div style="color: rgba(255,255,255,0.7); margin-bottom: 25px; font-weight: 600; font-size: 1.1rem;">
+                اقرأ الباركود لفتح الأسئلة بجوالك الخاص لكي لا تتعارض جلستك هنا
+            </div>
+
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 5px 0 rgba(0,0,0,0.25);">
+                <div id="modalPortalQrcodeBox" style="background:#fff; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; width: 180px; height: 180px; box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);">
+                </div>
+
             </div>
         </div>
     </div>
@@ -516,7 +690,7 @@
             onerror="this.onerror=null; var s=document.createElement('script'); s.src='js/qrcode.min.js'; document.head.appendChild(s);"></script>
     <script src="js/pdfData.js"></script>
     <script src="js/questionsData.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/script.js?v=settings-persist-25"></script>
 </body>
 
 </html>

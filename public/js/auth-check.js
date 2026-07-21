@@ -1,4 +1,8 @@
 (async function () {
+    // Temporary free-access mode. Change to false to restore phone verification.
+    const FREE_ACCESS_MODE = true;
+    if (FREE_ACCESS_MODE) return;
+
     const firebaseConfig = {
         apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
         authDomain: "buzzer-game-f2983.firebaseapp.com",
@@ -9,7 +13,9 @@
         appId: "1:125573747954:web:8dac68183e6e326b8b2c6b"
     };
 
-    const loginUrl = window.location.origin + '/login.html';
+    // تحديد مسار صفحة الدخول بناءً على موقع الصفحة الحالية
+    const inSubfolder = window.location.pathname.includes('/pages/');
+    const loginUrl = inSubfolder ? '../login.html' : 'login.html';
 
     // استثناء صفحات الدخول
     if (window.location.href.includes('login.html') || window.location.href.includes('admin.html')) {
@@ -62,9 +68,10 @@
 
             // 2. Heartbeat (تحديث النشاط)
             const heartbeatInterval = setInterval(() => {
-                set(ref(db, `users/${phone}/sessions/${token}`), Date.now()).catch(() => {
-                    clearInterval(heartbeatInterval);
-                });
+                const now = Date.now();
+                // تحديث الجلسة المحددة + النبض العام للمستخدم
+                set(ref(db, `users/${phone}/sessions/${token}`), now).catch(() => {});
+                set(ref(db, `users/${phone}/lastHeartbeat`), now).catch(() => {});
             }, 30000);
         });
 

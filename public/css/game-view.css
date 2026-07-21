@@ -10,7 +10,7 @@ body.presentation-mode #darkModeToggleBtn {
 body.presentation-mode .main-area {
     padding-left: 0 !important;
     padding-bottom: 0 !important;
-    padding-top: 100px !important; /* Reverted to the previous preferred spacing */
+    padding-top: 92px !important;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -18,7 +18,7 @@ body.presentation-mode .main-area {
 }
 
 body.presentation-mode .board-wrap {
-    transform: scale(1.2);
+    transform: scale(1.02);
     transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -41,20 +41,20 @@ body.presentation-mode .board-wrap {
 
 body.presentation-mode .game-view-header {
     display: flex;
-    height: 180px; /* Increased to fit stacked logo */
+    height: 88px;
 }
 
 .gv-current-round {
     font-family: 'Lalezar', cursive;
-    font-size: 2.4rem;
+    font-size: 1.85rem;
     color: #fff;
     text-shadow: 0 4px 10px rgba(0,0,0,0.5);
     background: rgba(139, 95, 191, 0.4);
-    padding: 8px 30px;
+    padding: 6px 22px;
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
-    gap: 15px; /* Added spacing between words */
+    gap: 10px;
 }
 
 .gv-word-1 { color: #fff; }
@@ -67,7 +67,10 @@ body.presentation-mode .game-view-header {
     align-items: center;
     justify-content: center;
     line-height: 0.75;
-    transform: scale(0.9);
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -2px) scale(0.52);
+    transform-origin: center center;
 }
 
 .gv-logo-line {
@@ -88,8 +91,8 @@ body.presentation-mode .game-view-header {
 .gv-logo-line3 { font-size: 5rem; color: #FF1744; }
 
 .gv-exit-btn {
-    width: 45px;
-    height: 45px;
+    width: 38px;
+    height: 38px;
     border-radius: 12px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
@@ -110,9 +113,9 @@ body.presentation-mode .game-view-header {
 .game-view-scores {
     display: none;
     position: fixed;
-    bottom: 40px;
-    left: 40px;
-    right: 40px;
+    bottom: 20px;
+    left: 70px;
+    right: 70px;
     z-index: 10000;
     justify-content: space-between;
     align-items: flex-end;
@@ -126,16 +129,36 @@ body.presentation-mode .game-view-scores {
 .gv-score-card {
     background: rgba(18, 8, 35, 0.85);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 15px 30px;
+    border-radius: 15px;
+    padding: 8px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 180px;
+    min-width: 122px;
     backdrop-filter: blur(16px);
     box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     animation: slideUpFade 0.6s ease forwards;
     pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.gv-score-card:hover {
+    filter: brightness(1.12);
+    transform: translateY(-3px);
+}
+
+.gv-score-card.ready {
+    box-shadow:
+        0 0 0 3px #ffd600,
+        0 0 28px rgba(255, 214, 0, 0.68),
+        0 15px 35px rgba(0, 0, 0, 0.5);
+    animation: gvScoreReady 0.85s ease-in-out infinite alternate;
+}
+
+@keyframes gvScoreReady {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-3px) scale(1.035); }
 }
 
 .gv-score-card.team-1 {
@@ -149,14 +172,14 @@ body.presentation-mode .game-view-scores {
 .gv-team-name {
     font-weight: 800;
     color: rgba(255,255,255,0.6);
-    font-size: 0.9rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
     margin-bottom: 5px;
 }
 
 .gv-score-num {
     font-family: 'Lalezar', cursive;
-    font-size: 3.5rem;
+    font-size: 2.35rem;
     color: #fff;
     line-height: 1;
     text-shadow: 0 5px 10px rgba(0,0,0,0.3);
@@ -173,12 +196,12 @@ body.presentation-mode .game-view-scores {
     }
 
     body.presentation-mode .game-view-header {
-        height: 120px;
+        height: 90px;
         padding: 0 15px;
     }
 
     .gv-logo-container {
-        transform: scale(0.65);
+        transform: translate(-50%, -7px) scale(0.48);
     }
 
     .gv-current-round {
@@ -188,23 +211,23 @@ body.presentation-mode .game-view-scores {
     }
 
     .game-view-scores {
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
+        bottom: 12px;
+        left: 14px;
+        right: 14px;
         gap: 10px;
     }
 
     .gv-score-card {
-        padding: 10px 15px;
-        min-width: 120px;
-        border-radius: 16px;
+        padding: 7px 11px;
+        min-width: 96px;
+        border-radius: 13px;
     }
 
     .gv-score-num {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
     }
 
     .gv-team-name {
-        font-size: 0.7rem;
+        font-size: 0.58rem;
     }
 }
