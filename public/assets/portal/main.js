@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "تحدي الصور",
             desc: "لعبة تحدي بالصور ممتعة وسهلة الفهم، تظهر على الشاشة صور تلمّح لاسم معين، وعلى اللاعبين تخمين الإجابة بأسرع وقت.",
             image: "tahadi_suwar.png",
-            link: "#",
+            link: "/assets/games/photo-challenge.pdf",
             btnText: "العب الآن"
         },
         {
