@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /login.html
+Disallow: /questions
+Disallow: /buzzer
+
+Sitemap: https://7roof-main.vercel.app/sitemap.xml

@@ -4,12 +4,25 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>قاف — هوجاس</title>
+    <title>قاف للألعاب | حروف مع هوجاس</title>
+    <meta name="description" content="قاف للألعاب تقدم حروف مع هوجاس، لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة. العب النسخة الكاملة مجانًا.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#4b2370">
+    <link rel="canonical" href="https://7roof-main.vercel.app/">
+    <link rel="icon" type="image/png" href="../assets/qaf-favicon.png">
+    <meta property="og:locale" content="ar_SA">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="قاف للألعاب">
+    <meta property="og:title" content="قاف للألعاب | حروف مع هوجاس">
+    <meta property="og:description" content="اكتشف لعبة حروف مع هوجاس والعب النسخة الكاملة مجانًا.">
+    <meta property="og:url" content="https://7roof-main.vercel.app/">
+    <meta property="og:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="قاف للألعاب | حروف مع هوجاس">
+    <meta name="twitter:description" content="لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة.">
+    <meta name="twitter:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
         rel="stylesheet" />
-
-    <!-- Auth Check -->
-
 
     <style>
         @font-face {
@@ -623,18 +636,11 @@
     <script>
         function goToGame() {
             try {
-                const AUTH_SERVER = 'https://hojas-auth9-production.up.railway.app';
-                const gameURL = '../index.html';
-                const token = localStorage.getItem('hojas_token');
-
-                if (token) {
-                    window.location.href = gameURL;
-                } else {
-                    window.location.href = AUTH_SERVER + '/?redirect=' + encodeURIComponent(gameURL);
-                }
+                // Temporary free-access mode: open the full game directly.
+                window.location.href = '../index.html';
             } catch (e) {
-                console.error("Auth Error:", e);
-                window.location.href = 'game.html'; // Fallback
+                console.error("Navigation Error:", e);
+                window.location.href = '../index.html';
             }
         }
     </script>
@@ -714,7 +720,7 @@
 
                     <p class="card-desc">اللعبة الكلاسيكية الشهيرة برؤية عصرية وتفاعلية. اختبر معلوماتك وسرعة بديهتك مع
                         أصدقائك.
-                        وايضا تحتوي على اكثر من 1000 سوال </p>
+                        وايضا تحتوي على اكثر من 700 سوال </p>
 
                     <div class="card-divider"></div>
 
@@ -954,6 +960,11 @@
                 <strong>هوجاس في طور الإبداع — </strong>
                 المزيد من الألعاب التفاعلية قادمة. تابعنا لتكون أول من يلعب.
             </p>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; justify-content: center; opacity: 0.6;">
+            <span style="font-size: 0.9rem;">v 1.2</span>
+            <span style="font-size: 0.7rem; background: rgba(74, 222, 128, 0.2); color: #4ADE80; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.3);">تحديث جديد</span>
         </div>
     </div>
 

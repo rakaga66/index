@@ -1,4 +1,8 @@
 (async function () {
+    // Temporary free-access mode. Change to false to restore phone verification.
+    const FREE_ACCESS_MODE = true;
+    if (FREE_ACCESS_MODE) return;
+
     const firebaseConfig = {
         apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
         authDomain: "buzzer-game-f2983.firebaseapp.com",

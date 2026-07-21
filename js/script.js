@@ -29,6 +29,168 @@ let board = [];
 let cellLetters = [];
 let selectedCell = null;
 let scores = { team1: 0, team2: 0 };
+let gameIsActive = false;
+
+const GAME_STATE_KEY = 'hojas_active_game_v1';
+const UI_SCREEN_KEY = 'hojas_current_screen_v1';
+const SETTINGS_SOURCE_KEY = 'hojas_settings_source_v1';
+
+function isValidGameMatrix(matrix) {
+    return Array.isArray(matrix) &&
+        matrix.length === BOARD_SIZE &&
+        matrix.every(row => Array.isArray(row) && row.length === BOARD_SIZE);
+}
+
+function saveGameState() {
+    if (!gameIsActive || !isValidGameMatrix(board) || !isValidGameMatrix(cellLetters)) return;
+
+    const state = {
+        version: 1,
+        savedAt: Date.now(),
+        board,
+        cellLetters,
+        scores,
+        teamSetup,
+        buzzerRoom,
+        presentationMode: document.body.classList.contains('presentation-mode')
+    };
+
+    try {
+        localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+    } catch (error) {
+        console.warn('Could not save game state', error);
+    }
+}
+
+function clearSavedGameState() {
+    gameIsActive = false;
+    localStorage.removeItem(GAME_STATE_KEY);
+}
+
+function returnToHomeWithWarning() {
+    const modal = document.getElementById('returnHomeModal');
+    if (!modal) return;
+
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.site-confirm__cancel')?.focus());
+}
+
+function closeReturnHomeWarning() {
+    const modal = document.getElementById('returnHomeModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    document.querySelector('.game-home-btn')?.focus();
+}
+
+function confirmReturnHome() {
+    clearSavedGameState();
+    localStorage.setItem(UI_SCREEN_KEY, 'home');
+    localStorage.removeItem(SETTINGS_SOURCE_KEY);
+    window.location.reload();
+}
+
+function openRulesModal() {
+    const modal = document.getElementById('rulesModal');
+    if (!modal) return;
+
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.rules-close-btn')?.focus());
+}
+
+function closeRulesModal() {
+    const modal = document.getElementById('rulesModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    document.querySelector('.home-buttons .btn-pill:last-child')?.focus();
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.getElementById('rulesModal')?.classList.contains('show')) {
+        closeRulesModal();
+        return;
+    }
+
+    if (event.key === 'Escape' && document.getElementById('returnHomeModal')?.classList.contains('show')) {
+        closeReturnHomeWarning();
+    }
+});
+
+function restoreSavedGameState() {
+    let state;
+    try {
+        state = JSON.parse(localStorage.getItem(GAME_STATE_KEY) || 'null');
+    } catch (error) {
+        clearSavedGameState();
+        return false;
+    }
+
+    if (!state || state.version !== 1 ||
+        !isValidGameMatrix(state.board) || !isValidGameMatrix(state.cellLetters)) {
+        return false;
+    }
+
+    teamSetup = {
+        ...teamSetup,
+        ...(state.teamSetup || {}),
+        team1: { ...teamSetup.team1, ...(state.teamSetup?.team1 || {}) },
+        team2: { ...teamSetup.team2, ...(state.teamSetup?.team2 || {}) }
+    };
+    board = state.board.map(row => [...row]);
+    cellLetters = state.cellLetters.map(row => [...row]);
+    scores = {
+        team1: Number(state.scores?.team1) || 0,
+        team2: Number(state.scores?.team2) || 0
+    };
+    teamSetup.team1.score = scores.team1;
+    teamSetup.team2.score = scores.team2;
+    buzzerRoom = state.buzzerRoom || generateBuzzerCode();
+    selectedCell = null;
+    gameIsActive = true;
+
+    const home = document.getElementById('homeScreen');
+    const settings = document.getElementById('settingsScreen');
+    const transition = document.getElementById('transitionScreen');
+    const mainArea = document.querySelector('.main-area');
+    if (home) home.style.display = 'none';
+    if (settings) settings.style.display = 'none';
+    if (transition) transition.style.display = 'none';
+    if (mainArea) mainArea.style.display = 'flex';
+
+    const badgeWrap = document.getElementById('sessionBadgeWrap');
+    const badgeCode = document.getElementById('sessionBadgeCode');
+    if (badgeWrap && badgeCode) {
+        badgeWrap.style.display = 'block';
+        badgeCode.textContent = buzzerRoom;
+    }
+
+    const sidebarLogo = document.querySelector('.sidebar .logo');
+    if (sidebarLogo) {
+        sidebarLogo.innerHTML = `
+            <span class="logo-line1">حروف</span>
+            <span class="logo-line2">مع</span>
+            <span class="logo-line3">${teamSetup.competitionName}</span>
+        `;
+    }
+
+    applyTeamColors();
+    updateBgGradient(COLOR_MAP[teamSetup.team1.color].bg, COLOR_MAP[teamSetup.team2.color].bg);
+    updateRoundDisplay();
+    updateSidebar();
+    document.body.classList.toggle('presentation-mode', Boolean(state.presentationMode));
+    setGamePresenter(teamSetup.presenter);
+
+    requestAnimationFrame(() => {
+        renderBoard();
+        if (state.presentationMode) syncGameViewUI();
+    });
+    return true;
+}
 
 // Setup choices
 let teamSetup = {
@@ -251,6 +413,29 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedManualTime) {
         teamSetup.manualTime = parseInt(savedManualTime);
     }
+
+    const restoredGame = restoreSavedGameState();
+
+    // Preserve the settings screen across refreshes, including when it was
+    // opened over an active game.
+    if (localStorage.getItem(UI_SCREEN_KEY) === 'settings') {
+        const settings = document.getElementById('settingsScreen');
+        const home = document.getElementById('homeScreen');
+        const requestedGameSource = localStorage.getItem(SETTINGS_SOURCE_KEY) === 'game';
+
+        settingsCalledFromGame = Boolean(restoredGame && requestedGameSource);
+        if (home) home.style.display = 'none';
+        if (settings) {
+            settings.style.display = 'flex';
+            requestAnimationFrame(() => { settings.scrollTop = 0; });
+        }
+        syncSettingsUI();
+    }
+});
+
+window.addEventListener('beforeunload', saveGameState);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveGameState();
 });
 
 
@@ -283,13 +468,17 @@ function showSettings() {
     const homeScreen = document.getElementById('homeScreen');
     const isInGame = homeScreen && homeScreen.style.display === 'none';
     settingsCalledFromGame = isInGame;
+    localStorage.setItem(UI_SCREEN_KEY, 'settings');
+    localStorage.setItem(SETTINGS_SOURCE_KEY, isInGame ? 'game' : 'home');
 
     syncSettingsUI();
 
     if (!isInGame) {
         homeScreen.style.display = 'none';
     }
-    document.getElementById('settingsScreen').style.display = 'flex';
+    const settingsScreen = document.getElementById('settingsScreen');
+    settingsScreen.style.display = 'flex';
+    requestAnimationFrame(() => { settingsScreen.scrollTop = 0; });
 }
 
 function updateRoundDisplay() {
@@ -308,6 +497,9 @@ function updateRoundDisplay() {
 function syncSettingsUI() {
     const compInput = document.getElementById('setCompName');
     if (compInput) compInput.value = teamSetup.competitionName;
+
+    const settingsLiveName = document.getElementById('settingsLiveCompName');
+    if (settingsLiveName) settingsLiveName.textContent = teamSetup.competitionName || 'هوجاس';
 
     const t1Input = document.getElementById('setTeam1Name');
     if (t1Input) t1Input.value = teamSetup.team1.name;
@@ -352,6 +544,8 @@ function syncSettingsUI() {
 function showHome() {
     document.getElementById('settingsScreen').style.display = 'none';
     document.getElementById('homeScreen').style.display = 'flex';
+    localStorage.setItem(UI_SCREEN_KEY, 'home');
+    localStorage.removeItem(SETTINGS_SOURCE_KEY);
 }
 
 function saveSettings() {
@@ -375,8 +569,11 @@ function saveSettings() {
     if (settingsCalledFromGame) {
         if (typeof updateSidebar === 'function') updateSidebar();
         if (typeof applyTeamColors === 'function') applyTeamColors();
+        saveGameState();
         // إغلاق الإعدادات والرجوع للعبة مباشرة
         document.getElementById('settingsScreen').style.display = 'none';
+        localStorage.setItem(UI_SCREEN_KEY, 'game');
+        localStorage.removeItem(SETTINGS_SOURCE_KEY);
     } else {
         showHome();
     }
@@ -384,6 +581,9 @@ function saveSettings() {
 
 function startGame() {
     document.getElementById('homeScreen').style.display = 'none';
+    localStorage.setItem(UI_SCREEN_KEY, 'game');
+    localStorage.removeItem(SETTINGS_SOURCE_KEY);
+    gameIsActive = true;
     
     // Generate unique session code for this game
     if (buzzerSocket) { buzzerSocket.disconnect(); buzzerSocket = null; }
@@ -395,6 +595,8 @@ function startGame() {
     
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    teamSetup.team1.score = 0;
+    teamSetup.team2.score = 0;
     
     document.getElementById('name1').textContent = teamSetup.team1.name;
     document.getElementById('name2').textContent = teamSetup.team2.name;
@@ -414,6 +616,7 @@ function startGame() {
     updateRoundDisplay();
     updateSidebar();
     setGamePresenter(teamSetup.presenter);
+    saveGameState();
     
     showTransitionScreen(compName, getRoundWord(teamSetup.currentRound));
 }
@@ -473,6 +676,9 @@ function hideTransitionNow(ts, mainArea) {
     if (ts) ts.style.display = 'none';
     if (mainArea) {
         mainArea.style.display = 'flex';
+        // The board was first rendered while the game area was hidden, so its
+        // measured size was zero. Re-render after the visible layout is ready.
+        requestAnimationFrame(() => renderBoard());
         if (teamSetup.sound === 'on') {
             const enterAudio = document.getElementById('enterSound');
             if (enterAudio) {
@@ -523,12 +729,16 @@ function setGamePresenter(type) {
         btn.classList.toggle('selected', btn.dataset.value === type);
     });
 
-    // If panel is already open, refresh its position/style
+    // Human presenter mode never shows the automatic question panel.
     const panel = document.getElementById('sidebarQuestion');
-    if (panel && panel.style.display !== 'none') {
+    if (type === 'human') {
+        closeQuestionPanel();
+    } else if (panel && panel.style.display !== 'none') {
         const letter = window.currentRequestedLetter;
         showQuestionPanel(letter);
     }
+
+    saveGameState();
 }
 
 function resetGameGrid() {
@@ -587,7 +797,7 @@ function initSettingsUI() {
         compNameInput.addEventListener('input', (e) => {
             const newName = e.target.value.trim() || 'هوجاس';
             teamSetup.competitionName = newName;
-            document.querySelectorAll('.logo-line3').forEach(el => {
+            document.querySelectorAll('.logo-line3, #settingsLiveCompName').forEach(el => {
                 el.textContent = newName;
             });
         });
@@ -781,6 +991,9 @@ function startGameFromSetup() {
     teamSetup.team2.name = n2;
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    teamSetup.team1.score = 0;
+    teamSetup.team2.score = 0;
+    gameIsActive = true;
 
     // Apply team colors to CSS variables
     applyTeamColors();
@@ -796,6 +1009,7 @@ function startGameFromSetup() {
     renderBoard();
     updateRoundDisplay();
     updateSidebar();
+    saveGameState();
 }
 
 // ===== Apply Dynamic Team Colors =====
@@ -848,6 +1062,7 @@ function shuffleBoard() {
     });
     renderBoard();
     cancelSelect();
+    saveGameState();
 }
 
 // ===== Init Board =====
@@ -884,6 +1099,7 @@ function renderBoard() {
 
     container.style.width  = totalW + 'px';
     container.style.height = totalH + 'px';
+    container.style.setProperty('--hex-size', hexW + 'px');
 
     for (let r = 0; r < BOARD_SIZE; r++) {
         for (let c = 0; c < BOARD_SIZE; c++) {
@@ -955,6 +1171,8 @@ function onHexClick(row, col, cellEl) {
     if (teamSetup.presenter === 'ai') {
         const targetedLetter = cellLetters[row][col];
         showQuestionPanel(targetedLetter, cellEl);
+    } else {
+        closeQuestionPanel();
     }
 }
 
@@ -981,6 +1199,7 @@ function unclaimCell() {
         
         board[row][col] = 0;
         updateScoreBoard();
+        saveGameState();
     }
     
     stopTimer();
@@ -1012,6 +1231,7 @@ function assignTeam(team) {
     el.classList.remove('selected');
     el.classList.add('team-' + team);
     board[row][col] = team;
+    saveGameState();
 
     // Unlock buzzers when a team is officially assigned
     if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
@@ -1046,7 +1266,7 @@ function cancelSelect() {
 
 // تحديث حالة الاستعداد في القائمة الجانبية (الوميض)
 function updateSidebarReady(isReady) {
-    document.querySelectorAll('.score-box').forEach(box => {
+    document.querySelectorAll('.score-box, .gv-score-card').forEach(box => {
         box.classList.toggle('ready', isReady);
     });
 }
@@ -1161,9 +1381,10 @@ function highlightWinPath(team) {
 // ===== Show Round Win (one team connected!) =====
 function showRoundWin(team) {
     // +1 point for winning this round
-    if (teamSetup[team]) teamSetup[team].score = (teamSetup[team].score || 0) + 1;
-    if (team === 'team1') document.getElementById('score1').textContent = teamSetup.team1.score || 0;
-    else document.getElementById('score2').textContent = teamSetup.team2.score || 0;
+    if (scores[team] !== undefined) scores[team]++;
+    if (teamSetup[team]) teamSetup[team].score = scores[team];
+    updateScoreBoard();
+    saveGameState();
 
     const t = team === 'team1' ? teamSetup.team1 : teamSetup.team2;
     const c = COLOR_MAP[t.color];
@@ -1221,6 +1442,7 @@ function nextRound() {
     initBoard();
     renderBoard();
     cancelSelect();
+    saveGameState();
 }
 
 function showFinalFromRound() {
@@ -1248,6 +1470,7 @@ function handleRoundEnd() {
         initBoard();
         renderBoard();
         cancelSelect();
+        saveGameState();
     }
 }
 
@@ -1294,7 +1517,7 @@ function showFinalResult() {
                 </div>
             </div>
             
-            <button onclick="location.reload()" style="
+            <button onclick="clearSavedGameState(); location.reload()" style="
                 font-family:'Lalezar',sans-serif;font-size:1.3rem;
                 padding:14px 36px;border:none;border-radius:50px;
                 background:#FFD600;color:#1a1a1a;cursor:pointer;
@@ -1308,24 +1531,48 @@ function showFinalResult() {
 
 // ===== Hex Size =====
 function getHexSize() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const sidebar = 300;
-    const padH = 80;
-    const availW = vw - sidebar;
-    const availH = vh - padH;
-    const wFactor = BOARD_SIZE - 0.5;
+    const boardHost = document.querySelector('.board-wrap');
+    const mainArea = document.querySelector('.main-area');
+    const host = boardHost || mainArea;
+    const rect = host ? host.getBoundingClientRect() : {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
+    const hostStyle = host ? window.getComputedStyle(host) : null;
+    const padX = hostStyle
+        ? parseFloat(hostStyle.paddingLeft) + parseFloat(hostStyle.paddingRight)
+        : 0;
+    const padY = hostStyle
+        ? parseFloat(hostStyle.paddingTop) + parseFloat(hostStyle.paddingBottom)
+        : 0;
+
+    // Extra room keeps the 8px hex borders and hover scale fully visible.
+    const edgeSafety = 20;
+    const availW = Math.max(0, rect.width - padX - edgeSafety);
+    const availH = Math.max(0, rect.height - padY - edgeSafety);
+
+    // Five columns plus the half-cell offset used by alternating rows.
+    const wFactor = BOARD_SIZE + 0.5;
     const hFactor = ((BOARD_SIZE - 1) * 0.75 + 1) * 1.1547;
     const maxByW = availW / wFactor;
     const maxByH = availH / hFactor;
-    let size = Math.max(60, Math.min(maxByW, maxByH, 180));
+    let size = Math.max(32, Math.min(maxByW, maxByH, 190)) * 0.95;
     
-    // Enlarge by 25% if in presentation mode
-    if (document.body.classList.contains('presentation-mode')) {
-        return size * 1.25;
-    }
+    // The base calculation already fits all five rows and columns inside the
+    // available viewport. Presentation mode applies only a tiny CSS emphasis;
+    // adding another fixed multiplier here caused clipping in fullscreen.
     return size;
 }
+
+let boardResizeFrame = null;
+window.addEventListener('resize', () => {
+    if (!board || board.length === 0) return;
+    if (boardResizeFrame) cancelAnimationFrame(boardResizeFrame);
+    boardResizeFrame = requestAnimationFrame(() => {
+        boardResizeFrame = null;
+        renderBoard();
+    });
+});
 
 function generateBuzzerCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1592,6 +1839,7 @@ function togglePresentationMode(forceState) {
     
     // Refresh board layout logic if needed (enlarging hexes)
     renderBoard();
+    saveGameState();
 }
 
 function syncGameViewUI() {
