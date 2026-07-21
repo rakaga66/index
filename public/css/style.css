@@ -2897,6 +2897,77 @@ body.dark-mode #darkModeToggleBtn {
     }
 }
 
+/* ===== COMPACT AI QUESTION — MOBILE LANDSCAPE ===== */
+@media (max-width: 950px) and (orientation: landscape),
+       (max-height: 600px) and (orientation: landscape) {
+    .sidebar-question.in-main {
+        width: min(72vw, 600px) !important;
+        max-height: calc(100dvh - 90px) !important;
+        bottom: max(52px, calc(env(safe-area-inset-bottom) + 38px)) !important;
+        padding: 6px 8px !important;
+        gap: 6px !important;
+        flex-direction: row !important;
+        border-width: 1px !important;
+        border-radius: 12px !important;
+        overflow-y: auto !important;
+        box-shadow: 0 -5px 18px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    .sidebar-question.in-main .sq-header {
+        min-width: 38px !important;
+        padding: 0 0 0 6px !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-left: 1px solid rgba(255,255,255,0.12) !important;
+    }
+
+    .sidebar-question.in-main .sq-num {
+        font-size: 1.45rem !important;
+    }
+
+    .sidebar-question.in-main .sq-content {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        gap: 3px !important;
+    }
+
+    .sidebar-question.in-main .sq-text {
+        font-size: clamp(0.72rem, 2.35vh, 0.9rem) !important;
+        line-height: 1.25 !important;
+        padding: 5px 6px !important;
+        border-radius: 7px !important;
+    }
+
+    .sidebar-question.in-main .sq-answer-wrap {
+        padding: 4px 6px !important;
+        border-radius: 7px !important;
+    }
+
+    .sidebar-question.in-main .sq-answer-label {
+        margin-bottom: 1px !important;
+        font-size: 0.55rem !important;
+    }
+
+    .sidebar-question.in-main .sq-answer-text {
+        font-size: 0.85rem !important;
+        line-height: 1.15 !important;
+    }
+
+    .sidebar-question.in-main .sq-actions {
+        width: 142px !important;
+        flex: 0 0 142px !important;
+        gap: 3px !important;
+    }
+
+    .sidebar-question.in-main .sq-btn {
+        min-width: 0 !important;
+        padding: 4px 5px !important;
+        border-radius: 6px !important;
+        font-size: 0.58rem !important;
+        line-height: 1.15 !important;
+    }
+}
+
 /* Desktop/laptop screens with limited height: keep the entire game rail visible. */
 @media (min-width: 951px) and (max-height: 900px) and (pointer: fine) {
     .sidebar {
