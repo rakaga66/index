@@ -4,7 +4,7 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/pages/playground.html" },
-    { "source": "/admin", "destination": "/hojas-auth/public/admin.html" },
+    { "source": "/admin", "destination": "/admin.html" },
     { "source": "/auth", "destination": "/login.html" },
     { "source": "/game", "destination": "/index.html" },
     { "source": "/questions", "destination": "/pages/q702.html" },
