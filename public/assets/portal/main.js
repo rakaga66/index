@@ -39,18 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btnText: "العب الآن"
         },
         {
-            title: "Neon Nexus",
-            desc: "A rhythmic action-adventure through a high-fidelity cyberpunk world.",
-            image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800",
-            link: "#",
-            btnText: "Learn More"
-        },
-        {
-            title: "Shadow Realm",
-            desc: "Ultra-precise 2D platforming in a dark fantasy setting with epic bosses.",
-            image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800",
-            link: "#",
-            btnText: "Learn More"
+            title: "تحدي الـ30 ثانية",
+            desc: "تحدٍ سريع بين فريقين يعتمد على سرعة الإجابة قبل انتهاء الثلاثين ثانية.",
+            image: "/assets/portal/thirty-seconds-game.png",
+            link: "https://30sec-vert.vercel.app/",
+            btnText: "العب الآن"
         }
     ];
 
