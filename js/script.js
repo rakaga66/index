@@ -1485,47 +1485,39 @@ function showFinalResult() {
     const c1 = COLOR_MAP[teamSetup.team1.color];
     const c2 = COLOR_MAP[teamSetup.team2.color];
 
-    let msg = '';
-    if (s1 > s2) msg = `🏆 مبروك ${n1}!`;
-    else if (s2 > s1) msg = `🏆 مبروك ${n2}!`;
-    else msg = '🤝 تعادل!';
+    const safeName = value => String(value).replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[char]);
+    const safeN1 = safeName(n1);
+    const safeN2 = safeName(n2);
+    const isDraw = s1 === s2;
+    const winnerName = s1 > s2 ? safeN1 : safeN2;
+    const title = isDraw ? 'تعادل جميل!' : `مبروك ${winnerName}!`;
+    const subtitle = isDraw ? 'منافسة قوية حتى آخر خلية' : 'بطل هذه المواجهة';
 
     const html = `
-        <div id="gameOverOverlay" style="
-            position:fixed;inset:0;background:rgba(0,0,0,0.87);
-            display:flex;align-items:center;justify-content:center;
-            z-index:90000;direction:rtl;
-        ">
-        <div style="
-            background:#1e0a3c;border:3px solid #FFD600;border-radius:28px;
-            padding:48px 40px;text-align:center;max-width:420px;width:90%;
-            box-shadow:0 0 60px rgba(255,214,0,0.3);
-            animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        ">
-            <div style="font-size:4rem;margin-bottom:12px;">🏅</div>
-            <div style="font-family:'Lalezar',sans-serif;font-size:2rem;color:#FFD600;
-                        -webkit-text-stroke:2px #000;margin-bottom:20px;">${msg}</div>
-            
-            <div style="display:flex;gap:20px;justify-content:center;margin-bottom:28px;">
-                <div style="background:${c1.bg};border-radius:14px;padding:14px 22px;min-width:110px;">
-                    <div style="font-size:0.9rem;color:${c1.text};font-weight:700;">${n1}</div>
-                    <div style="font-family:'Lalezar',sans-serif;font-size:2.5rem;color:#FFD600;
-                                -webkit-text-stroke:2px #000;">${s1}</div>
+        <div id="gameOverOverlay" class="game-over-overlay" role="dialog" aria-modal="true" aria-label="النتيجة النهائية">
+        <div class="game-over-card">
+            <div class="game-over-icon" aria-hidden="true">🏆</div>
+            <div class="game-over-kicker">النتيجة النهائية</div>
+            <div class="game-over-title">${title}</div>
+            <div class="game-over-subtitle">${subtitle}</div>
+
+            <div class="game-over-scores">
+                <div class="game-over-team ${s1 > s2 ? 'is-winner' : ''}" style="--team-color:${c1.bg};--team-text:${c1.text};">
+                    <div class="game-over-team-name">${safeN1}</div>
+                    <div class="game-over-team-score">${s1}</div>
                 </div>
-                <div style="background:${c2.bg};border-radius:14px;padding:14px 22px;min-width:110px;">
-                    <div style="font-size:0.9rem;color:${c2.text};font-weight:700;">${n2}</div>
-                    <div style="font-family:'Lalezar',sans-serif;font-size:2.5rem;color:#FFD600;
-                                -webkit-text-stroke:2px #000;">${s2}</div>
+                <div class="game-over-team ${s2 > s1 ? 'is-winner' : ''}" style="--team-color:${c2.bg};--team-text:${c2.text};">
+                    <div class="game-over-team-name">${safeN2}</div>
+                    <div class="game-over-team-score">${s2}</div>
                 </div>
             </div>
-            
-            <button onclick="clearSavedGameState(); location.reload()" style="
-                font-family:'Lalezar',sans-serif;font-size:1.3rem;
-                padding:14px 36px;border:none;border-radius:50px;
-                background:#FFD600;color:#1a1a1a;cursor:pointer;
-                box-shadow:0 6px 24px rgba(255,214,0,0.4);
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">🔄 لعبة جديدة</button>
+
+            <button class="game-over-new-btn" onclick="clearSavedGameState(); location.reload()">
+                <span aria-hidden="true">↻</span>
+                لعبة جديدة
+            </button>
         </div></div>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
