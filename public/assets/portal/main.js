@@ -19,14 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             title: "مآبين آلقلوب 1",
-            desc: "لعبة أسئلة عاطفية وعميقة (14.99 SAR)",
+            desc: "لعبة أسئلة عاطفية وعميقة تقرّب المسافات وتفتح مواضيع جميلة.",
             image: "maben_alqlub_1.png",
             link: "/assets/games/maben-alqlub-1.pdf",
             btnText: "العب الآن"
         },
         {
             title: "مآبين آلقلوب 2",
-            desc: "لعبة بطابع عاطفي واجتماعي (29 SAR)",
+            desc: "لعبة بطابع عاطفي واجتماعي مناسبة للأزواج والأصدقاء.",
             image: "maben_alqlub_2.png",
             link: "/assets/games/maben-alqlub-2.pdf",
             btnText: "العب الآن"
