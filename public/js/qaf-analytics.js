@@ -15,6 +15,7 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const ROOT = 'siteAnalytics';
 const activeSections = new Set();
+const isProductionSite = location.hostname === '7roof-main.vercel.app';
 
 function makeId() {
     return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -35,6 +36,7 @@ async function increment(name) {
 }
 
 export async function trackSection(section) {
+    if (!isProductionSite) return;
     if (!['game', 'store'].includes(section) || activeSections.has(section)) return;
     activeSections.add(section);
 
@@ -64,6 +66,7 @@ export async function trackSection(section) {
 }
 
 export async function trackGameStart() {
+    if (!isProductionSite) return;
     const clientId = getClientId();
     increment('gameStarts').catch(console.warn);
 
