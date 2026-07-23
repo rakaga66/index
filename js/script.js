@@ -92,6 +92,79 @@ function confirmReturnHome() {
     window.location.reload();
 }
 
+let pendingSiteConfirmAction = null;
+let siteConfirmReturnFocus = null;
+
+function ensureGameConfirmModal() {
+    let modal = document.getElementById('gameActionConfirm');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'gameActionConfirm';
+    modal.className = 'site-confirm game-action-confirm';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.setAttribute('aria-labelledby', 'gameActionConfirmTitle');
+    modal.setAttribute('aria-describedby', 'gameActionConfirmText');
+    modal.innerHTML = `
+        <div class="site-confirm__card">
+            <div class="site-confirm__icon" id="gameActionConfirmIcon" aria-hidden="true">؟</div>
+            <h2 id="gameActionConfirmTitle"></h2>
+            <p id="gameActionConfirmText"></p>
+            <div class="site-confirm__actions">
+                <button type="button" class="site-confirm__cancel">إلغاء</button>
+                <button type="button" class="site-confirm__delete" id="gameActionConfirmAccept">تأكيد</button>
+            </div>
+        </div>
+    `;
+
+    modal.addEventListener('click', event => {
+        if (event.target === modal) closeGameConfirm();
+    });
+    modal.querySelector('.site-confirm__cancel').addEventListener('click', closeGameConfirm);
+    modal.querySelector('#gameActionConfirmAccept').addEventListener('click', acceptGameConfirm);
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function showGameConfirm({ title, message, confirmText = 'تأكيد', icon = '؟', onConfirm }) {
+    const modal = ensureGameConfirmModal();
+    siteConfirmReturnFocus = document.activeElement;
+    pendingSiteConfirmAction = typeof onConfirm === 'function' ? onConfirm : null;
+
+    modal.querySelector('#gameActionConfirmTitle').textContent = title;
+    modal.querySelector('#gameActionConfirmText').textContent = message;
+    modal.querySelector('#gameActionConfirmIcon').textContent = icon;
+    modal.querySelector('#gameActionConfirmAccept').textContent = confirmText;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.site-confirm__cancel')?.focus());
+}
+
+function closeGameConfirm() {
+    const modal = document.getElementById('gameActionConfirm');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    pendingSiteConfirmAction = null;
+    if (siteConfirmReturnFocus?.focus) siteConfirmReturnFocus.focus();
+    siteConfirmReturnFocus = null;
+}
+
+function acceptGameConfirm() {
+    const action = pendingSiteConfirmAction;
+    const modal = document.getElementById('gameActionConfirm');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    pendingSiteConfirmAction = null;
+    siteConfirmReturnFocus = null;
+    if (action) action();
+}
+
 function openRulesModal() {
     const modal = document.getElementById('rulesModal');
     if (!modal) return;
@@ -118,6 +191,11 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key === 'Escape' && document.getElementById('returnHomeModal')?.classList.contains('show')) {
         closeReturnHomeWarning();
+        return;
+    }
+
+    if (event.key === 'Escape' && document.getElementById('gameActionConfirm')?.classList.contains('show')) {
+        closeGameConfirm();
     }
 });
 
@@ -743,10 +821,16 @@ function setGamePresenter(type) {
 }
 
 function resetGameGrid() {
-    if (confirm('هل أنت متأكد من بدء لعبة جديدة؟')) {
-        startGame();
-        document.getElementById('gameDropdown').style.display = 'none';
-    }
+    showGameConfirm({
+        title: 'بدء لعبة جديدة؟',
+        message: 'سيتم مسح الجولة الحالية وبدء لوحة جديدة.',
+        confirmText: 'ابدأ من جديد',
+        icon: '↻',
+        onConfirm: () => {
+            startGame();
+            document.getElementById('gameDropdown').style.display = 'none';
+        }
+    });
 }
 
 function playBell() {
@@ -1394,43 +1478,20 @@ function showRoundWin(team) {
     const isLastRound = teamSetup.currentRound >= teamSetup.totalRounds;
     const btnText = isLastRound ? '🏆 النتيجة النهائية' : '➡️ الجولة التالية';
     const btnAction = isLastRound ? 'showFinalFromRound()' : 'nextRound()';
+    const safeTeamName = String(t.name).replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[char]);
 
     const html = `
-        <div id="roundWinOverlay" class="transition-screen" style="background: rgba(107, 63, 160, 0.85); z-index: 9998;">
+        <div id="roundWinOverlay" class="transition-screen round-win-overlay">
             <div class="hex-bg-pattern"></div>
-            <div class="ts-content animate-pop-in">
-                <div class="ts-round">
-                    <span class="ts-round-txt1" style="color: #EF4444; margin-bottom: 5px;">الفائز</span>
-                    <span class="ts-round-txt2" style="color: #FFD600; margin-bottom: 10px;">بالجولة</span>
-                    <span style="
-                        font-family: 'Lalezar', sans-serif;
-                        font-size: 9.5rem;
-                        color: ${c.bg};
-                        -webkit-text-stroke: 4px #000;
-                        paint-order: stroke fill;
-                        text-shadow: 3px 3px 0 #000, 6px 6px 0 #000, 9px 9px 0 #000, 12px 12px 0 rgba(0,0,0,0.3);
-                        margin-bottom: 40px;
-                        line-height: 1;
-                    ">${t.name}</span>
-                    
-                    <button onclick="${btnAction}" style="
-                        font-family: 'Cairo', sans-serif;
-                        font-size: 1.6rem;
-                        padding: 16px 32px;
-                        border: none;
-                        border-radius: 50px;
-                        background: #fff;
-                        color: #4A2570;
-                        cursor: pointer;
-                        font-weight: bold;
-                        box-shadow: 0 8px 16px rgba(0,0,0,0.25);
-                        transition: transform 0.2s;
-                    " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(0,0,0,0.3)';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.25)';">
-                    ${btnText}
-                    </button>
-                </div>
-            </div>
+            <section class="round-win-card animate-pop-in" style="--winner-color:${c.bg};">
+                <div class="round-win-trophy" aria-hidden="true">🏆</div>
+                <div class="round-win-kicker">الفائز بالجولة</div>
+                <h2 class="round-win-name">${safeTeamName}</h2>
+                <p class="round-win-note">تمت إضافة نقطة للفريق</p>
+                <button class="round-win-next" onclick="${btnAction}">${btnText}</button>
+            </section>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
@@ -1618,7 +1679,18 @@ function openBuzzerModal() {
         const codeTxt = document.getElementById('modalBuzzerCodeTxt');
         if (codeTxt) {
             codeTxt.textContent = buzzerRoom;
-            codeTxt.onclick = () => { if (confirm('كود جديد؟')) { buzzerRoom = generateBuzzerCode(); openBuzzerModal(); } };
+            codeTxt.onclick = () => {
+                showGameConfirm({
+                    title: 'إنشاء كود جديد؟',
+                    message: 'سيتم استبدال كود الجرس الحالي بكود جديد.',
+                    confirmText: 'إنشاء كود',
+                    icon: '#',
+                    onConfirm: () => {
+                        buzzerRoom = generateBuzzerCode();
+                        openBuzzerModal();
+                    }
+                });
+            };
         }
 
         // Update direct link button
