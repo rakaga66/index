@@ -165,6 +165,157 @@ function acceptGameConfirm() {
     if (action) action();
 }
 
+const HOME_UPDATE_ITEMS = [
+    {
+        version: '1.2',
+        date: '24 يوليو 2026',
+        title: 'واجهة جولات أصغر وتنبيهات من داخل الموقع',
+        description: 'تصغير إعلان فوز الجولة على الجوال واستبدال نوافذ المتصفح بتأكيدات متناسقة مع اللعبة.'
+    },
+    {
+        version: '1.2',
+        date: '21 يوليو 2026',
+        title: 'نتيجة نهائية جديدة',
+        description: 'بطاقة فوز مختصرة تعرض الفريق الفائز والنتيجة بوضوح على الكمبيوتر والجوال.'
+    },
+    {
+        version: '1.2',
+        date: '21 يوليو 2026',
+        title: 'إحصاءات مباشرة',
+        description: 'متابعة المتصلين والزيارات وعدد مرات بدء لعبة حروف مع هوجاس والمتجر.'
+    },
+    {
+        version: '1.2',
+        date: '20 يوليو 2026',
+        title: 'تحسين وضع العرض',
+        description: 'ضبط السداسيات والنتائج والشعار ودعم منح الخلية للفريق من شاشة العرض.'
+    },
+    {
+        version: '1.2',
+        date: '19 يوليو 2026',
+        title: 'حفظ الجولة تلقائيًا',
+        description: 'العودة إلى نفس اللوحة والنتائج بعد تحديث الصفحة بدل فقدان التقدم.'
+    },
+    {
+        version: '1.2',
+        date: 'الإصدار المجاني',
+        title: 'النسخة الكاملة متاحة للجميع',
+        description: 'إلغاء التحقق بالجوال وفتح اللعبة وميزاتها الأساسية بدون تسجيل دخول.'
+    }
+];
+
+const HOME_FEATURE_ITEMS = [
+    { title: 'لوحة سداسية تفاعلية', description: 'حروف عشوائية ومسارات فوز واضحة لكل فريق.' },
+    { title: 'مقدم آلي بالأسئلة', description: 'يعرض سؤالًا مناسبًا للحرف المختار مع كشف الإجابة.' },
+    { title: 'وضع مقدم بشري', description: 'بوابة أسئلة منفصلة لإدارة السؤال بدون إظهاره للاعبين.' },
+    { title: 'جرس فرق مباشر', description: 'كود جلسة ورابط وQR لدخول المتسابقين من الجوال.' },
+    { title: 'وضع عرض احترافي', description: 'واجهة ملء شاشة للسداسيات والنقاط مناسبة للتلفزيون.' },
+    { title: 'حفظ تلقائي للتقدم', description: 'يحفظ الخلايا والجولات والنقاط حتى بعد تحديث الصفحة.' },
+    { title: 'أسماء وألوان مخصصة', description: 'تغيير أسماء الفريقين واختيار تركيبة الألوان المناسبة.' },
+    { title: 'مؤقتات مرنة', description: 'مؤقت للجرس والإجابة وفرصة الفريق الآخر بإعدادات مستقلة.' },
+    { title: 'تحكم كامل بالخلايا', description: 'تحديد الخلية أو إلغاؤها أو منحها لأي فريق بسهولة.' },
+    { title: 'نظام جولات ونتائج', description: 'حتى ثلاث جولات مع نقاط وإعلان الفائز والنتيجة النهائية.' },
+    { title: 'تخصيص الصوت والمظهر', description: 'تشغيل الأصوات أو إيقافها والتبديل بين المظهر الفاتح والداكن.' }
+];
+
+let homeInfoReturnFocus = null;
+
+function renderHomeInfo() {
+    const updatesPreview = document.getElementById('homeUpdatesPreview');
+    const featuresPreview = document.getElementById('homeFeaturesPreview');
+    const updatesArchive = document.getElementById('homeUpdatesArchive');
+    const featuresArchive = document.getElementById('homeFeaturesArchive');
+
+    if (updatesPreview) {
+        updatesPreview.innerHTML = HOME_UPDATE_ITEMS.slice(0, 2).map((item, index) => `
+            <div class="home-update-preview-item ${index === 0 ? 'is-latest' : ''}">
+                <span>${item.version}</span>
+                <strong>${item.title}</strong>
+            </div>
+        `).join('');
+    }
+
+    if (featuresPreview) {
+        featuresPreview.innerHTML = HOME_FEATURE_ITEMS.slice(0, 4).map(item =>
+            `<span class="home-feature-chip">${item.title}</span>`
+        ).join('');
+    }
+
+    if (updatesArchive) {
+        updatesArchive.innerHTML = HOME_UPDATE_ITEMS.map((item, index) => `
+            <article class="home-update-entry ${index === 0 ? 'is-latest' : ''}">
+                <div class="home-update-entry__meta">
+                    <span>${item.version}</span>
+                    <time>${item.date}</time>
+                </div>
+                <div>
+                    <h3>${item.title}</h3>
+                    <p>${item.description}</p>
+                </div>
+            </article>
+        `).join('');
+    }
+
+    if (featuresArchive) {
+        featuresArchive.innerHTML = HOME_FEATURE_ITEMS.map((item, index) => `
+            <article class="home-feature-entry">
+                <span class="home-feature-entry__number">${index + 1}</span>
+                <div>
+                    <h3>${item.title}</h3>
+                    <p>${item.description}</p>
+                </div>
+            </article>
+        `).join('');
+    }
+}
+
+function switchHomeInfoTab(tab = 'updates') {
+    const showFeatures = tab === 'features';
+    const updatesPanel = document.getElementById('homeUpdatesPanel');
+    const featuresPanel = document.getElementById('homeFeaturesPanel');
+    const updatesButton = document.getElementById('homeUpdatesTabButton');
+    const featuresButton = document.getElementById('homeFeaturesTabButton');
+
+    if (updatesPanel) updatesPanel.hidden = showFeatures;
+    if (featuresPanel) featuresPanel.hidden = !showFeatures;
+    if (updatesButton) {
+        updatesButton.classList.toggle('active', !showFeatures);
+        updatesButton.setAttribute('aria-selected', String(!showFeatures));
+    }
+    if (featuresButton) {
+        featuresButton.classList.toggle('active', showFeatures);
+        featuresButton.setAttribute('aria-selected', String(showFeatures));
+    }
+}
+
+function openHomeInfoModal(tab = 'updates') {
+    const modal = document.getElementById('homeInfoModal');
+    if (!modal) return;
+
+    homeInfoReturnFocus = document.activeElement;
+    renderHomeInfo();
+    switchHomeInfoTab(tab);
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.home-info-modal__close')?.focus());
+}
+
+function closeHomeInfoModal() {
+    const modal = document.getElementById('homeInfoModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    if (homeInfoReturnFocus?.focus) homeInfoReturnFocus.focus();
+    homeInfoReturnFocus = null;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderHomeInfo, { once: true });
+} else {
+    renderHomeInfo();
+}
+
 function openRulesModal() {
     const modal = document.getElementById('rulesModal');
     if (!modal) return;
@@ -184,6 +335,11 @@ function closeRulesModal() {
 }
 
 document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.getElementById('homeInfoModal')?.classList.contains('show')) {
+        closeHomeInfoModal();
+        return;
+    }
+
     if (event.key === 'Escape' && document.getElementById('rulesModal')?.classList.contains('show')) {
         closeRulesModal();
         return;
