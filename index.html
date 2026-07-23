@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-mobile-35">
+    <link rel="stylesheet" href="css/style.css?v=home-info-36">
     <link rel="stylesheet" href="css/game-view.css?v=presentation-interactive-4">
     <style>
         /* ===== LEFT ICON BAR ===== */
@@ -177,10 +177,74 @@
             </button>
         </div>
 
+        <!-- Compact home information cards -->
+        <div class="home-info-panels" aria-label="معلومات اللعبة">
+            <section class="home-info-card home-updates-card">
+                <div class="home-info-card__heading">
+                    <span class="home-info-card__icon" aria-hidden="true">✨</span>
+                    <div>
+                        <small>جديد اللعبة</small>
+                        <h2>آخر التحديثات</h2>
+                    </div>
+                </div>
+                <div class="home-info-preview" id="homeUpdatesPreview"></div>
+                <button type="button" class="home-info-more" onclick="openHomeInfoModal('updates')">
+                    عرض سجل التحديثات
+                </button>
+            </section>
+
+            <section class="home-info-card home-features-card">
+                <div class="home-info-card__heading">
+                    <span class="home-info-card__icon" aria-hidden="true">⚡</span>
+                    <div>
+                        <small>متاحة الآن</small>
+                        <h2>ميزات اللعبة</h2>
+                    </div>
+                </div>
+                <div class="home-info-preview home-features-preview" id="homeFeaturesPreview"></div>
+                <button type="button" class="home-info-more" onclick="openHomeInfoModal('features')">
+                    مشاهدة 11 ميزة
+                </button>
+            </section>
+        </div>
+
         <!-- Version Tag -->
         <div style="position: absolute; bottom: 15px; font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.85rem; background: rgba(74, 222, 128, 0.18); color: #4ADE80; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(74, 222, 128, 0.35);">النسخة الكاملة المجانية</span>
             <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.2</span>
+        </div>
+    </div>
+
+    <!-- Full updates and features archive -->
+    <div class="site-confirm home-info-modal" id="homeInfoModal" role="dialog" aria-modal="true"
+        aria-labelledby="homeInfoModalTitle" aria-hidden="true"
+        onclick="if (event.target === this) closeHomeInfoModal()">
+        <div class="home-info-modal__card">
+            <button type="button" class="home-info-modal__close" onclick="closeHomeInfoModal()"
+                aria-label="إغلاق">×</button>
+            <div class="home-info-modal__heading">
+                <span aria-hidden="true">✨</span>
+                <div>
+                    <small>حروف مع هوجاس</small>
+                    <h2 id="homeInfoModalTitle">آخر التحديثات والميزات</h2>
+                </div>
+            </div>
+            <div class="home-info-tabs" role="tablist" aria-label="معلومات اللعبة">
+                <button type="button" id="homeUpdatesTabButton" role="tab" aria-controls="homeUpdatesPanel"
+                    onclick="switchHomeInfoTab('updates')">آخر التحديثات</button>
+                <button type="button" id="homeFeaturesTabButton" role="tab" aria-controls="homeFeaturesPanel"
+                    onclick="switchHomeInfoTab('features')">11 ميزة حالية</button>
+            </div>
+            <div class="home-info-modal__body">
+                <section id="homeUpdatesPanel" class="home-info-tab-panel" role="tabpanel"
+                    aria-labelledby="homeUpdatesTabButton">
+                    <div class="home-update-archive" id="homeUpdatesArchive"></div>
+                </section>
+                <section id="homeFeaturesPanel" class="home-info-tab-panel" role="tabpanel"
+                    aria-labelledby="homeFeaturesTabButton" hidden>
+                    <div class="home-feature-archive" id="homeFeaturesArchive"></div>
+                </section>
+            </div>
         </div>
     </div>
 
@@ -694,7 +758,7 @@
         window.qafAnalyticsPendingStarts = 0;
         window.qafTrackGameStart = () => { window.qafAnalyticsPendingStarts += 1; };
     </script>
-    <script src="js/script.js?v=site-dialogs-29"></script>
+    <script src="js/script.js?v=home-info-30"></script>
     <script type="module">
         import { trackSection, trackGameStart } from './js/qaf-analytics.js?v=1';
         trackSection('game');
