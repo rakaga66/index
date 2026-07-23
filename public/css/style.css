@@ -4462,3 +4462,104 @@ body.dark-mode #darkModeToggleBtn {
     .home-feature-entry { grid-template-columns: 26px 1fr; gap: 6px; padding: 6px; }
     .home-feature-entry__number { width: 25px; height: 25px; font-size: 0.62rem; }
 }
+
+/* Keep the complete home screen visible on short landscape phones. */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    .home-screen {
+        justify-content: flex-start;
+        gap: 3px;
+        padding: 4px 8px 34px;
+    }
+
+    .home-screen .logo-home {
+        margin: 0 0 -13px;
+        transform: scale(0.66) rotate(-4deg);
+        transform-origin: top center;
+    }
+
+    .home-screen .home-buttons {
+        width: min(190px, 46vw);
+        gap: 5px;
+        margin-top: -7px;
+    }
+
+    .home-screen .btn-pill {
+        min-height: 35px;
+        padding: 4px 10px;
+        border-radius: 9px;
+        border-bottom-width: 3px;
+        font-size: 0.83rem;
+        box-shadow: 0 3px 0 rgba(0,0,0,0.3), 0 5px 9px rgba(0,0,0,0.16);
+    }
+
+    .home-screen .home-extra-links {
+        width: min(190px, 46vw);
+        gap: 5px;
+        margin-top: 2px;
+    }
+
+    .home-screen .hex-btn {
+        min-height: 29px;
+        padding: 4px 6px;
+        border-radius: 7px;
+        font-size: 0.58rem;
+    }
+
+    .home-screen .hex-btn svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .home-info-panels {
+        top: 47%;
+        right: 6px;
+        left: 6px;
+    }
+
+    .home-info-card {
+        width: min(118px, 22vw);
+        padding: 6px;
+    }
+
+    .home-info-card__heading {
+        margin-bottom: 4px;
+    }
+
+    .home-info-card__icon {
+        width: 21px;
+        height: 21px;
+        font-size: 0.62rem;
+    }
+
+    .home-info-card__heading h2 {
+        font-size: 0.58rem;
+    }
+
+    .home-info-more {
+        min-height: 24px;
+        padding: 3px 4px;
+        font-size: 0.48rem;
+    }
+
+    .home-version-badges {
+        right: 50%;
+        bottom: 3px !important;
+        transform: translateX(50%);
+        gap: 4px !important;
+        white-space: nowrap;
+    }
+
+    .home-version-badges > span {
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+        font-size: 0.55rem !important;
+    }
+
+    #darkModeToggleBtn {
+        width: 34px;
+        height: 34px;
+        left: 8px;
+        bottom: 7px;
+        font-size: 0.9rem;
+    }
+}
