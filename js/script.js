@@ -444,7 +444,7 @@ let teamSetup = {
     manualTime: 5,
     presenter: 'ai',
     sound: 'on',
-    buzzerServerUrl: 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/'
+    buzzerServerUrl: './buzzer/index.html'
 };
 
 // ===== Buzzer State =====
@@ -638,7 +638,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     if (isOldRailway || isDifferentBuzzer) {
         console.log('🔄 Forced migration of buzzer server URL to the specific Vercel link...');
-        savedBuzzerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+        savedBuzzerUrl = './buzzer/index.html';
         localStorage.setItem('buzzerServerUrl', savedBuzzerUrl);
     }
 
@@ -1832,7 +1832,7 @@ function openBuzzerModal() {
         // Runtime safety: Force specific Vercel if Railway or wrong URL is still present
         if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
             console.warn('⚠️ Correcting buzzer URL at runtime:', teamSetup.buzzerServerUrl);
-            teamSetup.buzzerServerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+            teamSetup.buzzerServerUrl = './buzzer/index.html';
         }
         
         const url = `${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
@@ -1912,7 +1912,7 @@ function openBuzzerDirectly() {
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
     // Runtime safety
     if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
-        teamSetup.buzzerServerUrl = 'https://7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app/';
+        teamSetup.buzzerServerUrl = './buzzer/index.html';
     }
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
