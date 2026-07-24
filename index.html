@@ -301,34 +301,20 @@
     </div>
 
     <!-- ===== ONLINE MODAL ===== -->
-    <div class="site-confirm" id="onlineModal" role="dialog" aria-modal="true"
-        aria-labelledby="onlineTitle" aria-hidden="true"
-        onclick="if (event.target === this) closeOnlineModal()">
-        <div class="site-confirm__card" style="text-align: center; max-width: 450px; width: 90%; padding: 15px 15px; max-height: 90vh; overflow-y: auto;">
-            <div class="rules-heading" style="justify-content: center; flex-direction: column; gap: 8px;">
-                <div aria-hidden="true" style="font-size: 3.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(255,214,0,0.1); border: 2px solid rgba(255,214,0,0.3); border-radius: 20px;">🌐</div>
-                <div>
-                    <h2 id="onlineTitle" style="font-size: 1.6rem; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">قريباً جداً!</h2>
-                    <p style="color: #FFD600; font-weight: 700; font-size: 1rem; margin-top: 2px;">العب مع أصدقائك عن بعد</p>
-                </div>
+    <div class="site-confirm" id="onlineModal" role="dialog" aria-modal="true" aria-labelledby="onlineTitle" aria-hidden="true" onclick="if (event.target === this) closeOnlineModal()">
+        <div class="site-confirm__card" style="text-align: center; width: 340px; max-width: 95%; padding: 20px; border-radius: 16px; margin: auto;">
+            <div style="font-size: 2.5rem; margin-bottom: 5px;">🌐</div>
+            <h2 id="onlineTitle" style="font-size: 1.5rem; color: #fff; margin: 0;">قريباً جداً!</h2>
+            <p style="color: #FFD600; font-weight: 700; font-size: 0.9rem; margin: 5px 0 15px 0;">العب مع أصدقائك عن بعد</p>
+            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; text-align: right; margin-bottom: 15px;">
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: rgba(255,255,255,0.9);">
+                    <li><span style="color: #4ADE80; margin-left: 5px;">✓</span>غرف لعب خاصة بك</li>
+                    <li><span style="color: #4ADE80; margin-left: 5px;">✓</span>جرس تفاعلي مدمج 100%</li>
+                    <li><span style="color: #4ADE80; margin-left: 5px;">✓</span>شات كتابي داخل اللعبة</li>
+                    <li><span style="color: #4ADE80; margin-left: 5px;">✓</span>لوحة صدارة أسبوعية</li>
+                </ul>
             </div>
-
-            <div style="margin-top: 12px; text-align: right;">
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 12px;">
-                    <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                        <span style="background: rgba(255,214,0,0.2); color: #FFD600; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✨</span> 
-                        الميزات القادمة
-                    </h3>
-                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> غرف لعب خاصة بك وبأصدقائك</li>
-                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> جرس تفاعلي مدمج ومتزامن 100%</li>
-                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> شات كتابي داخل اللعبة</li>
-                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> لوحة صدارة ومنافسات أسبوعية</li>
-                    </ul>
-                </div>
-            </div>
-
-            <button type="button" onclick="closeOnlineModal()" style="margin-top: 15px; background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; width: 100%; padding: 8px; border: none; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 0 #b36b00;">حماس! في الانتظار</button>
+            <button type="button" onclick="closeOnlineModal()" style="background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; width: 100%; padding: 10px; border: none; border-radius: 8px; font-family: 'Cairo', sans-serif; cursor: pointer;">حماس! في الانتظار</button>
         </div>
     </div>
 
