@@ -4479,17 +4479,17 @@ body.dark-mode #darkModeToggleBtn {
 
     .home-screen .home-buttons {
         width: min(190px, 46vw);
-        gap: 5px;
-        margin-top: -7px;
+        gap: 3px;
+        margin-top: -12px;
     }
 
     .home-screen .btn-pill {
-        min-height: 35px;
-        padding: 4px 10px;
-        border-radius: 9px;
-        border-bottom-width: 3px;
-        font-size: 0.83rem;
-        box-shadow: 0 3px 0 rgba(0,0,0,0.3), 0 5px 9px rgba(0,0,0,0.16);
+        min-height: 28px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        border-bottom-width: 2px;
+        font-size: 0.72rem;
+        box-shadow: 0 2px 0 rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.16);
     }
 
     .home-screen .home-extra-links {
