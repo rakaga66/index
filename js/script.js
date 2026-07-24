@@ -467,7 +467,7 @@ let teamSetup = {
     manualTime: 5,
     presenter: 'ai',
     sound: 'on',
-    buzzerServerUrl: 'https://rakaga66.github.io/buzzer-server-qaf/'
+    buzzerServerUrl: window.location.origin + '/buzzer-server-qaf'
 };
 
 // ===== Buzzer State =====
@@ -655,13 +655,13 @@ window.addEventListener('DOMContentLoaded', () => {
     // Load saved buzzer URL from localStorage if it exists
     let savedBuzzerUrl = localStorage.getItem('buzzerServerUrl');
     
-    // Aggressive Migration: If the saved URL is empty, old Railway, or a different Vercel link, force the new specific link
+    // Aggressive Migration: If the saved URL is old Railway or old github.io, force local relative URL
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
-    const isDifferentBuzzer = savedBuzzerUrl && (savedBuzzerUrl.includes('vercel.app') || savedBuzzerUrl.includes('7roof-buzzer')) && !savedBuzzerUrl.includes('rakaga66.github.io');
+    const isGithub = savedBuzzerUrl && savedBuzzerUrl.includes('rakaga66.github.io');
     
-    if (isOldRailway || isDifferentBuzzer) {
-        console.log('🔄 Forced migration of buzzer server URL to the specific Vercel link...');
-        savedBuzzerUrl = 'https://rakaga66.github.io/buzzer-server-qaf/';
+    if (isOldRailway || isGithub) {
+        console.log('🔄 Forced migration of buzzer server URL to local origin...');
+        savedBuzzerUrl = window.location.origin + '/buzzer-server-qaf';
         localStorage.setItem('buzzerServerUrl', savedBuzzerUrl);
     }
 
@@ -1883,10 +1883,10 @@ function openBuzzerModal() {
         if (!buzzerRoom) buzzerRoom = generateBuzzerCode();
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
-        // Runtime safety: Force specific Vercel if Railway or wrong URL is still present
-        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('rakaga66.github.io'))) {
-            console.warn('⚠️ Correcting buzzer URL at runtime:', teamSetup.buzzerServerUrl);
-            teamSetup.buzzerServerUrl = 'https://rakaga66.github.io/buzzer-server-qaf/';
+        // Runtime safety: Force local origin if Railway or Github is still present
+        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
+            console.warn('⚠️ Correcting buzzer URL at runtime to local origin:', teamSetup.buzzerServerUrl);
+            teamSetup.buzzerServerUrl = window.location.origin + '/buzzer-server-qaf';
         }
         
         const url = `${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
@@ -1966,8 +1966,8 @@ function openBuzzerDirectly() {
     const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
     // Runtime safety
-    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('rakaga66.github.io'))) {
-        teamSetup.buzzerServerUrl = 'https://rakaga66.github.io/buzzer-server-qaf/';
+    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
+        teamSetup.buzzerServerUrl = window.location.origin + '/buzzer-server-qaf';
     }
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
