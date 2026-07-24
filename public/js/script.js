@@ -167,6 +167,12 @@ function acceptGameConfirm() {
 
 const HOME_UPDATE_ITEMS = [
     {
+        version: '1.3',
+        date: '24 يوليو 2026',
+        title: 'تصميم جديد لجرس الفرق',
+        description: 'تحديث واجهة جرس الفرق بتصميم فخم وثلاثي الأبعاد وألوان زجاجية متناسقة مع اللعبة الأساسية.'
+    },
+    {
         version: '1.2',
         date: '24 يوليو 2026',
         title: 'واجهة جولات أصغر وتنبيهات من داخل الموقع',
@@ -334,6 +340,24 @@ function closeRulesModal() {
     document.querySelector('.home-buttons .btn-pill:last-child')?.focus();
 }
 
+function openOnlineModal() {
+    const modal = document.getElementById('onlineModal');
+    if (!modal) return;
+
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.rules-close-btn')?.focus());
+}
+
+function closeOnlineModal() {
+    const modal = document.getElementById('onlineModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    document.querySelector('.btn-online')?.focus();
+}
+
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && document.getElementById('homeInfoModal')?.classList.contains('show')) {
         closeHomeInfoModal();
@@ -342,6 +366,11 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key === 'Escape' && document.getElementById('rulesModal')?.classList.contains('show')) {
         closeRulesModal();
+        return;
+    }
+
+    if (event.key === 'Escape' && document.getElementById('onlineModal')?.classList.contains('show')) {
+        closeOnlineModal();
         return;
     }
 
@@ -628,7 +657,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Aggressive Migration: If the saved URL is empty, old Railway, or a different Vercel link, force the new specific link
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
-    const isDifferentBuzzer = savedBuzzerUrl && (savedBuzzerUrl.includes('vercel.app') || savedBuzzerUrl.includes('7roof-buzzer')) && !savedBuzzerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app');
+    const isDifferentBuzzer = savedBuzzerUrl && (savedBuzzerUrl.includes('vercel.app') || savedBuzzerUrl.includes('7roof-buzzer')) && !savedBuzzerUrl.includes('rakaga66.github.io');
     
     if (isOldRailway || isDifferentBuzzer) {
         console.log('🔄 Forced migration of buzzer server URL to the specific Vercel link...');
@@ -1824,7 +1853,7 @@ function openBuzzerModal() {
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
         // Runtime safety: Force specific Vercel if Railway or wrong URL is still present
-        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
+        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('rakaga66.github.io'))) {
             console.warn('⚠️ Correcting buzzer URL at runtime:', teamSetup.buzzerServerUrl);
             teamSetup.buzzerServerUrl = 'https://rakaga66.github.io/buzzer-server-qaf/';
         }
@@ -1905,7 +1934,7 @@ function openBuzzerDirectly() {
     const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
     // Runtime safety
-    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('7roof-buzzer-720tvp878-rakaga66s-projects.vercel.app'))) {
+    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || (teamSetup.buzzerServerUrl.includes('vercel.app') && !teamSetup.buzzerServerUrl.includes('rakaga66.github.io'))) {
         teamSetup.buzzerServerUrl = 'https://rakaga66.github.io/buzzer-server-qaf/';
     }
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
