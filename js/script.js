@@ -1041,6 +1041,37 @@ function playBell() {
     document.getElementById('gameDropdown').style.display = 'none';
 }
 
+function playBuzzerSound() {
+    if (teamSetup.sound === 'off') return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const oscillator2 = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        // Create a harsh, buzzer-like sound using two detuned square/sawtooth waves
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+        
+        oscillator2.type = 'square';
+        oscillator2.frequency.setValueAtTime(155, audioCtx.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+        
+        oscillator.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.start();
+        oscillator2.start();
+        oscillator.stop(audioCtx.currentTime + 0.8);
+        oscillator2.stop(audioCtx.currentTime + 0.8);
+    } catch(e) {
+        console.log("Audio not supported");
+    }
+}
+
 function toggleGameSound() {
     const isMuted = (teamSetup.sound === 'off');
     teamSetup.sound = isMuted ? 'on' : 'off';
@@ -1920,6 +1951,7 @@ function openBuzzerModal() {
                 const data = snap.val();
                 if (!data || isBuzzerLocked) return;
                 isBuzzerLocked = true;
+                playBuzzerSound(); // Play the custom buzzer sound immediately
                 showGameToast(`⚡ ${data.name} ضغط أولاً!`);
                 showBuzzerOverlay(data.name, data.team);
                 startBuzzerCountdown(data.team, 3);
