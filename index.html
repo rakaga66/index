@@ -157,6 +157,7 @@
         <!-- Action Buttons -->
         <div class="home-buttons">
             <button class="btn-pill" onclick="startGame()">بدء اللعبة</button>
+            <button class="btn-pill btn-online" onclick="openOnlineModal()" style="background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; border-color: #F57C00;">العب اونلاين 🌐</button>
             <button class="btn-pill" onclick="showSettings()">إعدادات</button>
             <button class="btn-pill" onclick="openRulesModal()">القوانين</button>
         </div>
@@ -296,6 +297,38 @@
             </div>
 
             <button type="button" class="rules-close-btn" onclick="closeRulesModal()">فهمت، ابدأ اللعب</button>
+        </div>
+    </div>
+
+    <!-- ===== ONLINE MODAL ===== -->
+    <div class="site-confirm" id="onlineModal" role="dialog" aria-modal="true"
+        aria-labelledby="onlineTitle" aria-hidden="true"
+        onclick="if (event.target === this) closeOnlineModal()">
+        <div class="site-confirm__card" style="text-align: center; max-width: 450px; width: 90%; padding: 30px 20px;">
+            <div class="rules-heading" style="justify-content: center; flex-direction: column; gap: 15px;">
+                <div aria-hidden="true" style="font-size: 3.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(255,214,0,0.1); border: 2px solid rgba(255,214,0,0.3); border-radius: 20px;">🌐</div>
+                <div>
+                    <h2 id="onlineTitle" style="font-size: 2.2rem; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.3);">قريباً جداً!</h2>
+                    <p style="color: #FFD600; font-weight: 700; font-size: 1.1rem; margin-top: 5px;">العب مع أصدقائك عن بعد</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 25px; text-align: right;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
+                    <h3 style="color: #fff; font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span style="background: rgba(255,214,0,0.2); color: #FFD600; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;">✨</span> 
+                        الميزات القادمة
+                    </h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> غرف لعب خاصة بك وبأصدقائك</li>
+                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> جرس تفاعلي مدمج ومتزامن 100%</li>
+                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> شات صوتي وكتابي داخل اللعبة</li>
+                        <li style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);"><span style="color: #4ADE80; font-size: 1.2rem;">✓</span> لوحة صدارة ومنافسات أسبوعية</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeOnlineModal()" style="margin-top: 25px; background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; width: 100%; padding: 12px; border: none; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 0 #b36b00;">حماس! في الانتظار</button>
         </div>
     </div>
 
@@ -458,7 +491,7 @@
                 </div>
 
                 <!-- Internal buzzer connection; intentionally hidden from players. -->
-                <input type="hidden" id="setBuzzerUrl" value="https://7roof-buzzer.vercel.app/">
+                <input type="hidden" id="setBuzzerUrl" value="https://rakaga66.github.io/buzzer-server-qaf/">
 
             </div>
 
