@@ -56,7 +56,7 @@
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
+            font-family: 'HrofFont', sans-serif;
             background-color: var(--bg);
             background-image:
                 linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
@@ -64,6 +64,14 @@
             background-size: 20px 20px;
             color: var(--dark);
             overflow-x: hidden;
+        }
+
+        button,
+        a,
+        input,
+        select,
+        textarea {
+            font-family: 'HrofFont', sans-serif;
         }
 
         /* ── NAV ── */
@@ -310,6 +318,168 @@
 
         .game-card.featured {
             border-color: var(--dark);
+        }
+
+        /* ── UPCOMING MAFIA GAME ── */
+        .game-card.mafia-coming {
+            border-color: #8b6a3d;
+            box-shadow: 6px 6px 0 #201710;
+        }
+
+        .game-card.mafia-coming:hover {
+            box-shadow: 8px 8px 0 #201710;
+        }
+
+        .status-mafia {
+            background: #f3d28b;
+            color: #24170d;
+        }
+
+        .status-mafia::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border: 2px solid #24170d;
+            background: #8b6a3d;
+        }
+
+        .mafia-preview {
+            background:
+                radial-gradient(circle at 50% 35%, rgba(190, 145, 83, 0.18), transparent 42%),
+                linear-gradient(135deg, #050505, #1b1b1b 48%, #080808);
+            border-color: #8b6a3d !important;
+        }
+
+        .mafia-preview img {
+            object-fit: contain !important;
+            padding: 4px;
+            filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55));
+        }
+
+        .mafia-coming .tag {
+            border-color: #8b6a3d;
+        }
+
+        .mafia-coming .btn-disabled {
+            background: #e8d2a2;
+            color: #24170d;
+            border-color: #24170d;
+        }
+
+        /* ── NEXT UPDATE COUNTDOWN ── */
+        .update-countdown {
+            width: calc(100% - 64px);
+            max-width: 1436px;
+            margin: 0 auto;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 28px;
+            color: #fff;
+            background:
+                radial-gradient(circle at 12% 20%, rgba(255, 214, 0, 0.2), transparent 35%),
+                linear-gradient(135deg, #2d164d, #5b2d82 55%, #351b55);
+            border: 3px solid #18101f;
+            border-right: 8px solid #ffd600;
+            border-radius: 14px;
+            box-shadow: 7px 7px 0 #18101f;
+            direction: rtl;
+        }
+
+        .update-countdown__copy {
+            min-width: 0;
+        }
+
+        .update-countdown__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 6px;
+            color: #ffd600;
+            font-size: 0.82rem;
+            font-weight: 900;
+        }
+
+        .update-countdown__copy h2 {
+            margin: 0 0 7px;
+            color: #fff;
+            font-family: 'HrofFont', sans-serif;
+            font-size: clamp(1.35rem, 2.4vw, 2rem);
+            line-height: 1.2;
+        }
+
+        .update-countdown__copy p {
+            margin: 0;
+            color: #eadcf6;
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+
+        .update-countdown__date {
+            display: inline-flex;
+            margin-top: 10px;
+            padding: 5px 10px;
+            color: #20120a;
+            background: #ffd600;
+            border: 2px solid #20120a;
+            border-radius: 7px;
+            box-shadow: 2px 2px 0 #20120a;
+            font-size: 0.74rem;
+            font-weight: 900;
+        }
+
+        .countdown-clock {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(58px, 1fr));
+            gap: 8px;
+            flex: 0 0 min(47%, 470px);
+            font-family: 'HrofFont', sans-serif;
+        }
+
+        .countdown-unit {
+            min-width: 0;
+            padding: 11px 7px 9px;
+            text-align: center;
+            font-family: 'HrofFont', sans-serif;
+            background: rgba(20, 8, 34, 0.58);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-bottom: 4px solid #ffd600;
+            border-radius: 9px;
+        }
+
+        .countdown-unit strong {
+            display: block;
+            color: #ffd600;
+            font-family: 'HrofFont', sans-serif;
+            font-size: clamp(1.25rem, 3vw, 2.15rem);
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .countdown-unit span {
+            display: block;
+            margin-top: 6px;
+            color: #fff;
+            font-family: 'HrofFont', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+
+        .countdown-clock.is-live .countdown-unit {
+            border-bottom-color: #4ade80;
+        }
+
+        .countdown-clock.is-live .countdown-unit strong {
+            color: #4ade80;
+        }
+
+        .update-countdown__status {
+            margin-top: 8px;
+            color: #d8cae5;
+            font-size: 0.7rem;
+            font-weight: 700;
         }
 
         /* card top strip */
@@ -659,6 +829,15 @@
         .banner-icon { font-size: 1.5rem; }
         .banner-text { font-size: 0.85rem; }
 
+        .update-countdown {
+            width: calc(100% - 48px);
+            padding: 20px 22px;
+        }
+
+        .update-countdown__copy p { font-size: 0.78rem; }
+
+        .countdown-clock { flex-basis: min(46%, 390px); }
+
         @media (max-width: 900px) {
 
             nav,
@@ -689,6 +868,26 @@
             }
 
             .section { padding: 28px 18px; }
+
+            .update-countdown {
+                width: calc(100% - 36px);
+                padding: 18px 16px;
+                display: block;
+                border-right-width: 5px;
+                box-shadow: 5px 5px 0 #18101f;
+            }
+
+            .update-countdown__copy h2 { font-size: 1.35rem; }
+            .update-countdown__copy p { font-size: 0.74rem; }
+            .update-countdown__date { font-size: 0.68rem; }
+            .countdown-clock {
+                margin-top: 16px;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 5px;
+            }
+            .countdown-unit { padding: 9px 3px 7px; }
+            .countdown-unit strong { font-size: 1.35rem; }
+            .countdown-unit span { margin-top: 4px; font-size: 0.6rem; }
         }
     </style>
     <script>
@@ -740,8 +939,26 @@
             <div class="stat-divider"></div>
             <div class="stat-row">
                 <span class="stat-label">الإصدار الحالي</span>
-                <span class="stat-value green">1.2</span>
+                <span class="stat-value green">1.4</span>
             </div>
+        </div>
+    </section>
+
+    <!-- Countdown to the next Huroof with Hojas update -->
+    <section class="update-countdown" aria-labelledby="updateCountdownTitle">
+        <div class="update-countdown__copy">
+            <span class="update-countdown__eyebrow">⚡ التحديث الجديد</span>
+            <h2 id="updateCountdownTitle">أكبر تحديث لـ «حروف مع هوجاس»</h2>
+            <p>إضافة طور القوى الخارقة — ثلاث قوى لكل فريق تغيّر مجرى الجولة.</p>
+            <span class="update-countdown__date">غدًا، الأربعاء 26 أغسطس 2026 · الساعة 4:00 مساءً</span>
+            <div class="update-countdown__status" data-countdown-status aria-live="polite">الوقت المتبقي حتى إطلاق التحديث</div>
+        </div>
+        <div class="countdown-clock" data-countdown-target="2026-08-26T16:00:00+03:00" role="timer"
+            aria-label="العد التنازلي للتحديث الجديد">
+            <div class="countdown-unit"><strong data-countdown-days>00</strong><span>يوم</span></div>
+            <div class="countdown-unit"><strong data-countdown-hours>00</strong><span>ساعة</span></div>
+            <div class="countdown-unit"><strong data-countdown-minutes>00</strong><span>دقيقة</span></div>
+            <div class="countdown-unit"><strong data-countdown-seconds>00</strong><span>ثانية</span></div>
         </div>
     </section>
 
@@ -750,6 +967,38 @@
         <p class="section-sub">اختر تجربتك التفاعلية</p>
 
         <div class="games-grid">
+
+            <!-- مافيا -->
+            <div class="game-card featured mafia-coming" id="mafia">
+                <div class="card-strip" style="background: linear-gradient(90deg, #201710, #8b6a3d, #d6b272);"></div>
+                <div class="card-body">
+                    <div class="card-status status-mafia">قريبًا</div>
+
+                    <div class="mafia-preview" style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
+                        <img src="../assets/portal/mafia.png" alt="مافيا مع هوجاس" style="width: 100%; height: 100%;">
+                    </div>
+
+                    <div class="card-name">مافيا</div>
+
+                    <div class="card-tags">
+                        <span class="tag">غموض</span>
+                        <span class="tag">أدوار سرية</span>
+                        <span class="tag">جماعي</span>
+                    </div>
+
+                    <p class="card-desc">لعبة مافيا مع هوجاس قادمة قريبًا: بطاقات غامضة، أدوار سرية، وتحقيقات تشعل الجلسة بين الأصدقاء.</p>
+
+                    <div class="card-divider"></div>
+
+                    <div class="card-meta">
+                        <div class="meta-item"><span class="meta-val">٦+</span><span class="meta-lbl">لاعبين</span></div>
+                        <div class="meta-item"><span class="meta-val">سري</span><span class="meta-lbl">أدوار</span></div>
+                        <div class="meta-item"><span class="meta-val">قريبًا</span><span class="meta-lbl">الإطلاق</span></div>
+                    </div>
+
+                    <button class="btn-disabled" type="button" disabled>قريبًا — تحت التطوير</button>
+                </div>
+            </div>
 
             <!-- حروف -->
             <div class="game-card featured">
@@ -1013,7 +1262,7 @@
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; justify-content: center; opacity: 0.6;">
-            <span style="font-size: 0.9rem;">v 1.2</span>
+            <span style="font-size: 0.9rem;">v 1.4</span>
             <span style="font-size: 0.7rem; background: rgba(74, 222, 128, 0.2); color: #4ADE80; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.3);">تحديث جديد</span>
         </div>
     </div>
@@ -1028,6 +1277,42 @@
     <script type="module">
         import { trackSection } from '../js/qaf-analytics.js?v=1';
         trackSection('store');
+
+        const countdownClock = document.querySelector('[data-countdown-target]');
+        if (countdownClock) {
+            const countdownTarget = Date.parse(countdownClock.dataset.countdownTarget || '');
+            const countdownStatus = document.querySelector('[data-countdown-status]');
+            const numberFormatter = new Intl.NumberFormat('ar-SA', {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+            });
+            let countdownInterval;
+
+            const updateCountdown = () => {
+                const remaining = countdownTarget - Date.now();
+                const totalSeconds = Math.max(0, Math.floor(remaining / 1000));
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                countdownClock.querySelector('[data-countdown-days]').textContent = numberFormatter.format(days);
+                countdownClock.querySelector('[data-countdown-hours]').textContent = numberFormatter.format(hours);
+                countdownClock.querySelector('[data-countdown-minutes]').textContent = numberFormatter.format(minutes);
+                countdownClock.querySelector('[data-countdown-seconds]').textContent = numberFormatter.format(seconds);
+
+                if (remaining <= 0) {
+                    countdownClock.classList.add('is-live');
+                    if (countdownStatus) countdownStatus.textContent = 'التحديث متاح الآن 🎉';
+                    window.clearInterval(countdownInterval);
+                }
+            };
+
+            if (Number.isFinite(countdownTarget)) {
+                updateCountdown();
+                countdownInterval = window.setInterval(updateCountdown, 1000);
+            }
+        }
     </script>
 </body>
 
