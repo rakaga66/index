@@ -3023,8 +3023,12 @@ async function renderPresenterAccess(forceNew = false) {
     const tokenHash = await hashSecureToken(token);
     const db = await ensureFirebase();
     const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    const basePath = "presenter.html";
-    _presenterAccessUrl = new URL(basePath, location.href).href +
+    // Vercel cleanUrls serves this page as `/modes/super-powers`. Resolving a
+    // relative `presenter.html` against that extensionless URL drops the
+    // `super-powers` directory and produces the broken `/modes/presenter.html`
+    // link. Keep the presenter route absolute so QR codes work on every host.
+    const presenterPath = '/modes/super-powers/presenter.html';
+    _presenterAccessUrl = new URL(presenterPath, window.location.origin).href +
         `?room=${encodeURIComponent(buzzerRoom)}&token=${encodeURIComponent(token)}`;
 
     await update(ref(db, `superPowerRooms/${buzzerRoom}`), {
