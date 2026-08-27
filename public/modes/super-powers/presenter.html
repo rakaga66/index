@@ -198,7 +198,9 @@ const ACTION_MESSAGES={
     reopenBuzzer:"تم فتح الجرس للجميع",shuffleBoard:"تم خلط الخلايا غير المحجوزة",updateSettings:"تم حفظ مدد المؤقت"
 };
 $("roomInput").value=room;$("roomCode").textContent=room;
-async function hash(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function fallbackDigest(value){let a=2166136261,b=2654435761,c=2246822519,d=3266489917;const text=String(value??"");for(let i=0;i<text.length;i++){const code=text.charCodeAt(i);a=Math.imul(a^code,16777619);b=Math.imul(b^(code+i),2246822519);c=Math.imul(c^(code<<((i%4)*8)),3266489917);d=Math.imul(d^(code*31+i),668265263)}return [a,b,c,d].map(x=>(x>>>0).toString(16).padStart(8,"0")).join("")}
+function makeId(prefix="presenter"){const cryptoApi=typeof window!=="undefined"?window.crypto:null;if(cryptoApi?.randomUUID)return cryptoApi.randomUUID();if(cryptoApi?.getRandomValues){const bytes=new Uint8Array(12);cryptoApi.getRandomValues(bytes);return `${prefix}-${[...bytes].map(x=>x.toString(16).padStart(2,"0")).join("")}`}return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,12)}`}
+async function hash(v){const cryptoApi=typeof window!=="undefined"?window.crypto:null;if(cryptoApi?.subtle?.digest){const b=await cryptoApi.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}return fallbackDigest(v)}
 function err(msg){$("loginError").textContent=msg}
 async function login(name){
     if(!room||!token)throw Error("رابط المقدم غير مكتمل. امسح الباركود من شاشة اللعبة.");
@@ -206,7 +208,7 @@ async function login(name){
     const data=roomSnap.val(),tokenHash=await hash(token);if(!data.presenterTokenHash||data.presenterTokenHash!==tokenHash)throw Error("رابط المقدم غير صالح لهذه الجلسة.");
     if(!data.presenterTokenExpiresAt||Date.now()>Number(data.presenterTokenExpiresAt))throw Error("انتهت صلاحية باركود المقدم. افتح خانة المقدم من شاشة الجلسة وامسح الباركود الجديد.");
     if(data.game?.status!=="playing")throw Error("هذه الجلسة غير نشطة الآن. ابدأ اللعبة من الشاشة الرئيسية أولًا.");
-    claimId=localStorage.getItem(`hojas_superpowers_presenter_claim_${room}`)||crypto.randomUUID();localStorage.setItem(`hojas_superpowers_presenter_claim_${room}`,claimId);
+    claimId=localStorage.getItem(`hojas_superpowers_presenter_claim_${room}`)||makeId();localStorage.setItem(`hojas_superpowers_presenter_claim_${room}`,claimId);
     const result=await runTransaction(ref(db,`superPowerRooms/${room}/presenter`),current=>{
         const stale=!current||!current.lastSeen||Date.now()-Number(current.lastSeen)>45000;
         if(stale||current.claimId===claimId)return{claimId,name,connected:true,claimedAt:current?.claimedAt||Date.now(),lastSeen:Date.now()};
@@ -239,7 +241,7 @@ $("leaveButton").onclick=async()=>{
 };
 function toast(message,type="success"){const box=$("presenterToast");clearTimeout(toastTimer);box.textContent=message;box.classList.toggle("error",type==="error");box.classList.add("show");toastTimer=setTimeout(()=>box.classList.remove("show"),2600)}
 async function send(type,payload={}){
-    await set(ref(db,`superPowerRooms/${room}/presenterCommand`),{id:crypto.randomUUID(),type,payload,presenterClaim:claimId,createdAt:Date.now()});
+    await set(ref(db,`superPowerRooms/${room}/presenterCommand`),{id:makeId("command"),type,payload,presenterClaim:claimId,createdAt:Date.now()});
 }
 async function runAction(button,type,payload={},message=ACTION_MESSAGES[type]){
     if(button?.classList.contains("is-loading"))return;
@@ -249,7 +251,7 @@ async function runAction(button,type,payload={},message=ACTION_MESSAGES[type]){
     finally{button?.classList.remove("is-loading");button?.removeAttribute("aria-busy")}
 }
 document.querySelectorAll("[data-command]").forEach(b=>b.onclick=()=>runAction(b,b.dataset.command,{letter:game.question?.letter||"",team:b.dataset.team||roomData.buzzer?.team||""}));
-document.querySelectorAll("[data-team-award]").forEach(b=>b.onclick=()=>runAction(b,"awardPoint",{team:b.dataset.teamAward},"تم منح الخلية للفريق"));
+document.querySelectorAll("[data-team-award]").forEach(b=>b.onclick=()=>{const type=b.dataset.teamAward==="team2"?"awardTeam2":"awardTeam1";runAction(b,type,{},ACTION_MESSAGES[type])});
 $("saveSettings").onclick=e=>runAction(e.currentTarget,"updateSettings",{answerSeconds:Number($("answerSeconds").value),otherTeamSeconds:Number($("otherSeconds").value)});
 function subscribe(){
     onValue(ref(db,".info/connected"),s=>$("connection").textContent=s.val()?"● متصل":"○ منقطع");

@@ -2895,14 +2895,45 @@ async function ensureFirebase() {
 
 function createSecureToken() {
     const bytes = new Uint8Array(24);
-    crypto.getRandomValues(bytes);
+    const cryptoApi = typeof window !== 'undefined' ? window.crypto : null;
+    if (cryptoApi?.getRandomValues) {
+        cryptoApi.getRandomValues(bytes);
+    } else {
+        for (let index = 0; index < bytes.length; index += 1) {
+            bytes[index] = Math.floor(Math.random() * 256);
+        }
+    }
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function fallbackTokenDigest(value) {
+    let a = 2166136261;
+    let b = 2654435761;
+    let c = 2246822519;
+    let d = 3266489917;
+    const text = String(value ?? '');
+    for (let index = 0; index < text.length; index += 1) {
+        const code = text.charCodeAt(index);
+        a = Math.imul(a ^ code, 16777619);
+        b = Math.imul(b ^ (code + index), 2246822519);
+        c = Math.imul(c ^ (code << ((index % 4) * 8)), 3266489917);
+        d = Math.imul(d ^ (code * 31 + index), 668265263);
+    }
+    return [a, b, c, d]
+        .map(part => (part >>> 0).toString(16).padStart(8, '0'))
+        .join('');
 }
 
 async function hashSecureToken(value) {
     const bytes = new TextEncoder().encode(value);
-    const digest = await crypto.subtle.digest('SHA-256', bytes);
-    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    const cryptoApi = typeof window !== 'undefined' ? window.crypto : null;
+    if (cryptoApi?.subtle?.digest) {
+        const digest = await cryptoApi.subtle.digest('SHA-256', bytes);
+        return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    // Local HTTP previews may not expose Web Crypto. Keep the same deterministic
+    // fallback in the presenter page so the short-lived room token still works.
+    return fallbackTokenDigest(value);
 }
 
 function getPresenterToken(forceNew = false) {
