@@ -210,6 +210,7 @@
         <div class="letters-grid" id="lettersGrid"></div>
     </div>
 
+    <script src="../js/question-library.js?v=followers-1"></script>
     <script>
         const allQuestions = [
             { "letter": "أ", "question": "ما هو المفهوم الإسلامي الذي يمثل أعلى مراتب الدين ويعني عبادة الله كأنك تراه؟", "answer": "الإحسان" },
@@ -775,9 +776,13 @@
         ];
 
         let currentLetter = "";
+        let approvedFollowerQuestions = [];
         const letters = ["أ", "ب", "ت", "ث", "ج", "ح", "خ", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ع", "غ", "ف", "ق", "ك", "ل", "م", "ن", "هـ", "و", "ي"];
 
-        window.onload = function () {
+        window.onload = async function () {
+            try {
+                approvedFollowerQuestions = (await window.QuestionLibrary?.getActiveQuestions?.(true) || []).map(item => ({ letter: item.letter, question: item.question, answer: item.answer }));
+            } catch (error) { console.warn('تعذر تحميل أسئلة المتابعين للشاشة.', error); }
             const grid = document.getElementById('lettersGrid');
             letters.forEach(char => {
                 const btn = document.createElement('button');
@@ -795,7 +800,8 @@
 
         function getNewQuestion() {
             if (!currentLetter) return;
-            const filtered = allQuestions.filter(q => q.letter === currentLetter);
+            const pool = allQuestions.concat(approvedFollowerQuestions);
+            const filtered = pool.filter(q => q.letter === currentLetter);
 
             if (filtered.length > 0) {
                 let randomQ;

@@ -194,6 +194,15 @@
 
         .instruction { font-size: 0.95rem; color: rgba(255,255,255,0.8); line-height: 1.5; margin-top: 24px; margin-bottom: auto; }
 
+        .player-timer {
+            display: none; width: 100%; margin-top: 14px; padding: 12px 16px;
+            border-radius: 12px; background: rgba(0,0,0,.28);
+            border: 1px solid rgba(255,214,0,.3); color: var(--yellow);
+            font-size: 1.05rem; text-align: center;
+        }
+        .player-timer.show { display: block; }
+        .player-timer strong { font-size: 1.45rem; margin-inline-start: 6px; }
+
         /* ===== HEX BUZZER ===== */
         .hex-buzzer-wrap {
             position: relative; width: 250px; height: 280px;
@@ -336,6 +345,7 @@
                 <div class="instruction">
                     اضغط فور معرفتك للإجابة.<br>إذا قُفل الجرس فانتظر إعادة التفعيل من المقدم.
                 </div>
+                <div class="player-timer" id="playerTimer"></div>
 
                 <div class="hex-buzzer-wrap" id="buzzerWrap" onclick="pressBuzzer()">
                     <div class="hex-bg" id="buzzerBg">
@@ -356,7 +366,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getDatabase, ref, set, update, onValue, runTransaction, remove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+        import { getDatabase, ref, set, update, onValue, runTransaction, push, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
         // ── Firebase Config ──────────────────────────────────────────────────
         const firebaseConfig = {
@@ -380,6 +390,10 @@
         let buzzerLocked = false;
         let team1Name   = 'الفريق الأول';
         let team2Name   = 'الفريق الثاني';
+        let currentQuestionId = 'lobby';
+        let lastPressedQuestionId = '';
+        let serverOffset = 0;
+        let playerTimerInterval = null;
 
         function genId() { return Math.random().toString(36).substr(2, 9) + Date.now().toString(36); }
 
@@ -416,15 +430,19 @@
 
             currentRoom = rc;
             myName      = nm;
-            myId        = genId();
+            myId        = localStorage.getItem(`hojas_player_${rc}`) || genId();
+            localStorage.setItem(`hojas_player_${rc}`, myId);
 
             const playerRef = ref(db, `rooms/${rc}/players/${myId}`);
-            set(playerRef, { name: nm, team: myTeam, joinedAt: Date.now() })
+            update(playerRef, {
+                name: nm, team: myTeam, joinedAt: serverTimestamp(),
+                lastSeen: serverTimestamp(), connected: true
+            })
                 .then(() => {
+                    onDisconnect(playerRef).update({ connected: false, lastSeen: serverTimestamp() });
+                    setInterval(() => update(playerRef, { connected: true, lastSeen: serverTimestamp() }), 15000);
                     showMainScreen();
                     listenToRoom(rc);
-                    // Clean up on page leave
-                    window.addEventListener('beforeunload', () => remove(playerRef));
                 })
                 .catch(err => showToast('❌ ' + err.message, true));
         };
@@ -447,10 +465,17 @@
         // ── Listen to Room State (Real-Time) ─────────────────────────────────
         function listenToRoom(roomCode) {
             const roomRef = ref(db, `rooms/${roomCode}`);
+            onValue(ref(db, '.info/serverTimeOffset'), snap => { serverOffset = Number(snap.val() || 0); });
 
             onValue(roomRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 const locked = data.locked || false;
+                const nextQuestionId = data.timer?.questionId || data.game?.updatedAt || 'lobby';
+                if (nextQuestionId !== currentQuestionId) {
+                    currentQuestionId = String(nextQuestionId);
+                    lastPressedQuestionId = '';
+                }
+                renderPlayerTimer(data.timer || null);
 
                 if (locked !== buzzerLocked) {
                     buzzerLocked = locked;
@@ -471,13 +496,22 @@
 
         // ── Press Buzzer (First Press Wins via Transaction) ───────────────────
         window.pressBuzzer = function () {
-            if (buzzerLocked) return;
+            if (lastPressedQuestionId === currentQuestionId) {
+                return showToast('تم تسجيل ضغطتك في الترتيب');
+            }
+            lastPressedQuestionId = currentQuestionId;
 
             const buzzerRef = ref(db, `rooms/${currentRoom}/buzzer`);
+            const queueRef = push(ref(db, `rooms/${currentRoom}/buzzQueue`));
+            set(queueRef, {
+                playerId: myId, name: myName, team: myTeam,
+                questionId: currentQuestionId,
+                pressedAt: serverTimestamp(), clientAt: Date.now()
+            });
 
             runTransaction(buzzerRef, (current) => {
                 if (current !== null) return; // already buzzed → abort
-                return { name: myName, team: myTeam, id: myId, time: Date.now() };
+                return { name: myName, team: myTeam, id: myId, time: Date.now(), questionId: currentQuestionId };
             }).then(({ committed }) => {
                 if (committed) {
                     // Lock the room
@@ -486,9 +520,28 @@
                     updateBuzzerUI();
                     if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
                 }
-                // If not committed → someone was faster (UI will update via listener)
+                if (!committed) showToast('تم تسجيلك ضمن ترتيب الضغطات');
             });
         };
+
+        function renderPlayerTimer(timer) {
+            clearInterval(playerTimerInterval);
+            const el = document.getElementById('playerTimer');
+            if (!timer || timer.phase === 'idle') { el.classList.remove('show'); return; }
+            el.classList.add('show');
+            if (timer.phase === 'open') {
+                el.innerHTML = 'الجرس مفتوح للجميع <strong>🔔</strong>';
+                return;
+            }
+            const draw = () => {
+                const elapsed = Date.now() + serverOffset - Number(timer.startedAt || Date.now());
+                const left = Math.max(0, Math.ceil((Number(timer.durationMs || 0) - elapsed) / 1000));
+                const teamName = timer.team === 'team2' ? team2Name : team1Name;
+                el.innerHTML = `وقت ${teamName} <strong>${left}</strong>`;
+            };
+            draw();
+            playerTimerInterval = setInterval(draw, 250);
+        }
 
         // ── UI Helpers ───────────────────────────────────────────────────────
         function updateBuzzerUI() {

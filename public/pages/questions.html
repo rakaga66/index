@@ -11,6 +11,8 @@
             --purple-dark: #4A2570;
             --yellow: #FFD600;
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
         
         body {
             margin: 0;
@@ -23,7 +25,8 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             background-image: linear-gradient(135deg, #4A2570 0%, #1e0a3c 100%);
         }
 
@@ -40,14 +43,14 @@
         .container {
             position: relative;
             z-index: 1;
-            width: 90%;
+            width: min(800px, calc(100% - 24px));
             max-width: 800px;
             background: rgba(26, 10, 60, 0.6);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 2px solid rgba(255, 214, 0, 0.3);
             border-radius: 40px;
-            padding: 40px;
+            padding: clamp(18px, 5vw, 40px);
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             display: flex;
@@ -187,11 +190,23 @@
             50% { opacity: 0.8; }
             100% { opacity: 0.4; }
         }
+
+        @media (max-width: 600px) {
+            .container { gap: 20px; border-radius: 24px; }
+            .title { font-size: clamp(2.5rem, 15vw, 4rem); -webkit-text-stroke-width: 1px; }
+            .waiting { font-size: clamp(1.05rem, 5.5vw, 1.5rem); }
+            .question-box { min-height: 120px; font-size: clamp(1.35rem, 7.5vw, 2.22rem); }
+            .letter-badge { font-size: clamp(2rem, 11vw, 3rem); padding: 8px 20px; }
+            .answer-text { font-size: clamp(1.6rem, 9vw, 2.5rem); overflow-wrap: anywhere; }
+            .actions { flex-direction: column; gap: 12px; }
+            .btn { width: 100%; min-height: 44px; padding: 11px 16px; font-size: 1.2rem; }
+        }
     </style>
     <!-- PDF.js for reading questions file -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="../js/pdfData.js"></script>
+    <script src="../js/questionsData.js"></script>
 </head>
 <body>
     <div class="hex-bg-pattern"></div>
@@ -226,8 +241,14 @@
         let lastUpdateTrigger = null;
 
         async function loadQuestions() {
-            if (typeof pdfBase64Data === 'undefined') {
-                console.error('PDF Data not found!');
+            if (typeof pdfBase64Data === 'undefined' || !pdfBase64Data) {
+                const fallback = Array.isArray(window.questionsData) ? window.questionsData : [];
+                questionsBank = fallback.map(item => ({
+                    q: String(item.question || item.q || '').trim(),
+                    a: String(item.answer || item.a || '').trim(),
+                    letterMatch: String(item.letter || 'عام').replace(/[أإآ]/g, 'ا')
+                })).filter(item => item.q.length > 0);
+                questionsLoaded = questionsBank.length > 0;
                 return;
             }
             try {

@@ -29,11 +29,60 @@ let board = [];
 let cellLetters = [];
 let selectedCell = null;
 let scores = { team1: 0, team2: 0 };
+// `scores` keeps the number of claimed cells in the current round.  The
+// visible match score is the number of rounds won, so it must be tracked
+// independently and must survive a cell reset/new round.
+let roundWins = { team1: 0, team2: 0 };
+let currentRoundWinner = '';
 let gameIsActive = false;
+let gameSessionId = null;
+let sessionStartedAt = null;
 
 const GAME_STATE_KEY = 'hojas_active_game_v1';
 const UI_SCREEN_KEY = 'hojas_current_screen_v1';
 const SETTINGS_SOURCE_KEY = 'hojas_settings_source_v1';
+const SESSION_HISTORY_KEY = 'hojas_completed_sessions_v1';
+const MAX_SAVED_SESSIONS = 50;
+
+// The admin dashboard opens the game as a read-only audience view.  The
+// presenter phone remains the only place allowed to change cells, shuffle the
+// board, or start a new round.  `admin=1` is also supported for a direct
+// preview link when sessionStorage is not shared between browser tabs.
+function isAdminViewer() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const queryFlag = ['1', 'true', 'yes'].includes(String(params.get('admin') || '').toLowerCase());
+        return queryFlag || sessionStorage.getItem('isAdmin') === 'true' || Boolean(sessionStorage.getItem('adminUid'));
+    } catch (_) {
+        return false;
+    }
+}
+
+function isBoardEditingLocked() {
+    const presenterMode = typeof teamSetup !== 'undefined' && teamSetup?.presenter === 'human';
+    const livePresenter = typeof _livePresenterConnected !== 'undefined' && _livePresenterConnected;
+    const commandInProgress = typeof _presenterCommandInProgress !== 'undefined' && _presenterCommandInProgress;
+    return (isAdminViewer() || presenterMode || livePresenter) && !commandInProgress;
+}
+
+function showEditingLockedNotice() {
+    if (typeof showGameToast === 'function') {
+        showGameToast('التحكم مقفل — استخدم جوال المقدم لبدء الجولة أو تعديل اللوحة.', true);
+    }
+}
+
+function applyAdminViewerMode() {
+    if (!isAdminViewer()) return;
+    document.body.classList.add('admin-viewer', 'presenter-locked');
+    document.body.dataset.adminViewer = 'true';
+    document.querySelectorAll('[data-tour="shuffle"], [data-tour="new-round"], [data-tour="settings"], .presenter-toggle-top, .score-box, .super-team-card').forEach(node => {
+        node.setAttribute('aria-disabled', 'true');
+        if (node.matches('button')) node.disabled = true;
+        node.querySelectorAll?.('button').forEach(button => { button.disabled = true; button.setAttribute('aria-disabled', 'true'); });
+    });
+    closeQuestionPanel?.();
+    if (typeof setGamePresenter === 'function') setGamePresenter('human', true);
+}
 
 function isValidGameMatrix(matrix) {
     return Array.isArray(matrix) &&
@@ -50,8 +99,13 @@ function saveGameState() {
         board,
         cellLetters,
         scores,
+        roundWins,
+        currentRoundWinner,
         teamSetup,
         buzzerRoom,
+        gameSessionId,
+        sessionStartedAt,
+        usedQuestionIds: [...usedQuestionIds],
         presentationMode: document.body.classList.contains('presentation-mode')
     };
 
@@ -64,6 +118,7 @@ function saveGameState() {
 
 function clearSavedGameState() {
     gameIsActive = false;
+    document.body.classList.remove('normal-game-active');
     localStorage.removeItem(GAME_STATE_KEY);
 }
 
@@ -165,72 +220,401 @@ function acceptGameConfirm() {
     if (action) action();
 }
 
+let playerHelpReturnFocus = null;
+function openPlayerHelp() {
+    const modal = document.getElementById('playerHelpModal');
+    if (!modal) return;
+    playerHelpReturnFocus = document.activeElement;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.player-help-close')?.focus());
+}
+
+function closePlayerHelp() {
+    const modal = document.getElementById('playerHelpModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    if (playerHelpReturnFocus?.focus) playerHelpReturnFocus.focus();
+    playerHelpReturnFocus = null;
+}
+
 const HOME_UPDATE_ITEMS = [
+    {
+        version: '1.55',
+        date: '26 أغسطس 2026',
+        title: 'تحسين مظهر الجوال لجميع الأطوار',
+        description: 'ضبط اللوحات والسداسيات وبطاقات النتائج والأزرار على الآيفون والجوال بالوضعين العمودي والأفقي دون قص أو تكبير مفاجئ.'
+    },
+    {
+        version: '1.55',
+        date: '26 أغسطس 2026',
+        title: 'تحسين إجابات طور الأونلاين',
+        description: 'التحقق يتم من السؤال الرسمي في السيرفر، مع قبول الأخطاء الإملائية الواضحة مثل تبديل حرفين دون اعتماد إجابة مختلفة.'
+    },
+    {
+        version: '1.55',
+        date: '26 أغسطس 2026',
+        title: 'حماية الجلسات ووضع الأدمن',
+        description: 'منع إنشاء جلسة ثانية خلال عشر دقائق، منع الدخول إلى الجلسات غير الموجودة، وقفل تعديل لوحة الأدمن لصالح جوال المقدم.'
+    },
+    {
+        version: '1.4',
+        date: '25 أغسطس 2026',
+        title: 'جرس ومؤقت متزامنان',
+        description: 'إظهار ترتيب ضغطات الجرس للجميع، مع تسلسل وقت الإجابة ثم فرصة الفريق الآخر ثم الفتح بالجرس.'
+    },
+    {
+        version: '1.4',
+        date: '25 أغسطس 2026',
+        title: 'جولة تعريفية لأول مرة',
+        description: 'شرح مختصر وتفاعلي لأزرار المباراة العادية والأونلاين وطور القوى الخارقة.'
+    },
+    {
+        version: '1.4',
+        date: '25 أغسطس 2026',
+        title: 'إدارة الأسئلة والإجابات داخل الموقع',
+        description: 'السؤال يبقى مخفيًا عن الجمهور حتى يختار المقدم إظهاره، والإجابة تظهر بتنبيه واضح داخل اللعبة.'
+    },
+    {
+        version: '1.4',
+        date: '25 أغسطس 2026',
+        title: 'إشعارات الموقع بدل نوافذ المتصفح',
+        description: 'التأكيدات والتنبيهات وإعلانات الفوز أصبحت من تصميم الموقع وتعمل على الجوال والكمبيوتر.'
+    },
+    {
+        version: '1.4',
+        date: '25 أغسطس 2026',
+        title: 'تنقل واضح بين الأطوار',
+        description: 'الدخول إلى القوى الخارقة يبدأ من واجهتها، مع زر يرجع للطور العادي بدون فتح جولة قديمة تلقائيًا.'
+    },
     {
         version: '1.3',
         date: '24 يوليو 2026',
-        title: 'تصميم جديد لجرس الفرق',
-        description: 'تحديث واجهة جرس الفرق بتصميم فخم وثلاثي الأبعاد وألوان زجاجية متناسقة مع اللعبة الأساسية.'
+        title: 'تحسين وضع العرض والجوال',
+        description: 'تصغير السداسيات والنتائج والأزرار، وضبط الضبابية والملء الشاشة دون قص اللوحة.'
     },
     {
-        version: '1.2',
+        version: '1.3',
         date: '24 يوليو 2026',
-        title: 'واجهة جولات أصغر وتنبيهات من داخل الموقع',
-        description: 'تصغير إعلان فوز الجولة على الجوال واستبدال نوافذ المتصفح بتأكيدات متناسقة مع اللعبة.'
+        title: 'بطاقات فوز أوضح',
+        description: 'إعلان الفائز ونتيجة الجولة والنتيجة النهائية بتصميم واضح ومناسب للشاشات الصغيرة.'
+    },
+    {
+        version: '1.3',
+        date: '24 يوليو 2026',
+        title: 'جلسات أونلاين متزامنة',
+        description: 'غرف مشتركة للاعبين والمقدم مع حالة اتصال واضحة وتحديث لحظي بين الأجهزة.'
+    },
+    {
+        version: '1.3',
+        date: '24 يوليو 2026',
+        title: 'تصميم جرس الفرق',
+        description: 'تحديث واجهة الجرس وترتيب الضغطات بألوان وحالات واضحة داخل الموقع.'
+    },
+    {
+        version: '1.3',
+        date: '24 يوليو 2026',
+        title: 'حفظ الجولة بعد تحديث الصفحة',
+        description: 'اللوحة والخلايا والنتائج تستمر بعد التحديث، مع عودة واضحة للرئيسية عند إنهاء الجولة.'
+    },
+    {
+        version: '1.3',
+        date: '24 يوليو 2026',
+        title: 'إعدادات أسهل وتغيير لحظي',
+        description: 'تنظيم إعدادات الفرق والجولات والمؤقتات والألوان، وتحديث اسم المسابقة مباشرة عند تغييره.'
     },
     {
         version: '1.2',
         date: '21 يوليو 2026',
-        title: 'نتيجة نهائية جديدة',
-        description: 'بطاقة فوز مختصرة تعرض الفريق الفائز والنتيجة بوضوح على الكمبيوتر والجوال.'
+        title: 'أسئلة المتابعين',
+        description: 'خانة مخصصة لاقتراح سؤال وحرف وإجابة ليتم مراجعته قبل إضافته إلى بنك الأسئلة.'
     },
     {
         version: '1.2',
         date: '21 يوليو 2026',
-        title: 'إحصاءات مباشرة',
-        description: 'متابعة المتصلين والزيارات وعدد مرات بدء لعبة حروف مع هوجاس والمتجر.'
+        title: 'إحصاءات اللعبة والمتجر',
+        description: 'تتبع الزيارات وبدء اللعب والاتصال بالجلسات للعبة حروف مع هوجاس والمتجر.'
     },
     {
         version: '1.2',
         date: '20 يوليو 2026',
-        title: 'تحسين وضع العرض',
-        description: 'ضبط السداسيات والنتائج والشعار ودعم منح الخلية للفريق من شاشة العرض.'
-    },
-    {
-        version: '1.2',
-        date: '19 يوليو 2026',
-        title: 'حفظ الجولة تلقائيًا',
-        description: 'العودة إلى نفس اللوحة والنتائج بعد تحديث الصفحة بدل فقدان التقدم.'
+        title: 'خريطة موقع وتجهيز للبحث',
+        description: 'إضافة خريطة الموقع ووصف الصفحات الأساسية لتسهيل ظهور الألعاب عند البحث.'
     },
     {
         version: '1.2',
         date: 'الإصدار المجاني',
         title: 'النسخة الكاملة متاحة للجميع',
-        description: 'إلغاء التحقق بالجوال وفتح اللعبة وميزاتها الأساسية بدون تسجيل دخول.'
+        description: 'إلغاء التحقق بالجوال وفتح اللعبة وميزاتها الأساسية مجانًا بدون تسجيل دخول.'
     }
 ];
 
-const HOME_FEATURE_ITEMS = [
-    { title: 'لوحة سداسية تفاعلية', description: 'حروف عشوائية ومسارات فوز واضحة لكل فريق.' },
-    { title: 'مقدم آلي بالأسئلة', description: 'يعرض سؤالًا مناسبًا للحرف المختار مع كشف الإجابة.' },
-    { title: 'وضع مقدم بشري', description: 'بوابة أسئلة منفصلة لإدارة السؤال بدون إظهاره للاعبين.' },
-    { title: 'جرس فرق مباشر', description: 'كود جلسة ورابط وQR لدخول المتسابقين من الجوال.' },
-    { title: 'وضع عرض احترافي', description: 'واجهة ملء شاشة للسداسيات والنقاط مناسبة للتلفزيون.' },
-    { title: 'حفظ تلقائي للتقدم', description: 'يحفظ الخلايا والجولات والنقاط حتى بعد تحديث الصفحة.' },
-    { title: 'أسماء وألوان مخصصة', description: 'تغيير أسماء الفريقين واختيار تركيبة الألوان المناسبة.' },
-    { title: 'مؤقتات مرنة', description: 'مؤقت للجرس والإجابة وفرصة الفريق الآخر بإعدادات مستقلة.' },
-    { title: 'تحكم كامل بالخلايا', description: 'تحديد الخلية أو إلغاؤها أو منحها لأي فريق بسهولة.' },
-    { title: 'نظام جولات ونتائج', description: 'حتى ثلاث جولات مع نقاط وإعلان الفائز والنتيجة النهائية.' },
-    { title: 'تخصيص الصوت والمظهر', description: 'تشغيل الأصوات أو إيقافها والتبديل بين المظهر الفاتح والداكن.' }
+const HOME_UPCOMING_ITEMS = [
+    {
+        expected: 'قريبًا',
+        status: 'قيد التجهيز',
+        title: 'تحسينات أمان الجلسات',
+        description: 'حماية إضافية لهوية منشئ الجلسة ومراجعة حالة الغرفة قبل كل دخول أو إعادة اتصال.'
+    },
+    {
+        expected: 'بعد الاختبار',
+        status: 'قيد الاختبار',
+        title: 'توسعة بنك الأسئلة والتحقق',
+        description: 'أسئلة إضافية مع تحقق أدق من الحرف والإجابة ومراجعة الأخطاء الكتابية الشائعة.'
+    },
+    {
+        expected: 'التحديث القادم',
+        status: 'مخطط',
+        title: 'أطوار لعب جديدة',
+        description: 'أفكار أطوار إضافية مرتبطة بنظام الجلسات والمقدم بعد اكتمال اختبارات الأونلاين.'
+    }
 ];
 
 let homeInfoReturnFocus = null;
+let previousSessionsReturnFocus = null;
+
+function escapeHistoryText(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    })[char]);
+}
+
+function getPreviousSessions() {
+    try {
+        const sessions = JSON.parse(localStorage.getItem(SESSION_HISTORY_KEY) || '[]');
+        return Array.isArray(sessions) ? sessions.filter(Boolean) : [];
+    } catch (error) {
+        console.warn('Could not read previous sessions', error);
+        return [];
+    }
+}
+
+function savePreviousSessions(sessions) {
+    try {
+        localStorage.setItem(
+            SESSION_HISTORY_KEY,
+            JSON.stringify(sessions.slice(0, MAX_SAVED_SESSIONS))
+        );
+    } catch (error) {
+        console.warn('Could not save previous sessions', error);
+    }
+}
+
+function formatPreviousSessionDate(timestamp) {
+    const date = new Date(Number(timestamp) || Date.now());
+    try {
+        return new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        }).format(date);
+    } catch (error) {
+        return date.toLocaleString('ar-SA');
+    }
+}
+
+function createSessionHistoryId() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function recordCompletedSession() {
+    const team1Score = Number(roundWins.team1) || 0;
+    const team2Score = Number(roundWins.team2) || 0;
+    const isDraw = team1Score === team2Score;
+    const winnerTeam = isDraw ? null : (team1Score > team2Score ? 'team1' : 'team2');
+    const sessionId = gameSessionId || createSessionHistoryId();
+    const completedAt = Date.now();
+    const session = {
+        id: sessionId,
+        competitionName: teamSetup.competitionName || 'هوجاس',
+        team1: {
+            name: teamSetup.team1.name || 'الفريق الأول',
+            score: team1Score,
+            cells: Number(scores.team1) || 0,
+            color: teamSetup.team1.color || 'orange'
+        },
+        team2: {
+            name: teamSetup.team2.name || 'الفريق الثاني',
+            score: team2Score,
+            cells: Number(scores.team2) || 0,
+            color: teamSetup.team2.color || 'purple'
+        },
+        winnerTeam,
+        winnerName: winnerTeam ? teamSetup[winnerTeam].name : 'تعادل',
+        roundsPlayed: Number(teamSetup.currentRound) || 1,
+        totalRounds: Number(teamSetup.totalRounds) || 1,
+        startedAt: sessionStartedAt || completedAt,
+        completedAt
+    };
+
+    const sessions = getPreviousSessions();
+    const existingIndex = sessions.findIndex(item => item.id === sessionId);
+    if (existingIndex >= 0) sessions.splice(existingIndex, 1);
+    sessions.unshift(session);
+    savePreviousSessions(sessions);
+    renderPreviousSessionsHome();
+    return session;
+}
+
+function getSessionWinnerLabel(session) {
+    if (!session.winnerTeam) return 'تعادل';
+    return `الفائز: ${session.winnerName || session[session.winnerTeam]?.name || '—'}`;
+}
+
+function renderPreviousSessionsHome() {
+    const sessions = getPreviousSessions();
+    const preview = document.getElementById('homeHistoryPreview');
+    const count = document.getElementById('homeHistoryCount');
+
+    if (count) {
+        count.textContent = sessions.length
+            ? `${sessions.length} ${sessions.length === 1 ? 'جلسة محفوظة' : 'جلسات محفوظة'}`
+            : 'لا توجد جلسات';
+    }
+
+    if (!preview) return;
+    if (!sessions.length) {
+        preview.innerHTML = '<div class="home-history-empty">ستظهر نتائج مبارياتك هنا</div>';
+        return;
+    }
+
+    const latest = sessions[0];
+    preview.innerHTML = `
+        <div class="home-history-latest">
+            <strong>${escapeHistoryText(latest.competitionName || 'هوجاس')}</strong>
+            <span>${escapeHistoryText(latest.team1?.name || 'الفريق الأول')}
+                <b>${Number(latest.team1?.score) || 0}</b>
+                <i>—</i>
+                <b>${Number(latest.team2?.score) || 0}</b>
+                ${escapeHistoryText(latest.team2?.name || 'الفريق الثاني')}</span>
+            <small>${escapeHistoryText(getSessionWinnerLabel(latest))}</small>
+        </div>
+    `;
+}
+
+function renderPreviousSessionsModal() {
+    const sessions = getPreviousSessions();
+    const summary = document.getElementById('previousSessionsSummary');
+    const list = document.getElementById('previousSessionsList');
+    const clearButton = document.getElementById('clearPreviousSessionsButton');
+
+    if (summary) {
+        const wins1 = sessions.filter(session => session.winnerTeam === 'team1').length;
+        const wins2 = sessions.filter(session => session.winnerTeam === 'team2').length;
+        const draws = sessions.filter(session => !session.winnerTeam).length;
+        summary.innerHTML = `
+            <span><b>${sessions.length}</b> جلسة</span>
+            <span><b>${wins1 + wins2}</b> فوز</span>
+            <span><b>${draws}</b> تعادل</span>
+        `;
+    }
+
+    if (clearButton) clearButton.hidden = sessions.length === 0;
+    if (!list) return;
+
+    if (!sessions.length) {
+        list.innerHTML = `
+            <div class="previous-sessions-empty">
+                <span aria-hidden="true">🏁</span>
+                <h3>لا توجد جلسات سابقة بعد</h3>
+                <p>بعد إنهاء أول مباراة ستظهر نتيجتها هنا تلقائيًا.</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = sessions.map(session => {
+        const team1Color = COLOR_MAP[session.team1?.color]?.bg || '#FF9800';
+        const team2Color = COLOR_MAP[session.team2?.color]?.bg || '#8B5FBF';
+        const team1Winner = session.winnerTeam === 'team1';
+        const team2Winner = session.winnerTeam === 'team2';
+        return `
+            <article class="previous-session-item">
+                <div class="previous-session-topline">
+                    <div>
+                        <h3>${escapeHistoryText(session.competitionName || 'هوجاس')}</h3>
+                        <time>${escapeHistoryText(formatPreviousSessionDate(session.completedAt))}</time>
+                    </div>
+                    <span class="previous-session-winner">${escapeHistoryText(getSessionWinnerLabel(session))}</span>
+                </div>
+                <div class="previous-session-score">
+                    <div class="previous-session-team ${team1Winner ? 'is-winner' : ''}"
+                        style="--session-team-color:${team1Color}">
+                        <span>${escapeHistoryText(session.team1?.name || 'الفريق الأول')}</span>
+                        <b>${Number(session.team1?.score) || 0}</b>
+                    </div>
+                    <span class="previous-session-versus">VS</span>
+                    <div class="previous-session-team ${team2Winner ? 'is-winner' : ''}"
+                        style="--session-team-color:${team2Color}">
+                        <span>${escapeHistoryText(session.team2?.name || 'الفريق الثاني')}</span>
+                        <b>${Number(session.team2?.score) || 0}</b>
+                    </div>
+                </div>
+                <div class="previous-session-footer">
+                    <span>${Number(session.roundsPlayed) || 1} من ${Number(session.totalRounds) || 1} جولات</span>
+                    <button type="button" onclick="deletePreviousSession('${escapeHistoryText(session.id)}')"
+                        aria-label="حذف جلسة ${escapeHistoryText(session.competitionName || 'هوجاس')}">حذف</button>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
+function openPreviousSessionsModal() {
+    const modal = document.getElementById('previousSessionsModal');
+    if (!modal) return;
+
+    previousSessionsReturnFocus = document.activeElement;
+    renderPreviousSessionsModal();
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => modal.querySelector('.home-info-modal__close')?.focus());
+}
+
+function closePreviousSessionsModal() {
+    const modal = document.getElementById('previousSessionsModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    if (previousSessionsReturnFocus?.focus) previousSessionsReturnFocus.focus();
+    previousSessionsReturnFocus = null;
+}
+
+function deletePreviousSession(sessionId) {
+    const sessions = getPreviousSessions().filter(session => session.id !== sessionId);
+    savePreviousSessions(sessions);
+    renderPreviousSessionsHome();
+    renderPreviousSessionsModal();
+}
+
+function clearPreviousSessionsHistory() {
+    showGameConfirm({
+        title: 'مسح سجل الجلسات؟',
+        message: 'سيتم حذف جميع نتائج الجلسات السابقة المحفوظة على هذا الجهاز.',
+        confirmText: 'مسح السجل',
+        icon: '🗑️',
+        onConfirm: () => {
+            localStorage.removeItem(SESSION_HISTORY_KEY);
+            renderPreviousSessionsHome();
+            renderPreviousSessionsModal();
+        }
+    });
+}
 
 function renderHomeInfo() {
     const updatesPreview = document.getElementById('homeUpdatesPreview');
-    const featuresPreview = document.getElementById('homeFeaturesPreview');
+    const upcomingPreview = document.getElementById('homeUpcomingPreview');
     const updatesArchive = document.getElementById('homeUpdatesArchive');
-    const featuresArchive = document.getElementById('homeFeaturesArchive');
+    const upcomingArchive = document.getElementById('homeUpcomingArchive');
 
     if (updatesPreview) {
         updatesPreview.innerHTML = HOME_UPDATE_ITEMS.slice(0, 2).map((item, index) => `
@@ -241,10 +625,13 @@ function renderHomeInfo() {
         `).join('');
     }
 
-    if (featuresPreview) {
-        featuresPreview.innerHTML = HOME_FEATURE_ITEMS.slice(0, 4).map(item =>
-            `<span class="home-feature-chip">${item.title}</span>`
-        ).join('');
+    if (upcomingPreview) {
+        upcomingPreview.innerHTML = HOME_UPCOMING_ITEMS.map(item => `
+            <div class="home-update-preview-item home-upcoming-preview-item">
+                <span>${item.expected}</span>
+                <strong>${item.title}</strong>
+            </div>
+        `).join('');
     }
 
     if (updatesArchive) {
@@ -262,10 +649,13 @@ function renderHomeInfo() {
         `).join('');
     }
 
-    if (featuresArchive) {
-        featuresArchive.innerHTML = HOME_FEATURE_ITEMS.map((item, index) => `
-            <article class="home-feature-entry">
-                <span class="home-feature-entry__number">${index + 1}</span>
+    if (upcomingArchive) {
+        upcomingArchive.innerHTML = HOME_UPCOMING_ITEMS.map(item => `
+            <article class="home-update-entry home-upcoming-entry">
+                <div class="home-update-entry__meta">
+                    <span>${item.expected}</span>
+                    <small>${item.status}</small>
+                </div>
                 <div>
                     <h3>${item.title}</h3>
                     <p>${item.description}</p>
@@ -273,24 +663,26 @@ function renderHomeInfo() {
             </article>
         `).join('');
     }
+
+    renderPreviousSessionsHome();
 }
 
 function switchHomeInfoTab(tab = 'updates') {
-    const showFeatures = tab === 'features';
+    const showUpcoming = tab === 'upcoming';
     const updatesPanel = document.getElementById('homeUpdatesPanel');
-    const featuresPanel = document.getElementById('homeFeaturesPanel');
+    const upcomingPanel = document.getElementById('homeUpcomingPanel');
     const updatesButton = document.getElementById('homeUpdatesTabButton');
-    const featuresButton = document.getElementById('homeFeaturesTabButton');
+    const upcomingButton = document.getElementById('homeUpcomingTabButton');
 
-    if (updatesPanel) updatesPanel.hidden = showFeatures;
-    if (featuresPanel) featuresPanel.hidden = !showFeatures;
+    if (updatesPanel) updatesPanel.hidden = showUpcoming;
+    if (upcomingPanel) upcomingPanel.hidden = !showUpcoming;
     if (updatesButton) {
-        updatesButton.classList.toggle('active', !showFeatures);
-        updatesButton.setAttribute('aria-selected', String(!showFeatures));
+        updatesButton.classList.toggle('active', !showUpcoming);
+        updatesButton.setAttribute('aria-selected', String(!showUpcoming));
     }
-    if (featuresButton) {
-        featuresButton.classList.toggle('active', showFeatures);
-        featuresButton.setAttribute('aria-selected', String(showFeatures));
+    if (upcomingButton) {
+        upcomingButton.classList.toggle('active', showUpcoming);
+        upcomingButton.setAttribute('aria-selected', String(showUpcoming));
     }
 }
 
@@ -340,13 +732,30 @@ function closeRulesModal() {
     document.querySelector('.home-buttons .btn-pill:last-child')?.focus();
 }
 
-function openOnlineModal() {
-    const modal = document.getElementById('onlineModal');
+function openSuperpowersModal() {
+    const modal = document.getElementById('superpowersModal');
     if (!modal) return;
 
     modal.classList.add('show');
     modal.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(() => modal.querySelector('.rules-close-btn')?.focus());
+    requestAnimationFrame(() => modal.querySelector('.home-info-modal__close')?.focus());
+}
+
+function closeSuperpowersModal() {
+    const modal = document.getElementById('superpowersModal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    document.querySelector('.superpowers-link')?.focus();
+}
+
+function openOnlineModal() {
+    // Keep the destination stable when the home page is served from `/` or
+    // from a nested route such as `/pages/playground`.
+    window.location.href = window.location.protocol === 'file:'
+        ? 'pages/online-board.html'
+        : '/pages/online-board.html';
 }
 
 function closeOnlineModal() {
@@ -359,6 +768,11 @@ function closeOnlineModal() {
 }
 
 document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.getElementById('previousSessionsModal')?.classList.contains('show')) {
+        closePreviousSessionsModal();
+        return;
+    }
+
     if (event.key === 'Escape' && document.getElementById('homeInfoModal')?.classList.contains('show')) {
         closeHomeInfoModal();
         return;
@@ -369,6 +783,11 @@ document.addEventListener('keydown', (event) => {
         return;
     }
 
+    if (event.key === 'Escape' && document.getElementById('superpowersModal')?.classList.contains('show')) {
+        closeSuperpowersModal();
+        return;
+    }
+
     if (event.key === 'Escape' && document.getElementById('onlineModal')?.classList.contains('show')) {
         closeOnlineModal();
         return;
@@ -376,6 +795,11 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key === 'Escape' && document.getElementById('returnHomeModal')?.classList.contains('show')) {
         closeReturnHomeWarning();
+        return;
+    }
+
+    if (event.key === 'Escape' && document.getElementById('playerHelpModal')?.classList.contains('show')) {
+        closePlayerHelp();
         return;
     }
 
@@ -404,17 +828,35 @@ function restoreSavedGameState() {
         team1: { ...teamSetup.team1, ...(state.teamSetup?.team1 || {}) },
         team2: { ...teamSetup.team2, ...(state.teamSetup?.team2 || {}) }
     };
+    // Migrate games created with the old reversed default palette.
+    if ((teamSetup.team1.color === 'purple' && teamSetup.team2.color === 'orange') ||
+        (teamSetup.team1.color === 'green' && teamSetup.team2.color === 'orange')) {
+        teamSetup.team1.color = 'orange';
+        teamSetup.team2.color = 'purple';
+    }
     board = state.board.map(row => [...row]);
     cellLetters = state.cellLetters.map(row => [...row]);
     scores = {
         team1: Number(state.scores?.team1) || 0,
         team2: Number(state.scores?.team2) || 0
     };
-    teamSetup.team1.score = scores.team1;
-    teamSetup.team2.score = scores.team2;
+    roundWins = {
+        team1: Number(state.roundWins?.team1) || 0,
+        team2: Number(state.roundWins?.team2) || 0
+    };
+    currentRoundWinner = state.currentRoundWinner === 'team1' || state.currentRoundWinner === 'team2'
+        ? state.currentRoundWinner
+        : '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
     buzzerRoom = state.buzzerRoom || generateBuzzerCode();
+    gameSessionId = state.gameSessionId || createSessionHistoryId();
+    sessionStartedAt = Number(state.sessionStartedAt) || Number(state.savedAt) || Date.now();
+    usedQuestionIds.clear();
+    (Array.isArray(state.usedQuestionIds) ? state.usedQuestionIds : []).forEach(id => usedQuestionIds.add(id));
     selectedCell = null;
     gameIsActive = true;
+    document.body.classList.add('normal-game-active');
 
     const home = document.getElementById('homeScreen');
     const settings = document.getElementById('settingsScreen');
@@ -424,13 +866,6 @@ function restoreSavedGameState() {
     if (settings) settings.style.display = 'none';
     if (transition) transition.style.display = 'none';
     if (mainArea) mainArea.style.display = 'flex';
-
-    const badgeWrap = document.getElementById('sessionBadgeWrap');
-    const badgeCode = document.getElementById('sessionBadgeCode');
-    if (badgeWrap && badgeCode) {
-        badgeWrap.style.display = 'block';
-        badgeCode.textContent = buzzerRoom;
-    }
 
     const sidebarLogo = document.querySelector('.sidebar .logo');
     if (sidebarLogo) {
@@ -446,20 +881,26 @@ function restoreSavedGameState() {
     updateRoundDisplay();
     updateSidebar();
     document.body.classList.toggle('presentation-mode', Boolean(state.presentationMode));
-    setGamePresenter(teamSetup.presenter);
+    setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
+    applyAdminViewerMode();
 
     requestAnimationFrame(() => {
         renderBoard();
         if (state.presentationMode) syncGameViewUI();
+        window.HojasFirstGameTour?.maybeStart({
+            mode: 'normal',
+            active: () => gameIsActive
+        });
     });
+    setupLiveGameSession().catch(error => console.error('Live session restore failed', error));
     return true;
 }
 
 // Setup choices
 let teamSetup = {
     competitionName: 'هوجاس',
-    team1: { name: 'الفريق الأول', color: 'purple' },
-    team2: { name: 'الفريق الثاني', color: 'orange' },
+    team1: { name: 'الفريق الأول', color: 'orange' },
+    team2: { name: 'الفريق الثاني', color: 'purple' },
     totalRounds: 3,
     currentRound: 1,
     ansTime: 3,
@@ -499,37 +940,53 @@ function safeSetDisplay(idOrElement, displayStyle) {
     return null;
 }
 
-// ===== Dark Mode =====
-function applyDarkMode(isDark) {
-    if (isDark) {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-    // تحديث الزر العائم
-    const btn = document.getElementById('darkModeToggleBtn');
-    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
-    
-    // مزامنة الزر في الإعدادات
-    const themeGroup = document.getElementById('setThemeGroup');
-    if (themeGroup) {
-        themeGroup.querySelectorAll('.toggle-btn').forEach(b => {
-            b.classList.toggle('selected', b.dataset.value === (isDark ? 'dark' : 'light'));
-        });
-    }
-    
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+// The game uses one consistent light appearance. Remove any legacy theme
+// preference so an old dark-mode setting cannot bring back the deleted toggle.
+function applyDarkMode() {
+    document.body.classList.remove('dark-mode');
+    localStorage.removeItem('theme');
 }
 
 function toggleDarkMode() {
-    const isDark = !document.body.classList.contains('dark-mode');
-    applyDarkMode(isDark);
+    applyDarkMode(false);
 }
 
 // ===== Questions System =====
-let questionsBank = [];   // Array of { q: string, a: string, letterMatch: string }
+let questionsBank = [];   // Array of { id, q: string, a: string, letterMatch: string }
 let currentQIndex = -1;
 let questionsLoaded = false;
+let extraQuestionsLoaded = false;
+const usedQuestionIds = new Set();
+
+function normalizeQuestionLetter(value) {
+    return (window.QuestionLibrary?.normalizeLetter?.(value) || String(value || ''))
+        .replace(/[أإآٱ]/g, 'ا').trim().slice(0, 1);
+}
+
+async function loadExtraQuestionLibrary() {
+    if (extraQuestionsLoaded) return;
+    try {
+        if (!window.QuestionLibrary?.getActiveQuestions) return;
+        const extra = await window.QuestionLibrary.getActiveQuestions(true);
+        const existing = new Set(questionsBank.map(item => item.id));
+        const mapped = extra.filter(item => item.question && item.answer)
+            .map(item => ({
+                id: `extra-${item.id}`,
+                q: item.question,
+                a: item.answer,
+                letterMatch: normalizeQuestionLetter(item.letter),
+                source: 'follower'
+            }))
+            .filter(item => !existing.has(item.id));
+        questionsBank = questionsBank.concat(mapped);
+        if (mapped.length) console.log(`✅ Added ${mapped.length} approved follower questions`);
+    } catch (error) {
+        // The static bank remains usable when the optional Firebase library is unavailable.
+        console.warn('تعذر تحميل أسئلة المتابعين، سيتم استخدام البنك الأساسي.', error);
+    } finally {
+        extraQuestionsLoaded = true;
+    }
+}
 
 async function loadQuestionsFromJSON() {
     if (questionsLoaded) return;
@@ -551,14 +1008,17 @@ async function loadQuestionsFromJSON() {
         }
         
         if (data && data.length > 0) {
-            questionsBank = data.map(item => ({
+            questionsBank = data.map((item, index) => ({
+                id: item.id || `static-${index}`,
                 q: item.question || item.q || "",
                 a: item.answer || item.a || "",
-                letterMatch: item.letter ? item.letter.replace(/[أإآ]/g, 'ا') : 'عام'
+                letterMatch: normalizeQuestionLetter(item.letter) || 'عام',
+                source: 'static'
             }));
-            questionsLoaded = true;
-            console.log(`✅ Bank Ready: ${questionsBank.length} questions`);
         }
+        await loadExtraQuestionLibrary();
+        questionsLoaded = true;
+        console.log(`✅ Bank Ready: ${questionsBank.length} questions`);
         if (loadingEl) loadingEl.style.display = 'none';
     } catch (err) {
         console.error('❌ Data Load Error:', err);
@@ -566,6 +1026,10 @@ async function loadQuestionsFromJSON() {
 }
 
 function showQuestionPanel(letter, cellEl) {
+    if (isAdminViewer()) {
+        closeQuestionPanel();
+        return;
+    }
     const panel = document.getElementById('sidebarQuestion');
     if (!panel) return;
     
@@ -595,16 +1059,22 @@ function showRandomQuestion(targetLetter) {
     if (questionsBank.length === 0) return;
     
     targetLetter = targetLetter || window.currentRequestedLetter || '';
-    let normalizedTarget = targetLetter.replace(/[أإآ]/g, 'ا');
+    let normalizedTarget = normalizeQuestionLetter(targetLetter);
     
     let filteredQs = questionsBank.filter(q => {
         if (!normalizedTarget) return true;
-        return q.letterMatch && q.letterMatch.includes(normalizedTarget);
+        return q.letterMatch && normalizeQuestionLetter(q.letterMatch) === normalizedTarget;
     });
     
     if (filteredQs.length === 0) filteredQs = questionsBank;
     
-    const qChosen = filteredQs[Math.floor(Math.random() * filteredQs.length)];
+    let availableQs = filteredQs.filter(item => !usedQuestionIds.has(item.id));
+    if (!availableQs.length) {
+        filteredQs.forEach(item => usedQuestionIds.delete(item.id));
+        availableQs = filteredQs;
+    }
+    const qChosen = availableQs[Math.floor(Math.random() * availableQs.length)];
+    if (qChosen?.id) usedQuestionIds.add(qChosen.id);
     currentQIndex = questionsBank.indexOf(qChosen);
     
     // UI Elements
@@ -628,19 +1098,82 @@ function showRandomQuestion(targetLetter) {
     if (numEl) {
         numEl.textContent = targetLetter || "عام";
     }
+    // In human-presenter mode the full question belongs only to the
+    // presenter phone. The public game state carries the selected letter
+    // without leaking the question or answer to players.
+    if (teamSetup.presenter === 'human') {
+        publishPresenterQuestion().catch(() => {});
+    } else {
+        publishLiveGameState().catch(() => {});
+    }
+}
+
+async function prepareHumanPresenterQuestion(letter) {
+    if (isAdminViewer()) {
+        closeQuestionPanel();
+        return;
+    }
+    window.currentRequestedLetter = letter;
+    if (!questionsLoaded || questionsBank.length === 0) {
+        await loadQuestionsFromJSON();
+    }
+    if (questionsBank.length > 0) showRandomQuestion(letter);
+    closeQuestionPanel();
+}
+
+function showAudienceAnswerOverlay(answer) {
+    const overlay = document.getElementById('audienceAnswerOverlay');
+    const text = document.getElementById('audienceAnswerText');
+    if (!overlay || !text || !answer) return;
+    text.textContent = answer;
+    overlay.classList.remove('show');
+    void overlay.offsetWidth;
+    overlay.classList.add('show');
+    clearTimeout(window.audienceAnswerOverlayTimer);
+    window.audienceAnswerOverlayTimer = setTimeout(() => overlay.classList.remove('show'), 3000);
 }
 
 function revealAnswer() {
+    if (isAdminViewer() && !_presenterCommandInProgress) return;
     safeSetDisplay('sqAnswer', 'block');
     safeSetDisplay('sqRevealBtn', 'none');
+    showAudienceAnswerOverlay(document.getElementById('sqAnswerText')?.textContent?.trim());
+    if (teamSetup.presenter === 'human') publishPresenterQuestion().catch(() => {});
+    publishLiveGameState().catch(() => {});
 }
 
 function nextQuestion() {
+    if (isAdminViewer() && !_presenterCommandInProgress) {
+        showEditingLockedNotice();
+        return;
+    }
     showRandomQuestion();
 }
 
 function closeQuestionPanel() {
     safeSetDisplay('sidebarQuestion', 'none');
+}
+
+// Once a cell has been resolved, remove the question from every view.  The
+// presenter and audience otherwise kept seeing the previous question while
+// the next cell was being selected.
+function clearActiveQuestion({ publish = true } = {}) {
+    window.currentRequestedLetter = '';
+    const qEl = document.getElementById('sqQuestion');
+    const aEl = document.getElementById('sqAnswerText');
+    const numEl = document.getElementById('sqNum');
+    const answerRow = document.getElementById('sqAnswer');
+    const revealBtn = document.getElementById('sqRevealBtn');
+    if (qEl) qEl.textContent = '';
+    if (aEl) aEl.textContent = '';
+    if (numEl) numEl.textContent = '';
+    if (answerRow) answerRow.style.display = 'none';
+    if (revealBtn) revealBtn.style.display = 'none';
+    closeQuestionPanel();
+    if (teamSetup.presenter === 'human' && typeof publishPresenterQuestion === 'function') {
+        publishPresenterQuestion({ letter: '', text: '', answer: '', revealed: false, selectedCell: null }).catch(() => {});
+    }
+    if (publish) publishLiveGameState().catch(() => {});
 }
 
 // ===== Screen Navigation =====
@@ -650,7 +1183,8 @@ window.addEventListener('DOMContentLoaded', () => {
     applyDarkMode(savedTheme === 'dark');
     
     initSettingsUI();
-    setGamePresenter(teamSetup.presenter);
+    setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
+    applyAdminViewerMode();
     
     // Load saved buzzer URL from localStorage if it exists
     let savedBuzzerUrl = localStorage.getItem('buzzerServerUrl');
@@ -677,7 +1211,24 @@ window.addEventListener('DOMContentLoaded', () => {
         teamSetup.manualTime = parseInt(savedManualTime);
     }
 
-    const restoredGame = restoreSavedGameState();
+    const savedScreen = localStorage.getItem(UI_SCREEN_KEY);
+    const settingsSource = localStorage.getItem(SETTINGS_SOURCE_KEY);
+    // Restore only an explicitly active match.  A home marker is authoritative
+    // so a refresh after leaving a round cannot reopen the old board.
+    const shouldRestoreGame = savedScreen === 'game' ||
+        (savedScreen === 'settings' && settingsSource === 'game');
+    const restoredGame = shouldRestoreGame ? restoreSavedGameState() : false;
+
+    if (!restoredGame && savedScreen === 'game') {
+        localStorage.setItem(UI_SCREEN_KEY, 'home');
+        localStorage.removeItem(SETTINGS_SOURCE_KEY);
+    }
+
+    if (!shouldRestoreGame) {
+        clearSavedGameState();
+    }
+
+    updateSoundButton();
 
     // Preserve the settings screen across refreshes, including when it was
     // opened over an active game.
@@ -728,6 +1279,10 @@ document.addEventListener('click', (e) => {
 let settingsCalledFromGame = false;
 
 function showSettings() {
+    if (isAdminViewer()) {
+        showEditingLockedNotice();
+        return;
+    }
     const homeScreen = document.getElementById('homeScreen');
     const isInGame = homeScreen && homeScreen.style.display === 'none';
     settingsCalledFromGame = isInGame;
@@ -790,9 +1345,11 @@ function syncSettingsUI() {
         }
     }
 
-    // مزامنة الوقت اليدوي
-    const manualValEl = document.getElementById('manualTimeVal');
-    if (manualValEl) manualValEl.textContent = teamSetup.manualTime;
+    // مزامنة جميع مدد المؤقت
+    ['manualTime', 'ansTime', 'otherTime'].forEach(key => {
+        const valueEl = document.getElementById(key + 'Val');
+        if (valueEl) valueEl.textContent = teamSetup[key];
+    });
 
     // مزامنة الألوان
     const colorsGrid = document.getElementById('setColorsGroup');
@@ -807,11 +1364,16 @@ function syncSettingsUI() {
 function showHome() {
     document.getElementById('settingsScreen').style.display = 'none';
     document.getElementById('homeScreen').style.display = 'flex';
+    document.body.classList.remove('normal-game-active');
     localStorage.setItem(UI_SCREEN_KEY, 'home');
     localStorage.removeItem(SETTINGS_SOURCE_KEY);
 }
 
 function saveSettings() {
+    if (isAdminViewer()) {
+        showEditingLockedNotice();
+        return;
+    }
     const cName = document.getElementById('setCompName').value.trim();
     if(cName) teamSetup.competitionName = cName;
     
@@ -843,22 +1405,27 @@ function saveSettings() {
 }
 
 function startGame() {
+    if (isAdminViewer() && !_presenterCommandInProgress) {
+        showEditingLockedNotice();
+        return;
+    }
+    usedQuestionIds.clear();
     window.qafTrackGameStart?.();
     document.getElementById('homeScreen').style.display = 'none';
     localStorage.setItem(UI_SCREEN_KEY, 'game');
     localStorage.removeItem(SETTINGS_SOURCE_KEY);
     gameIsActive = true;
+    document.body.classList.add('normal-game-active');
     
     // Generate unique session code for this game
     if (buzzerSocket) { buzzerSocket.disconnect(); buzzerSocket = null; }
     buzzerRoom = generateBuzzerCode();
-    const bw = document.getElementById('sessionBadgeWrap');
-    const bc = document.getElementById('sessionBadgeCode');
-    if (bw && bc) { bw.style.display = 'block'; bc.textContent = buzzerRoom; }
-    
-    
+    gameSessionId = createSessionHistoryId();
+    sessionStartedAt = Date.now();
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    roundWins = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
     teamSetup.team1.score = 0;
     teamSetup.team2.score = 0;
     
@@ -879,8 +1446,9 @@ function startGame() {
     renderBoard();
     updateRoundDisplay();
     updateSidebar();
-    setGamePresenter(teamSetup.presenter);
+    setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
     saveGameState();
+    setupLiveGameSession().catch(error => console.error('Live session setup failed', error));
     
     showTransitionScreen(compName, getRoundWord(teamSetup.currentRound));
 }
@@ -942,7 +1510,13 @@ function hideTransitionNow(ts, mainArea) {
         mainArea.style.display = 'flex';
         // The board was first rendered while the game area was hidden, so its
         // measured size was zero. Re-render after the visible layout is ready.
-        requestAnimationFrame(() => renderBoard());
+        requestAnimationFrame(() => {
+            renderBoard();
+            window.HojasFirstGameTour?.maybeStart({
+                mode: 'normal',
+                active: () => gameIsActive
+            });
+        });
         if (teamSetup.sound === 'on') {
             const enterAudio = document.getElementById('enterSound');
             if (enterAudio) {
@@ -968,7 +1542,8 @@ window.addEventListener('click', (e) => {
     }
 });
 
-function setGamePresenter(type) {
+function setGamePresenter(type, force = false) {
+    if (isAdminViewer() && !force) type = 'human';
     teamSetup.presenter = type;
     
     // Update sidebar buttons
@@ -976,10 +1551,6 @@ function setGamePresenter(type) {
     const btnHuman = document.getElementById('ptBtnHuman');
     if (btnAi) btnAi.classList.toggle('active', type === 'ai');
     if (btnHuman) btnHuman.classList.toggle('active', type === 'human');
-    
-    // إظهار/إخفاء منطقة بوابة الأسئلة للمقدم البشري
-    const portalArea = document.getElementById('humanPortalArea');
-    if (portalArea) portalArea.style.display = (type === 'human') ? 'block' : 'none';
     
     // Update dropdown buttons if they exist
     const gdAi = document.getElementById('gdToggleAi');
@@ -1006,6 +1577,10 @@ function setGamePresenter(type) {
 }
 
 function resetGameGrid() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
     showGameConfirm({
         title: 'بدء لعبة جديدة؟',
         message: 'سيتم مسح الجولة الحالية وبدء لوحة جديدة.',
@@ -1013,7 +1588,8 @@ function resetGameGrid() {
         icon: '↻',
         onConfirm: () => {
             startGame();
-            document.getElementById('gameDropdown').style.display = 'none';
+            const dropdown = document.getElementById('gameDropdown');
+            if (dropdown) dropdown.style.display = 'none';
         }
     });
 }
@@ -1048,21 +1624,21 @@ function playBuzzerSound() {
         const oscillator = audioCtx.createOscillator();
         const oscillator2 = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        
+
         // Create a harsh, buzzer-like sound using two detuned square/sawtooth waves
         oscillator.type = 'sawtooth';
         oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
-        
+
         oscillator2.type = 'square';
         oscillator2.frequency.setValueAtTime(155, audioCtx.currentTime);
-        
+
         gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-        
+
         oscillator.connect(gainNode);
         oscillator2.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
+
         oscillator.start();
         oscillator2.start();
         oscillator.stop(audioCtx.currentTime + 0.8);
@@ -1072,22 +1648,27 @@ function playBuzzerSound() {
     }
 }
 
-function toggleGameSound() {
-    const isMuted = (teamSetup.sound === 'off');
-    teamSetup.sound = isMuted ? 'on' : 'off';
-    
-    const btn = document.getElementById('gdMuteBtn');
-    if (teamSetup.sound === 'on') {
-        btn.innerHTML = '<span>إيقاف الصوت</span> 🔊';
-    } else {
-        btn.innerHTML = '<span>تشغيل الصوت</span> 🔇';
-    }
-    
-    // Sync with main settings screen
-    const mainSettingsGroups = document.querySelectorAll('#setSoundGroup .toggle-btn');
-    mainSettingsGroups.forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.value === teamSetup.sound);
+function updateSoundButton() {
+    const muted = teamSetup.sound === 'off';
+    document.querySelectorAll('#bibMuteBtn, #gdMuteBtn').forEach(button => {
+        const icon = button.querySelector('.bib-icon-sound');
+        const label = button.querySelector('.bib-label');
+        if (icon) icon.textContent = muted ? '🔇' : '🔊';
+        if (label) label.textContent = muted ? 'مكتوم' : 'الصوت';
+        if (!icon && !label) button.innerHTML = `<span>${muted ? 'تشغيل الصوت' : 'إيقاف الصوت'}</span> ${muted ? '🔇' : '🔊'}`;
+        button.classList.toggle('is-muted', muted);
+        button.setAttribute('aria-label', muted ? 'الصوت مكتوم' : 'كتم الصوت');
+        button.setAttribute('aria-pressed', String(muted));
     });
+    document.querySelectorAll('#setSoundGroup .toggle-btn').forEach(button => {
+        button.classList.toggle('selected', button.dataset.value === teamSetup.sound);
+    });
+}
+
+function toggleGameSound() {
+    teamSetup.sound = teamSetup.sound === 'off' ? 'on' : 'off';
+    updateSoundButton();
+    saveGameState();
 }
 
 // ===== Settings Init =====
@@ -1117,7 +1698,7 @@ function initSettingsUI() {
                 if (gid === 'setPresenterGroup') teamSetup.presenter = btn.dataset.value;
                 if (gid === 'setSoundGroup') {
                     teamSetup.sound = btn.dataset.value;
-
+                    updateSoundButton();
                 }
                 if (gid === 'setThemeGroup') {
                     applyDarkMode(btn.dataset.value === 'dark');
@@ -1154,6 +1735,10 @@ function adjTime(key, delta) {
 }
 
 function startManualTimer(team) {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
     // Stop any existing timer first
     stopTimer();
     // Start timer for the team using manualTime
@@ -1274,6 +1859,10 @@ function updateBgGradient(color1, color2) {
 
 // ===== Start Game from Setup =====
 function startGameFromSetup() {
+    if (isAdminViewer() && !_presenterCommandInProgress) {
+        showEditingLockedNotice();
+        return;
+    }
     const n1 = document.getElementById('setupName1').value.trim();
     const n2 = document.getElementById('setupName2').value.trim();
     const err = document.getElementById('setupError');
@@ -1292,9 +1881,12 @@ function startGameFromSetup() {
     teamSetup.team2.name = n2;
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    roundWins = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
     teamSetup.team1.score = 0;
     teamSetup.team2.score = 0;
     gameIsActive = true;
+    document.body.classList.add('normal-game-active');
     window.qafTrackGameStart?.();
 
     // Apply team colors to CSS variables
@@ -1312,6 +1904,12 @@ function startGameFromSetup() {
     updateRoundDisplay();
     updateSidebar();
     saveGameState();
+    requestAnimationFrame(() => {
+        window.HojasFirstGameTour?.maybeStart({
+            mode: 'normal',
+            active: () => gameIsActive
+        });
+    });
 }
 
 // ===== Apply Dynamic Team Colors =====
@@ -1340,14 +1938,18 @@ function applyTeamColors() {
 function updateSidebar() {
     document.getElementById('name1').textContent = teamSetup.team1.name;
     document.getElementById('name2').textContent = teamSetup.team2.name;
-    document.getElementById('score1').textContent = scores.team1;
-    document.getElementById('score2').textContent = scores.team2;
+    document.getElementById('score1').textContent = roundWins.team1;
+    document.getElementById('score2').textContent = roundWins.team2;
 }
 
 // ===== Round Display =====
 
 // ===== Shuffle Board (only unclaimed) =====
 function shuffleBoard() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
     const unclaimed = [];
     const letters = [];
     for (let r = 0; r < BOARD_SIZE; r++) {
@@ -1422,6 +2024,12 @@ function renderBoard() {
 
             const shape = document.createElement('div');
             shape.className = 'hex-shape';
+            // Keep every hexagon at its assigned size while hovering.
+            cell.style.setProperty('transform', 'none', 'important');
+            cell.style.setProperty('transition', 'none', 'important');
+            shape.style.setProperty('transform', 'none', 'important');
+            shape.style.setProperty('transition', 'none', 'important');
+            shape.style.setProperty('animation', 'none', 'important');
 
             const letter = document.createElement('span');
             letter.className = 'hex-letter';
@@ -1443,6 +2051,11 @@ function renderBoard() {
 
 // ===== Hex Click =====
 function onHexClick(row, col, cellEl) {
+    if (isBoardEditingLocked()) {
+        showGameToast('اختيار الخلايا من جوال المقدم فقط', true);
+        return;
+    }
+
     // If clicking an already claimed cell -> Unclaim it immediately
     if (board[row][col] !== 0) {
         selectedCell = { row, col, el: cellEl };
@@ -1468,6 +2081,7 @@ function onHexClick(row, col, cellEl) {
     
     // Unlock buzzers for everyone silently when a new unclaimed letter is chosen
     if (typeof clearBuzzerLock === 'function') clearBuzzerLock(false);
+    if (typeof setSharedTimer === 'function') setSharedTimer('idle').catch(() => {});
     
     // Show question panel in AI presenter mode
     if (teamSetup.presenter === 'ai') {
@@ -1475,11 +2089,17 @@ function onHexClick(row, col, cellEl) {
         showQuestionPanel(targetedLetter, cellEl);
     } else {
         closeQuestionPanel();
+        prepareHumanPresenterQuestion(cellLetters[row][col]).catch(console.error);
     }
+    publishLiveGameState().catch(() => {});
 }
 
 // ===== Unclaim Cell =====
 function unclaimCell() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
     if (!selectedCell) return;
     
     const { row, col, el } = selectedCell;
@@ -1502,12 +2122,14 @@ function unclaimCell() {
         board[row][col] = 0;
         updateScoreBoard();
         saveGameState();
+        publishLiveGameState().catch(() => {});
     }
     
     stopTimer();
     el.classList.remove('selected');
     selectedCell = null;
     updateSidebarReady(false);
+    clearActiveQuestion();
     
     // Unlock buzzers if we are connected
     if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
@@ -1515,6 +2137,10 @@ function unclaimCell() {
 
 // ===== Assign Team =====
 function assignTeam(team) {
+    if (isBoardEditingLocked()) {
+        showGameToast('منح النقاط من جوال المقدم فقط', true);
+        return;
+    }
     if (!selectedCell) return;
     
     // Play correct answer sound
@@ -1533,15 +2159,17 @@ function assignTeam(team) {
     el.classList.remove('selected');
     el.classList.add('team-' + team);
     board[row][col] = team;
+    scores[team] = Number(scores[team] || 0) + 1;
+    teamSetup[team].score = roundWins[team];
+    updateScoreBoard();
     saveGameState();
 
     // Unlock buzzers when a team is officially assigned
     if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
 
-    // Score incremented only on round win (not per cell)
-
     selectedCell = null;
     updateSidebarReady(false);
+    clearActiveQuestion();
 
     // Check win for this team
     if (checkWin(team)) {
@@ -1550,10 +2178,12 @@ function assignTeam(team) {
         return;
     }
 
-    // Check if all cells claimed → next round
+    // A full board without a connected path has no winner.  Keep the round in
+    // place and let the presenter reset the cells instead of auto-advancing.
     if (isBoardFull()) {
         setTimeout(handleRoundEnd, 500);
     }
+    publishLiveGameState().catch(() => {});
 }
 
 // ===== Cancel =====
@@ -1564,6 +2194,7 @@ function cancelSelect() {
         selectedCell = null;
     }
     updateSidebarReady(false);
+    publishLiveGameState().catch(() => {});
 }
 
 // تحديث حالة الاستعداد في القائمة الجانبية (الوميض)
@@ -1682,11 +2313,23 @@ function highlightWinPath(team) {
 
 // ===== Show Round Win (one team connected!) =====
 function showRoundWin(team) {
-    // +1 point for winning this round
-    if (scores[team] !== undefined) scores[team]++;
-    if (teamSetup[team]) teamSetup[team].score = scores[team];
+    if (team !== 'team1' && team !== 'team2') return;
+    if (currentRoundWinner === team) return;
+    currentRoundWinner = team;
+    roundWins[team] = Number(roundWins[team] || 0) + 1;
+    teamSetup[team].score = roundWins[team];
     updateScoreBoard();
     saveGameState();
+    const roundLeader = getBestConnectedPlayer();
+    publishLiveGameState({
+        status: 'roundEnd',
+        roundWinner: team,
+        roundLeader: roundLeader ? {
+            name: roundLeader.name,
+            team: roundLeader.team,
+            correctAnswers: Number(roundLeader.correctAnswers || 0)
+        } : null
+    }).catch(() => {});
 
     const t = team === 'team1' ? teamSetup.team1 : teamSetup.team2;
     const c = COLOR_MAP[t.color];
@@ -1697,6 +2340,9 @@ function showRoundWin(team) {
     const safeTeamName = String(t.name).replace(/[&<>'"]/g, char => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
     })[char]);
+    const safeLeaderName = roundLeader ? String(roundLeader.name).replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[char]) : '';
 
     const html = `
         <div id="roundWinOverlay" class="transition-screen round-win-overlay">
@@ -1705,7 +2351,8 @@ function showRoundWin(team) {
                 <div class="round-win-trophy" aria-hidden="true">🏆</div>
                 <div class="round-win-kicker">الفائز بالجولة</div>
                 <h2 class="round-win-name">${safeTeamName}</h2>
-                <p class="round-win-note">تمت إضافة نقطة للفريق</p>
+                <p class="round-win-note">اكتمل مسار الفريق في هذه الجولة</p>
+                ${roundLeader ? `<p class="round-win-note">⭐ الأكثر إجابات صحيحة: ${safeLeaderName} (${Number(roundLeader.correctAnswers || 0)})</p>` : ''}
                 <button class="round-win-next" onclick="${btnAction}">${btnText}</button>
             </section>
         </div>
@@ -1714,17 +2361,39 @@ function showRoundWin(team) {
 }
 
 function nextRound() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
+    if (currentRoundWinner !== 'team1' && currentRoundWinner !== 'team2') {
+        showGameToast('لا يمكن بدء جولة جديدة قبل إعلان فائز بالجولة الحالية.', true);
+        return;
+    }
+    if (teamSetup.currentRound >= teamSetup.totalRounds) {
+        showFinalFromRound();
+        return;
+    }
     const overlay = document.getElementById('roundWinOverlay');
     if (overlay) overlay.remove();
     teamSetup.currentRound++;
+    scores = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
     updateRoundDisplay();
     initBoard();
     renderBoard();
     cancelSelect();
+    clearActiveQuestion();
     saveGameState();
+    publishLiveGameState({ status: 'playing' }).catch(() => {});
 }
 
 function showFinalFromRound() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return;
+    }
     const overlay = document.getElementById('roundWinOverlay');
     if (overlay) overlay.remove();
     showFinalResult();
@@ -1740,23 +2409,41 @@ function isBoardFull() {
 
 // ===== Handle Round End =====
 function handleRoundEnd() {
-    if (teamSetup.currentRound >= teamSetup.totalRounds) {
-        // Game over
-        showFinalResult();
-    } else {
-        teamSetup.currentRound++;
-        updateRoundDisplay();
-        initBoard();
-        renderBoard();
-        cancelSelect();
-        saveGameState();
+    if (currentRoundWinner) return;
+    showGameToast('اكتملت الخلايا — لا يوجد فائز بعد. استخدم «تصفير الخلايا» من جوال المقدم.', true);
+    publishLiveGameState({ status: 'playing', boardFull: true }).catch(() => {});
+}
+
+// Clear only the ownership of the cells.  Round wins, team names, settings,
+// and the current round remain untouched so the presenter can continue the
+// same match after a board with no connected winner.
+function resetCells() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return false;
     }
+    stopTimer();
+    clearBuzzerLock(false);
+    board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
+    selectedCell = null;
+    scores = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
+    renderBoard();
+    updateSidebarReady(false);
+    updateScoreBoard();
+    clearActiveQuestion({ publish: false });
+    saveGameState();
+    publishLiveGameState({ status: 'playing', roundWinner: null, boardFull: false, cellsResetAt: Date.now() }).catch(() => {});
+    showGameToast('تم تصفير الخلايا — نتيجة الجولات لم تتغير.', true);
+    return true;
 }
 
 // ===== Final Result =====
 function showFinalResult() {
-    const s1 = scores.team1;
-    const s2 = scores.team2;
+    const s1 = Number(roundWins.team1) || 0;
+    const s2 = Number(roundWins.team2) || 0;
     const n1 = teamSetup.team1.name;
     const n2 = teamSetup.team2.name;
     const c1 = COLOR_MAP[teamSetup.team1.color];
@@ -1770,7 +2457,18 @@ function showFinalResult() {
     const isDraw = s1 === s2;
     const winnerName = s1 > s2 ? safeN1 : safeN2;
     const title = isDraw ? 'تعادل جميل!' : `مبروك ${winnerName}!`;
-    const subtitle = isDraw ? 'منافسة قوية حتى آخر خلية' : 'بطل هذه المواجهة';
+    const subtitle = isDraw ? 'تعادل في عدد الجولات' : 'الفائز بعدد الجولات';
+    recordCompletedSession();
+    const bestPlayer = getBestConnectedPlayer();
+    publishLiveGameState({
+        status: 'finished',
+        bestPlayer: bestPlayer ? {
+            name: bestPlayer.name,
+            team: bestPlayer.team,
+            correctAnswers: Number(bestPlayer.correctAnswers || 0)
+        } : null
+    }).catch(() => {});
+    const safeBestPlayerName = bestPlayer ? safeName(bestPlayer.name) : '';
 
     const html = `
         <div id="gameOverOverlay" class="game-over-overlay" role="dialog" aria-modal="true" aria-label="النتيجة النهائية">
@@ -1779,6 +2477,7 @@ function showFinalResult() {
             <div class="game-over-kicker">النتيجة النهائية</div>
             <div class="game-over-title">${title}</div>
             <div class="game-over-subtitle">${subtitle}</div>
+            ${bestPlayer ? `<div class="game-over-subtitle">⭐ أفضل لاعب: ${safeBestPlayerName} — ${Number(bestPlayer.correctAnswers || 0)} إجابات صحيحة</div>` : ''}
 
             <div class="game-over-scores">
                 <div class="game-over-team ${s1 > s2 ? 'is-winner' : ''}" style="--team-color:${c1.bg};--team-text:${c1.text};">
@@ -1856,6 +2555,21 @@ function generateBuzzerCode() {
 let _fbApp   = null;
 let _fbDb    = null;
 let _fbUnsubscribe = null;
+let _liveCommandUnsubscribe = null;
+let _liveTimerUnsubscribe = null;
+let _livePlayersUnsubscribe = null;
+let _livePresenterUnsubscribe = null;
+let _liveServerOffsetUnsubscribe = null;
+let _liveServerOffset = 0;
+let _liveTimerRenderInterval = null;
+let _liveTimerAdvanceKey = '';
+let _lastPresenterCommandId = '';
+let _lastDisplayedBuzzKey = '';
+let _presenterAccessUrl = '';
+let _livePlayers = {};
+let _livePresenterConnected = false;
+let _presenterCommandInProgress = false;
+const PRESENTER_LINK_TTL_MS = 15 * 60 * 1000;
 
 async function ensureFirebase() {
     if (_fbDb) return _fbDb;
@@ -1873,6 +2587,488 @@ async function ensureFirebase() {
     _fbApp = getApps().length === 0 ? initializeApp(FB_CONFIG) : getApps()[0];
     _fbDb  = getDatabase(_fbApp);
     return _fbDb;
+}
+
+function createSecureToken() {
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashSecureToken(value) {
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function getPresenterToken(forceNew = false) {
+    if (!buzzerRoom) return '';
+    const key = `hojas_presenter_token_${buzzerRoom}`;
+    let token = forceNew ? '' : sessionStorage.getItem(key);
+    if (!token) {
+        token = createSecureToken();
+        sessionStorage.setItem(key, token);
+    }
+    return token;
+}
+
+function getCurrentQuestionState() {
+    const isPrivatePresenterMode = teamSetup.presenter === 'human';
+    return {
+        letter: window.currentRequestedLetter || '',
+        text: isPrivatePresenterMode ? '' : (document.getElementById('sqQuestion')?.textContent || ''),
+        answer: isPrivatePresenterMode ? '' : (document.getElementById('sqAnswerText')?.textContent || ''),
+        revealed: isPrivatePresenterMode ? false : document.getElementById('sqAnswer')?.style.display !== 'none'
+    };
+}
+
+// Keep the complete question in a presenter-only Firebase node. Players
+// receive the public game state above, which intentionally omits question
+// text and answers while a human presenter is active.
+async function publishPresenterQuestion(overrides = null) {
+    if (!buzzerRoom || !gameIsActive || teamSetup.presenter !== 'human') return;
+    try {
+        const db = await ensureFirebase();
+        const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        const current = overrides || {
+            letter: window.currentRequestedLetter || '',
+            text: document.getElementById('sqQuestion')?.textContent || '',
+            answer: document.getElementById('sqAnswerText')?.textContent || '',
+            revealed: document.getElementById('sqAnswer')?.style.display !== 'none',
+            selectedCell: selectedCell ? { row: selectedCell.row, col: selectedCell.col } : null
+        };
+        await update(ref(db, `rooms/${buzzerRoom}/presenterQuestion`), {
+            letter: current.letter || '',
+            text: current.text || '',
+            answer: current.answer || '',
+            revealed: Boolean(current.revealed),
+            selectedCell: current.selectedCell || null,
+            updatedAt: Date.now()
+        });
+    } catch (error) {
+        console.warn('تعذر مزامنة سؤال المقدم الخاص', error);
+    }
+}
+
+function buildLiveGameState(extra = {}) {
+    return {
+        board,
+        cellLetters,
+        selectedCell: selectedCell ? { row: selectedCell.row, col: selectedCell.col } : null,
+        question: getCurrentQuestionState(),
+        scores: { ...scores },
+        roundWins: { ...roundWins },
+        roundWinner: currentRoundWinner || null,
+        round: teamSetup.currentRound,
+        totalRounds: teamSetup.totalRounds,
+        competitionName: teamSetup.competitionName,
+        team1: { ...teamSetup.team1 },
+        team2: { ...teamSetup.team2 },
+        settings: { answerSeconds: teamSetup.ansTime, otherTeamSeconds: teamSetup.otherTime },
+        status: 'playing',
+        updatedAt: Date.now(),
+        ...extra
+    };
+}
+
+async function publishLiveGameState(extra = {}) {
+    if (!buzzerRoom || !gameIsActive) return;
+    try {
+        const db = await ensureFirebase();
+        const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        await update(ref(db, `rooms/${buzzerRoom}/game`), buildLiveGameState(extra));
+    } catch (error) {
+        console.warn('تعذر مزامنة شاشة الجمهور', error);
+    }
+}
+
+async function renderPresenterAccess(forceNew = false) {
+    if (!buzzerRoom) return;
+    const token = getPresenterToken(forceNew);
+    const tokenHash = await hashSecureToken(token);
+    const db = await ensureFirebase();
+    const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const basePath = location.pathname.includes('/public/') ? '../pages/presenter.html' : 'pages/presenter.html';
+    _presenterAccessUrl = new URL(basePath, location.href).href +
+        `?room=${encodeURIComponent(buzzerRoom)}&token=${encodeURIComponent(token)}`;
+
+    await update(ref(db, `rooms/${buzzerRoom}`), {
+        presenterTokenHash: tokenHash,
+        presenterAccessCreatedAt: Date.now(),
+        presenterTokenExpiresAt: Date.now() + PRESENTER_LINK_TTL_MS,
+        team1Name: teamSetup.team1.name,
+        team2Name: teamSetup.team2.name
+    });
+
+    const qrBox = document.getElementById('modalPresenterQrcodeBox');
+    if (qrBox) {
+        qrBox.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrBox, {
+                text: _presenterAccessUrl,
+                width: 156,
+                height: 156,
+                colorDark: '#16052d',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            const generatedImage = qrBox.querySelector('img');
+            if (generatedImage) generatedImage.alt = 'باركود دخول المقدم';
+        } else {
+            const img = document.createElement('img');
+            img.alt = 'باركود دخول المقدم';
+            img.src = `https://quickchart.io/qr?text=${encodeURIComponent(_presenterAccessUrl)}&size=160&margin=1`;
+            qrBox.appendChild(img);
+        }
+    }
+}
+
+async function openPresenterAccessModal() {
+    if (!buzzerRoom) {
+        showGameToast('ابدأ الجلسة أولًا لإنشاء باركود المقدم', true);
+        return;
+    }
+    const modal = document.getElementById('presenterShareModal');
+    const roomCode = document.getElementById('presenterModalRoomCode');
+    if (roomCode) roomCode.textContent = buzzerRoom;
+    if (modal) modal.style.display = 'flex';
+    try {
+        await renderPresenterAccess(true);
+    } catch (error) {
+        console.error(error);
+        showGameToast('تعذر إنشاء باركود المقدم', true);
+    }
+}
+
+function closePresenterAccessModal() {
+    safeSetDisplay('presenterShareModal', 'none');
+}
+
+let questionSuggestionMode = 'choice';
+
+function selectSuggestionMode(mode = 'choice') {
+    questionSuggestionMode = ['question', 'suggestion'].includes(mode) ? mode : 'choice';
+    const choices = document.getElementById('questionSuggestionChoices');
+    const questionPanel = document.getElementById('suggestionQuestionPanel');
+    const proposalPanel = document.getElementById('suggestionProposalPanel');
+    const back = document.getElementById('questionSuggestionBack');
+    const submit = document.getElementById('questionSuggestionSubmit');
+    const title = document.getElementById('questionSuggestionTitle');
+    const intro = document.getElementById('questionSuggestionIntro');
+    if (choices) choices.hidden = questionSuggestionMode !== 'choice';
+    if (questionPanel) questionPanel.hidden = questionSuggestionMode !== 'question';
+    if (proposalPanel) proposalPanel.hidden = questionSuggestionMode !== 'suggestion';
+    if (back) back.hidden = questionSuggestionMode === 'choice';
+    if (submit) {
+        submit.hidden = questionSuggestionMode === 'choice';
+        submit.textContent = questionSuggestionMode === 'suggestion' ? 'إرسال الاقتراح للمراجعة' : 'إرسال السؤال للمراجعة';
+    }
+    if (title) title.textContent = questionSuggestionMode === 'question' ? 'أرسل سؤالًا جديدًا' : questionSuggestionMode === 'suggestion' ? 'أرسل اقتراحًا' : 'أسئلة المتابعين';
+    if (intro) intro.textContent = questionSuggestionMode === 'question'
+        ? 'أضف سؤالًا وإجابته والحرف، وسيراجعه المشرف قبل دخوله بنك اللعبة.'
+        : questionSuggestionMode === 'suggestion'
+            ? 'شارك فكرة أو بلّغ عن مشكلة، وسيتابعها المشرف.'
+            : 'اختر ما تريد إرساله، وستصل مشاركتك إلى الأدمن للمراجعة.';
+    const questionFields = ['suggestionLetter', 'suggestionQuestion', 'suggestionAnswer'];
+    questionFields.forEach(id => { const field = document.getElementById(id); if (field) field.required = questionSuggestionMode === 'question'; });
+    const proposalText = document.getElementById('proposalText');
+    if (proposalText) proposalText.required = questionSuggestionMode === 'suggestion';
+    const status = document.getElementById('questionSuggestionStatus');
+    if (status) status.textContent = '';
+}
+
+function openQuestionSuggestionModal() {
+    const modal = document.getElementById('questionSuggestionModal');
+    if (!modal) return;
+    document.getElementById('questionSuggestionForm')?.reset();
+    selectSuggestionMode('choice');
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeQuestionSuggestionModal() {
+    const modal = document.getElementById('questionSuggestionModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+async function submitQuestionSuggestion(event) {
+    event.preventDefault();
+    const form = document.getElementById('questionSuggestionForm');
+    const submit = document.getElementById('questionSuggestionSubmit');
+    const status = document.getElementById('questionSuggestionStatus');
+    if (questionSuggestionMode === 'choice') return;
+    submit.disabled = true;
+    if (status) status.textContent = 'جاري الإرسال للمراجعة...';
+    try {
+        if (!window.QuestionLibrary) throw new Error('question-library-unavailable');
+        if (questionSuggestionMode === 'question') {
+            const name = document.getElementById('suggestionName')?.value.trim() || 'متابع';
+            const letter = document.getElementById('suggestionLetter')?.value.trim().slice(0, 2) || '';
+            const question = document.getElementById('suggestionQuestion')?.value.trim() || '';
+            const answer = document.getElementById('suggestionAnswer')?.value.trim() || '';
+            if (!letter || question.length < 8 || !answer || !window.QuestionLibrary.answerMatchesLetter(answer, letter)) {
+                throw new Error('letter-mismatch');
+            }
+            await window.QuestionLibrary.submitQuestion({
+                name, letter, question, answer,
+                category: document.getElementById('suggestionCategory')?.value.trim(),
+                difficulty: document.getElementById('suggestionDifficulty')?.value
+            });
+        } else {
+            const text = document.getElementById('proposalText')?.value.trim() || '';
+            if (text.length < 5) throw new Error('proposal-too-short');
+            await window.QuestionLibrary.submitSuggestion({
+                name: document.getElementById('proposalName')?.value.trim(),
+                category: document.getElementById('proposalType')?.value,
+                title: document.getElementById('proposalTitle')?.value.trim(),
+                text
+            });
+        }
+        form.reset();
+        if (status) status.textContent = questionSuggestionMode === 'question' ? 'تم إرسال السؤال للمراجعة، شكرًا لك!' : 'تم إرسال اقتراحك للمراجعة، شكرًا لك!';
+        setTimeout(() => closeQuestionSuggestionModal(), 1400);
+    } catch (error) {
+        console.error(error);
+        if (status) status.textContent = error.message === 'letter-mismatch' ? 'تأكد أن الإجابة تبدأ بالحرف المحدد.' : error.message === 'proposal-too-short' ? 'اكتب الاقتراح بتفاصيل أكثر.' : 'تعذر الإرسال الآن، حاول مرة أخرى.';
+    } finally {
+        submit.disabled = false;
+    }
+}
+
+function openPresenterDirectly() {
+    if (_presenterAccessUrl) window.open(_presenterAccessUrl, '_blank', 'noopener');
+}
+
+async function setSharedTimer(phase, team = '', durationSeconds = 0) {
+    if (!buzzerRoom) return;
+    const db = await ensureFirebase();
+    const { ref, update, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    await update(ref(db, `rooms/${buzzerRoom}/timer`), {
+        phase,
+        team,
+        durationMs: Math.max(0, Number(durationSeconds) || 0) * 1000,
+        startedAt: serverTimestamp(),
+        questionId: `${teamSetup.currentRound}-${window.currentRequestedLetter || ''}-${Date.now()}`
+    });
+}
+
+function displaySharedTimer(timer) {
+    clearInterval(_liveTimerRenderInterval);
+    const display = document.getElementById('timerDisplay');
+    const teamSpan = document.getElementById('timerTeam');
+    const secSpan = document.getElementById('timerSeconds');
+    if (!display || !timer || timer.phase === 'idle') {
+        if (display) display.style.display = 'none';
+        document.getElementById('buzzerLockOverlay')?.remove();
+        return;
+    }
+    display.style.display = 'flex';
+    if (timer.phase === 'open') {
+        teamSpan.textContent = 'مفتوح للجميع بالجرس';
+        secSpan.textContent = '🔔';
+        display.classList.remove('danger');
+        document.getElementById('buzzerLockOverlay')?.remove();
+        return;
+    }
+    const render = () => {
+        const elapsed = Date.now() + _liveServerOffset - Number(timer.startedAt || Date.now());
+        const remaining = Math.max(0, Math.ceil((Number(timer.durationMs || 0) - elapsed) / 1000));
+        teamSpan.textContent = `وقت ${teamSetup[timer.team]?.name || ''}:`;
+        secSpan.textContent = remaining;
+        display.classList.toggle('danger', remaining <= 3);
+        syncBuzzerOverlayWithSharedTimer(timer, remaining);
+        if (remaining <= 0) {
+            clearInterval(_liveTimerRenderInterval);
+            advanceSharedTimer(timer);
+        }
+    };
+    render();
+    _liveTimerRenderInterval = setInterval(render, 250);
+}
+
+function syncBuzzerOverlayWithSharedTimer(timer, remaining) {
+    if (!timer || (timer.phase !== 'first' && timer.phase !== 'second')) return;
+
+    const teamObj = timer.team === 'team2' ? teamSetup.team2 : teamSetup.team1;
+    let overlay = document.getElementById('buzzerLockOverlay');
+    const needsSecondChanceView = timer.phase === 'second' && overlay?.dataset.timerPhase !== 'second';
+
+    if (!overlay || needsSecondChanceView) {
+        showBuzzerOverlay(
+            timer.phase === 'second' ? (teamObj?.name || '') : 'الفريق الأسرع',
+            timer.team,
+            timer.phase,
+            remaining
+        );
+        overlay = document.getElementById('buzzerLockOverlay');
+    }
+
+    if (overlay) overlay.dataset.timerPhase = timer.phase;
+    updateBuzzerOverlayTimer(teamObj?.name || '', remaining, timer.phase);
+}
+
+async function advanceSharedTimer(timer) {
+    if (!buzzerRoom || !timer) return;
+    const timerKey = `${timer.phase}|${timer.team || ''}|${timer.startedAt || ''}|${timer.questionId || ''}`;
+    if (_liveTimerAdvanceKey === timerKey) return;
+    _liveTimerAdvanceKey = timerKey;
+    try {
+        const db = await ensureFirebase();
+        const { ref, get, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        const fresh = (await get(ref(db, `rooms/${buzzerRoom}/timer`))).val();
+        const freshKey = fresh ? `${fresh.phase}|${fresh.team || ''}|${fresh.startedAt || ''}|${fresh.questionId || ''}` : '';
+        if (!fresh || freshKey !== timerKey) return;
+        if (fresh.phase === 'first') {
+            const otherTeam = fresh.team === 'team1' ? 'team2' : 'team1';
+            await setSharedTimer('second', otherTeam, teamSetup.otherTime);
+            return;
+        }
+        if (fresh.phase === 'second') {
+            isBuzzerLocked = false;
+            document.getElementById('buzzerLockOverlay')?.remove();
+            await update(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null });
+            await setSharedTimer('open', '', 0);
+        }
+    } catch (error) {
+        _liveTimerAdvanceKey = '';
+        throw error;
+    }
+}
+
+function getBestConnectedPlayer() {
+    const players = Object.values(_livePlayers || {});
+    if (!players.length) return null;
+    return players.sort((a, b) => Number(b.correctAnswers || 0) - Number(a.correctAnswers || 0))[0] || null;
+}
+
+async function executePresenterCommand(command) {
+    if (!command || command.id === _lastPresenterCommandId) return;
+    _lastPresenterCommandId = command.id;
+    const payload = command.payload || {};
+    _presenterCommandInProgress = true;
+    try {
+    if (command.type === 'setPresenterMode') {
+        // Opening the presenter page is the authoritative switch to human
+        // presentation for this room. Audience clicks stay read-only.
+        setGamePresenter('human');
+        saveGameState();
+        await publishPresenterQuestion({ letter: '', text: '', answer: '', revealed: false, selectedCell: null });
+        await publishLiveGameState();
+    } else if (command.type === 'selectCell') {
+        const row = Number(payload.row);
+        const col = Number(payload.col);
+        const cell = document.querySelector(`.hex-cell[data-row="${row}"][data-col="${col}"]`);
+        if (cell) {
+            onHexClick(row, col, cell);
+        }
+    } else if (command.type === 'nextRound') {
+        if (currentRoundWinner !== 'team1' && currentRoundWinner !== 'team2') {
+            showGameToast('لا يمكن بدء جولة جديدة قبل إعلان فائز بالجولة الحالية.', true);
+        } else if (teamSetup.currentRound < teamSetup.totalRounds) nextRound();
+        else showFinalFromRound();
+    } else if (command.type === 'newQuestion') {
+        showRandomQuestion(payload.letter || window.currentRequestedLetter);
+        await clearBuzzerLock(false);
+        await setSharedTimer('idle');
+    } else if (command.type === 'revealAnswer') {
+        revealAnswer();
+    } else if (command.type === 'awardPoint') {
+        if (selectedCell && (payload.team === 'team1' || payload.team === 'team2')) {
+            assignTeam(payload.team);
+            if (payload.playerId) {
+                const db = await ensureFirebase();
+                const { ref, runTransaction } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+                await runTransaction(ref(db, `rooms/${buzzerRoom}/players/${payload.playerId}/correctAnswers`),
+                    current => Number(current || 0) + 1);
+            }
+            await setSharedTimer('idle');
+        }
+    } else if (command.type === 'awardTeam1' || command.type === 'awardTeam2') {
+        const team = command.type === 'awardTeam1' ? 'team1' : 'team2';
+        if (selectedCell) {
+            assignTeam(team);
+            await setSharedTimer('idle');
+        }
+    } else if (command.type === 'resetCells') {
+        resetCells();
+    } else if (command.type === 'wrongAnswer') {
+        const db = await ensureFirebase();
+        const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        const timer = (await get(ref(db, `rooms/${buzzerRoom}/timer`))).val();
+        if (timer?.phase === 'open') {
+            await clearBuzzerLock(false);
+            await setSharedTimer('open');
+        } else {
+            await advanceSharedTimer(timer || { phase: 'first', team: payload.team || 'team1' });
+        }
+    } else if (command.type === 'skipQuestion') {
+        cancelSelect();
+        closeQuestionPanel();
+        await clearBuzzerLock(false);
+        await setSharedTimer('idle');
+    } else if (command.type === 'reopenBuzzer') {
+        await clearBuzzerLock(false);
+        await setSharedTimer('open');
+    } else if (command.type === 'shuffleBoard') {
+        shuffleBoard();
+        await clearBuzzerLock(false);
+        await setSharedTimer('idle');
+    } else if (command.type === 'timerExpired') {
+        const db = await ensureFirebase();
+        const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        const timer = (await get(ref(db, `rooms/${buzzerRoom}/timer`))).val();
+        if (timer?.phase === 'first' || timer?.phase === 'second') await advanceSharedTimer(timer);
+    } else if (command.type === 'updateSettings') {
+        teamSetup.ansTime = Math.max(2, Math.min(30, Number(payload.answerSeconds) || 3));
+        teamSetup.otherTime = Math.max(5, Math.min(60, Number(payload.otherTeamSeconds) || 10));
+        saveGameState();
+    }
+    } finally {
+        _presenterCommandInProgress = false;
+    }
+    await publishLiveGameState();
+}
+
+async function setupLiveGameSession() {
+    if (!buzzerRoom || !gameIsActive) return;
+    const db = await ensureFirebase();
+    const { ref, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    await update(ref(db, `rooms/${buzzerRoom}`), {
+        openedAt: Date.now(),
+        team1Name: teamSetup.team1.name,
+        team2Name: teamSetup.team2.name,
+        locked: false,
+        game: buildLiveGameState()
+    });
+    if (_liveCommandUnsubscribe) _liveCommandUnsubscribe();
+    if (_liveTimerUnsubscribe) _liveTimerUnsubscribe();
+    if (_livePlayersUnsubscribe) _livePlayersUnsubscribe();
+    if (_livePresenterUnsubscribe) _livePresenterUnsubscribe();
+    if (_liveServerOffsetUnsubscribe) _liveServerOffsetUnsubscribe();
+    _liveCommandUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/presenterCommand`), snap => {
+        executePresenterCommand(snap.val()).catch(console.error);
+    });
+    _liveTimerUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/timer`), snap => displaySharedTimer(snap.val()));
+    if (_fbUnsubscribe) _fbUnsubscribe();
+    _fbUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/buzzer`), snap => {
+        handleLiveBuzzer(snap.val()).catch(console.error);
+    });
+    _livePlayersUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/players`), snap => {
+        _livePlayers = snap.val() || {};
+    });
+    _livePresenterUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/presenter`), snap => {
+        const presenter = snap.val();
+        _livePresenterConnected = Boolean(
+            presenter?.connected &&
+            Date.now() - Number(presenter.lastSeen || 0) < 45000
+        );
+    });
+    _liveServerOffsetUnsubscribe = onValue(ref(db, '.info/serverTimeOffset'), snap => {
+        _liveServerOffset = Number(snap.val() || 0);
+    });
+    await renderPresenterAccess();
 }
 
 function openBuzzerModal() {
@@ -1934,27 +3130,22 @@ function openBuzzerModal() {
 
         // Initialize Firebase and listen for buzzes
         ensureFirebase().then(async (db) => {
-            const { ref, set, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            const { ref, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
 
             // Create/reset room in Firebase with team names
-            await set(ref(db, `rooms/${buzzerRoom}`), {
+            await update(ref(db, `rooms/${buzzerRoom}`), {
                 locked: false, buzzer: null, openedAt: Date.now(),
                 team1Name: (teamSetup.team1 && teamSetup.team1.name) ? teamSetup.team1.name : 'الفريق الأول',
                 team2Name: (teamSetup.team2 && teamSetup.team2.name) ? teamSetup.team2.name : 'الفريق الثاني'
             });
+            await renderPresenterAccess();
 
             // Stop old listener if any
             if (_fbUnsubscribe) { _fbUnsubscribe(); _fbUnsubscribe = null; }
 
             // Listen for first buzz
             _fbUnsubscribe = onValue(ref(db, `rooms/${buzzerRoom}/buzzer`), (snap) => {
-                const data = snap.val();
-                if (!data || isBuzzerLocked) return;
-                isBuzzerLocked = true;
-                playBuzzerSound(); // Play the custom buzzer sound immediately
-                showGameToast(`⚡ ${data.name} ضغط أولاً!`);
-                showBuzzerOverlay(data.name, data.team);
-                startBuzzerCountdown(data.team, 3);
+                handleLiveBuzzer(snap.val()).catch(console.error);
             });
         }).catch(err => console.error('Firebase host error:', err));
     } catch(e) { console.error('Buzzer Modal error', e); }
@@ -1972,33 +3163,27 @@ function openBuzzerDirectly() {
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }
 
-// عرض باركود لبوابة الأسئلة
-function showPortalQR() {
-    const modal = document.getElementById('portalShareModal');
-    if (modal) modal.style.display = 'flex';
-
-    // مسار بوابة الأسئلة ثابت على السيرفر ليعمل الباركود حتى لو كنت تلعب من ملف محلي (بدون سيرفر)
-    const url = 'https://7roof-main.vercel.app/pages/q702.html';
-
-    const qrBox = document.getElementById('modalPortalQrcodeBox');
-    if (qrBox) {
-        qrBox.innerHTML = '';
-        const encoded = encodeURIComponent(url);
-        const img = document.createElement('img');
-        img.alt = 'QR Code';
-        img.style.cssText = 'width:156px;height:156px;border-radius:12px;display:block;';
-        // Primary: quickchart.io
-        img.src = `https://quickchart.io/qr?text=${encoded}&size=160&margin=1`;
-        // Fallback: api.qrserver.com
-        img.onerror = function() {
-            this.onerror = null;
-            this.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=${encoded}`;
-        };
-        qrBox.appendChild(img);
+async function handleLiveBuzzer(data) {
+    if (!data) {
+        _lastDisplayedBuzzKey = '';
+        return;
+    }
+    const buzzKey = `${data.questionId || ''}|${data.id || ''}|${data.time || ''}`;
+    if (_lastDisplayedBuzzKey === buzzKey) return;
+    _lastDisplayedBuzzKey = buzzKey;
+    isBuzzerLocked = true;
+    playBuzzerSound();
+    showGameToast(`⚡ ${data.name} ضغط أولاً!`);
+    showBuzzerOverlay(data.name, data.team, 'first', teamSetup.ansTime);
+    const db = await ensureFirebase();
+    const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const timer = (await get(ref(db, `rooms/${buzzerRoom}/timer`))).val();
+    if (!timer || timer.phase === 'idle' || timer.phase === 'open') {
+        await setSharedTimer('first', data.team, teamSetup.ansTime);
     }
 }
 
-
+// The question portal was removed; questions are controlled from the presenter page.
 // عداد تنازلي مرئي مرتبط بفريق معين
 function startBuzzerCountdown(team, seconds, isSecondChance = false) {
     clearInterval(buzzerTimerInterval);
@@ -2021,24 +3206,40 @@ function startBuzzerCountdown(team, seconds, isSecondChance = false) {
                 const nextTeam = team === 'team1' ? 'team2' : 'team1';
                 const nextTeamObj = nextTeam === 'team1' ? teamSetup.team1 : teamSetup.team2;
                 showBuzzerOverlay(nextTeamObj ? nextTeamObj.name : '', nextTeam);
-                startBuzzerCountdown(nextTeam, 10, true);
+                startBuzzerCountdown(nextTeam, teamSetup.otherTime, true);
             }
         }
     }, 1000);
 }
 
-function updateBuzzerOverlayTimer(teamName, timeLeft) {
-    const el = document.getElementById('buzzerOverlayTimer');
-    if (el) {
-        el.textContent = `⏱ ${teamName}: ${timeLeft} ثانية`;
-        el.style.color = timeLeft <= 3 ? '#FF4444' : '#FFD600';
+function updateBuzzerOverlayTimer(teamName, timeLeft, phase = 'first') {
+    const secondsEl = document.getElementById('buzzerOverlaySeconds');
+    const labelEl = document.getElementById('buzzerOverlayTimerLabel');
+    const teamEl = document.getElementById('buzzerOverlayTeam');
+    if (secondsEl) {
+        secondsEl.textContent = Math.max(0, Number(timeLeft) || 0);
+        secondsEl.style.color = timeLeft <= 3 ? '#ff5a5a' : '#ffd600';
+    }
+    if (labelEl) {
+        labelEl.textContent = phase === 'second'
+            ? `وقت إجابة ${teamName}`
+            : 'الوقت المتبقي للإجابة';
+    }
+    if (teamEl && phase === 'second') {
+        teamEl.textContent = 'انتقلت فرصة الإجابة إلى الفريق الآخر';
     }
 }
 
-function showBuzzerOverlay(name, teamId) {
+function showBuzzerOverlay(name, teamId, phase = 'first', initialSeconds = 0) {
     clearInterval(buzzerTimerInterval);
     const teamObj = teamId === 'team1' ? teamSetup.team1 : teamSetup.team2;
-    const color = (teamObj && COLOR_MAP[teamObj.color]) ? COLOR_MAP[teamObj.color] : { bg: '#6B3FA0' };
+    const color = (teamObj && COLOR_MAP[teamObj.color]) ? COLOR_MAP[teamObj.color] : { bg: '#FF9800' };
+    const isSecondChance = phase === 'second';
+    const kicker = isSecondChance ? '⏱ فرصة الفريق الآخر' : '⚡ أسرع ضغطة ⚡';
+    const displayName = isSecondChance ? (teamObj ? teamObj.name : name) : name;
+    const teamLine = isSecondChance
+        ? 'انتقلت فرصة الإجابة إلى الفريق الآخر'
+        : (teamObj ? teamObj.name : '');
 
     const old = document.getElementById('buzzerLockOverlay');
     if (old) old.remove();
@@ -2062,15 +3263,20 @@ function showBuzzerOverlay(name, teamId) {
                     100% { transform: translate(-50%, 0)     scale(1);    opacity: 1; }
                 }
             </style>
-            <div style="font-size:0.82rem; color:rgba(255,214,0,0.8); font-weight:900; letter-spacing:2px; text-transform:uppercase;">⚡ أسرع ضغطة ⚡</div>
-            <div style="font-family:'Lalezar','HrofFont',cursive; font-size:clamp(2.6rem,7vw,3.8rem); color:#fff; line-height:1.05; text-shadow:0 4px 12px rgba(0,0,0,0.5);">${name}</div>
-            <div style="font-size:1rem; color:rgba(255,255,255,0.75); font-weight:700;">${teamObj ? teamObj.name : ''}</div>
+            <div style="font-size:0.82rem; color:rgba(255,214,0,0.8); font-weight:900; letter-spacing:2px; text-transform:uppercase;">${kicker}</div>
+            <div style="font-family:'HrofFont','Cairo',sans-serif; font-size:clamp(2.6rem,7vw,3.8rem); color:#fff; line-height:1.05; text-shadow:0 4px 12px rgba(0,0,0,0.5);">${displayName}</div>
+            <div id="buzzerOverlayTeam" style="font-size:1rem; color:rgba(255,255,255,0.75); font-weight:700;">${teamLine}</div>
             <div id="buzzerOverlayTimer" style="
-                font-family:'Lalezar','HrofFont',cursive; font-size:1.9rem; color:#FFD600;
-                background:rgba(0,0,0,0.35); padding:5px 20px;
+                min-width:170px; background:rgba(0,0,0,0.35); padding:8px 20px 6px;
                 border-radius:8px; border:1px solid rgba(255,214,0,0.25);
                 margin: 6px 0;
-            "></div>
+            ">
+                <div id="buzzerOverlayTimerLabel" style="font-size:.72rem; color:rgba(255,255,255,.7); margin-bottom:2px;">الوقت المتبقي للإجابة</div>
+                <div style="display:flex; align-items:baseline; justify-content:center; gap:5px;">
+                    <span id="buzzerOverlaySeconds" style="font-family:'HrofFont','Cairo',sans-serif; font-size:2.35rem; line-height:1; color:#FFD600;">${initialSeconds}</span>
+                    <small style="font-size:.72rem; color:rgba(255,255,255,.68);">ثانية</small>
+                </div>
+            </div>
             <button onclick="clearBuzzerLock()" style="
                 margin-top:8px; padding:12px 30px; border:none; border-radius:10px;
                 background:#FFD600; color:#1a1a1a; font-weight:900; font-size:1rem;
@@ -2086,6 +3292,9 @@ function showBuzzerOverlay(name, teamId) {
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
+    const overlay = document.getElementById('buzzerLockOverlay');
+    if (overlay) overlay.dataset.timerPhase = phase;
+    updateBuzzerOverlayTimer(teamObj ? teamObj.name : '', initialSeconds, phase);
 }
 
 function clearBuzzerLock(showToast = true) {
@@ -2098,8 +3307,13 @@ function clearBuzzerLock(showToast = true) {
     // Reset Firebase room (فتح الجرس لجميع اللاعبين)
     if (buzzerRoom) {
         ensureFirebase().then(async (db) => {
-            const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-            update(ref(db, `rooms/${buzzerRoom}`), { locked: false, buzzer: null });
+            const { ref, update, remove } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            update(ref(db, `rooms/${buzzerRoom}`), {
+                locked: false,
+                buzzer: null,
+                timer: { phase: 'open', team: '', durationMs: 0, startedAt: Date.now() }
+            });
+            remove(ref(db, `rooms/${buzzerRoom}/buzzQueue`));
         });
     }
     if (showToast) showGameToast('الجرس متاح للجميع! 🔔', true);
@@ -2114,10 +3328,8 @@ function togglePresentationMode(forceState) {
     if (isModeActive) {
         document.body.classList.add('presentation-mode');
         syncGameViewUI();
-        showGameToast('📟 تم تفعيل وضع العرض المباشر');
     } else {
         document.body.classList.remove('presentation-mode');
-        showGameToast('📟 تم إيقاف وضع العرض المباشر');
     }
     
     // Refresh board layout logic if needed (enlarging hexes)
@@ -2157,9 +3369,9 @@ function syncGameViewUI() {
     const s2 = document.getElementById('gvTeam2Score');
     
     if (n1) n1.textContent = teamSetup.team1.name;
-    if (s1) s1.textContent = scores.team1;
+    if (s1) s1.textContent = roundWins.team1;
     if (n2) n2.textContent = teamSetup.team2.name;
-    if (s2) s2.textContent = scores.team2;
+    if (s2) s2.textContent = roundWins.team2;
 }
 
 // Add Keyboard Shortcut (Escape to exit)
@@ -2174,10 +3386,9 @@ function updateScoreBoard() {
     // Original sideboard scores
     const s1 = document.getElementById('score1');
     const s2 = document.getElementById('score2');
-    if (s1) s1.textContent = scores.team1;
-    if (s2) s2.textContent = scores.team2;
+    if (s1) s1.textContent = roundWins.team1;
+    if (s2) s2.textContent = roundWins.team2;
     
     // Sync to Presentation Mode UI
     syncGameViewUI();
 }
-

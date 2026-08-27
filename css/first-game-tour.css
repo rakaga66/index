@@ -1,0 +1,218 @@
+/* Shared first-match guided tour for normal and online modes. */
+.game-tour-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2000000;
+    direction: rtl;
+    pointer-events: none;
+}
+
+.game-tour-blur {
+    position: fixed;
+    z-index: 0;
+    background: rgba(12, 4, 24, 0.76);
+    backdrop-filter: blur(8px) saturate(0.65);
+    -webkit-backdrop-filter: blur(8px) saturate(0.65);
+    pointer-events: auto;
+}
+
+.game-tour-focus {
+    position: fixed;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    border: 3px solid #ffd600;
+    border-radius: 14px;
+    background: transparent;
+    box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.2), 0 0 26px rgba(255, 214, 0, 0.82);
+    cursor: pointer;
+    pointer-events: auto;
+    animation: gameTourFocusPulse 1.25s ease-in-out infinite alternate;
+}
+
+.game-tour-card {
+    --tour-arrow-x: 50%;
+    --tour-arrow-y: 50%;
+    position: fixed;
+    z-index: 2;
+    width: min(350px, calc(100vw - 20px));
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom: 5px solid #ffd600;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #4b2370, #271039);
+    color: #fff;
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55);
+    text-align: right;
+    pointer-events: auto;
+    animation: gameTourCardIn 0.22s ease both;
+}
+
+.game-tour-card::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.25));
+}
+
+.game-tour-card.is-below::before {
+    top: -15px;
+    left: var(--tour-arrow-x);
+    transform: translateX(-50%);
+    border-right: 13px solid transparent;
+    border-left: 13px solid transparent;
+    border-bottom: 16px solid #ffd600;
+}
+
+.game-tour-card.is-above::before {
+    bottom: -15px;
+    left: var(--tour-arrow-x);
+    transform: translateX(-50%);
+    border-right: 13px solid transparent;
+    border-left: 13px solid transparent;
+    border-top: 16px solid #ffd600;
+}
+
+.game-tour-card.is-right::before {
+    top: var(--tour-arrow-y);
+    left: -15px;
+    transform: translateY(-50%);
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    border-right: 16px solid #ffd600;
+}
+
+.game-tour-card.is-left::before {
+    top: var(--tour-arrow-y);
+    right: -15px;
+    transform: translateY(-50%);
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    border-left: 16px solid #ffd600;
+}
+
+.game-tour-card-top,
+.game-tour-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.game-tour-progress {
+    color: #ffd600;
+    font-size: 0.78rem;
+}
+
+.game-tour-skip {
+    padding: 4px 8px;
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.68);
+    font: inherit;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.game-tour-skip:hover {
+    color: #fff;
+}
+
+.game-tour-title {
+    margin: 8px 0 5px;
+    color: #ffd600 !important;
+    font-size: 1.35rem;
+    line-height: 1.15;
+    -webkit-text-stroke: 0 !important;
+    text-shadow: none !important;
+}
+
+.game-tour-text {
+    min-height: 3.2em;
+    margin: 0 0 14px;
+    color: rgba(255, 255, 255, 0.92);
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.game-tour-actions button {
+    min-width: 86px;
+    padding: 9px 15px;
+    border: 0;
+    border-radius: 10px;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.game-tour-actions button:active {
+    transform: translateY(2px);
+}
+
+.game-tour-prev {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.game-tour-next {
+    background: #ffd600;
+    color: #21102f;
+    box-shadow: 0 4px 0 #aa7800;
+}
+
+.game-tour-prev:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+@keyframes gameTourFocusPulse {
+    from { box-shadow: 0 0 0 2px rgba(255, 214, 0, 0.18), 0 0 18px rgba(255, 214, 0, 0.55); }
+    to { box-shadow: 0 0 0 5px rgba(255, 214, 0, 0.28), 0 0 34px rgba(255, 214, 0, 0.95); }
+}
+
+@keyframes gameTourCardIn {
+    from { opacity: 0; transform: translateY(7px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-height: 540px) {
+    .game-tour-card {
+        width: min(310px, calc(100vw - 20px));
+        padding: 11px 13px 12px;
+        border-radius: 13px;
+        border-bottom-width: 4px;
+    }
+
+    .game-tour-title {
+        margin: 4px 0 2px;
+        font-size: 1rem;
+    }
+
+    .game-tour-text {
+        min-height: 0;
+        margin-bottom: 7px;
+        font-size: 0.7rem;
+        line-height: 1.45;
+    }
+
+    .game-tour-progress,
+    .game-tour-skip {
+        font-size: 0.58rem;
+    }
+
+    .game-tour-actions button {
+        min-width: 72px;
+        padding: 6px 10px;
+        font-size: 0.66rem;
+        border-radius: 7px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-tour-focus,
+    .game-tour-card {
+        animation: none;
+    }
+}

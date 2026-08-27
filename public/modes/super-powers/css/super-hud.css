@@ -1,0 +1,421 @@
+/*
+ * Shadow Power HUD
+ *
+ * This stylesheet intentionally targets only the surrounding HUD. The board
+ * itself (.board-wrap, .board-container, .hex-cell and its children) is not
+ * styled here so its geometry, letters and colours remain read-only.
+ */
+
+.super-power-mode {
+    --shadow-ink: #100820;
+    --shadow-panel: rgba(20, 8, 41, .9);
+    --shadow-panel-soft: rgba(58, 25, 93, .72);
+    --shadow-violet: #a978ff;
+    --shadow-violet-bright: #cfadff;
+    --shadow-yellow: #ffd600;
+    --shadow-orange: #ff9d00;
+    --shadow-muted: rgba(240, 228, 255, .62);
+}
+
+.super-power-mode::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border: 1px solid rgba(180, 126, 255, .18);
+    box-shadow: inset 0 0 90px rgba(22, 4, 43, .42), inset 0 0 0 1px rgba(255, 214, 0, .04);
+}
+
+.super-power-mode .sidebar {
+    position: relative;
+    isolation: isolate;
+    background-image:
+        linear-gradient(160deg, rgba(20, 8, 41, .76), rgba(14, 5, 28, .97)),
+        url('..//assets/sidebar.png');
+    border-inline-start: 1px solid rgba(167, 113, 255, .32);
+    box-shadow: -12px 0 35px rgba(7, 2, 17, .52), inset 0 0 28px rgba(116, 62, 181, .13);
+}
+
+.super-power-mode .sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(169, 120, 255, .13), transparent 38%, rgba(0, 0, 0, .2));
+}
+
+.super-power-mode .presenter-toggle-top {
+    border-color: rgba(169, 120, 255, .48);
+    background: rgba(11, 4, 27, .52);
+    box-shadow: inset 0 0 18px rgba(169, 120, 255, .1), 0 3px 0 rgba(0, 0, 0, .25);
+}
+
+.super-power-mode .pt-btn {
+    color: rgba(250, 242, 255, .62);
+    font-size: .78rem;
+    letter-spacing: -.02em;
+}
+
+.super-power-mode .pt-btn.active {
+    background: linear-gradient(135deg, #ffd600, #ffad00);
+    color: #1a092c;
+    box-shadow: 0 3px 0 #815b00, 0 0 18px rgba(255, 214, 0, .2);
+}
+
+.super-power-mode .round-label {
+    width: 100%;
+    margin: 1px 0 2px;
+    padding: 7px 9px;
+    border: 1px solid rgba(169, 120, 255, .44);
+    border-radius: 12px;
+    background: rgba(9, 3, 22, .56);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, .24), inset 0 0 18px rgba(169, 120, 255, .08);
+}
+
+.super-power-mode .round-label span:first-child {
+    color: rgba(255, 255, 255, .58);
+    font-size: .64rem;
+}
+
+.super-power-mode .round-label #roundText {
+    color: var(--shadow-yellow);
+    font-size: .98rem;
+    text-shadow: 0 0 12px rgba(255, 214, 0, .28);
+}
+
+/* The new team cards carry the visible scores and power slots. The original
+   score controls remain in the DOM for existing game actions, but stay out of
+   the HUD so the sidebar reads like the reference panel. */
+.super-power-mode #sidebarScores {
+    display: none;
+}
+
+.super-sidebar-panel {
+    width: 100%;
+    display: grid;
+    gap: 7px;
+    padding: 9px;
+    border: 1px solid rgba(169, 120, 255, .38);
+    border-radius: 15px;
+    background: linear-gradient(155deg, rgba(83, 41, 129, .64), rgba(24, 7, 48, .75));
+    box-shadow: 0 7px 0 rgba(0, 0, 0, .3), 0 0 22px rgba(114, 64, 187, .15), inset 0 0 20px rgba(190, 137, 255, .05);
+}
+
+.super-sidebar-panel__header,
+.super-team-card__head,
+.super-team-card__meta,
+.super-turn-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.super-sidebar-panel__header {
+    padding: 1px 2px 3px;
+}
+
+.super-sidebar-panel__header > div {
+    display: grid;
+    gap: 1px;
+}
+
+.super-sidebar-panel__eyebrow {
+    color: var(--shadow-yellow);
+    font-size: .56rem;
+    font-weight: 900;
+    letter-spacing: .04em;
+}
+
+.super-sidebar-panel__header strong {
+    color: #fff;
+    font-size: .96rem;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, .3);
+}
+
+.super-sidebar-panel__log {
+    border: 1px solid rgba(255, 214, 0, .45);
+    border-radius: 8px;
+    padding: 5px 8px;
+    color: #ffd600;
+    background: rgba(255, 214, 0, .08);
+    cursor: pointer;
+    font-size: .62rem;
+    font-weight: 900;
+    transition: .18s ease;
+}
+
+.super-sidebar-panel__log:hover,
+.super-sidebar-panel__log:focus-visible {
+    color: #160822;
+    background: var(--shadow-yellow);
+    transform: translateY(-1px);
+}
+
+.super-turn-chip {
+    justify-content: flex-start;
+    min-height: 25px;
+    padding: 5px 7px;
+    border: 1px solid rgba(169, 120, 255, .28);
+    border-radius: 8px;
+    background: rgba(10, 3, 24, .42);
+    color: var(--shadow-muted);
+}
+
+.super-turn-chip__dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: #7f6b96;
+    box-shadow: 0 0 0 3px rgba(127, 107, 150, .12);
+}
+
+.super-turn-chip[data-state="ready"] .super-turn-chip__dot,
+.super-turn-chip[data-state="active"] .super-turn-chip__dot {
+    background: #4dffa8;
+    box-shadow: 0 0 0 3px rgba(77, 255, 168, .13), 0 0 12px rgba(77, 255, 168, .6);
+}
+
+.super-turn-chip[data-state="active"] .super-turn-chip__dot { animation: shadowDotPulse 1s ease-in-out infinite; }
+
+.super-turn-chip__label { font-size: .55rem; opacity: .62; }
+.super-turn-chip strong { margin-inline-start: auto; color: #fff; font-size: .63rem; }
+
+.super-team-card {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 7px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 11px;
+    background: rgba(11, 4, 26, .46);
+    box-shadow: inset 0 0 17px rgba(255, 255, 255, .025), 0 3px 0 rgba(0, 0, 0, .2);
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    cursor: pointer;
+}
+
+.super-team-card--one { border-inline-start: 3px solid #ff9d00; }
+.super-team-card--two { border-inline-start: 3px solid #9b72ff; }
+.super-team-card.is-turn,
+.super-team-card.ready { transform: translateY(-1px); border-color: rgba(255, 214, 0, .72); box-shadow: 0 0 16px rgba(255, 214, 0, .15), 0 4px 0 rgba(0, 0, 0, .24); }
+.super-team-card.ready { animation: shadowReadyPulse .85s ease-in-out infinite alternate; }
+.super-team-card:focus-visible { outline: 2px solid var(--shadow-yellow); outline-offset: 2px; }
+
+.super-team-card__name {
+    min-width: 0;
+    overflow: hidden;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.super-team-card__score {
+    color: var(--shadow-yellow);
+    font-size: 1.25rem;
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(255, 214, 0, .27);
+}
+
+.super-team-card__meta {
+    color: rgba(255, 255, 255, .44);
+    font-size: .52rem;
+}
+
+.super-team-card__meta span:last-child {
+    color: var(--shadow-violet-bright);
+    font-weight: 900;
+}
+
+.super-power-slots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.super-power-slot {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 5px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 7px;
+    background: rgba(83, 45, 126, .42);
+    color: #fff;
+    text-align: start;
+    cursor: default;
+    transition: border-color .18s ease, background .18s ease, opacity .18s ease;
+}
+
+.super-power-slot__icon { flex: 0 0 auto; font-size: .82rem; line-height: 1; }
+.super-power-slot__copy { min-width: 0; display: grid; gap: 1px; }
+.super-power-slot__name { overflow: hidden; font-size: .48rem; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.super-power-slot__state { color: rgba(255,255,255,.46); font-size: .42rem; white-space: nowrap; }
+
+.super-power-slot.is-ready { border-color: rgba(77, 255, 168, .38); background: rgba(20, 86, 76, .45); }
+.super-power-slot.is-ready .super-power-slot__state { color: #78ffc2; }
+.super-power-slot.is-pending { border-color: rgba(255, 214, 0, .55); background: rgba(100, 70, 11, .45); }
+.super-power-slot.is-pending .super-power-slot__state { color: #ffd600; }
+.super-power-slot.is-used { opacity: .4; filter: saturate(.2); }
+.super-power-slot.is-used .super-power-slot__state { color: #ff9eaa; }
+.super-power-slot.is-used-power { opacity: 1; filter: none; border-color: rgba(255, 214, 0, .58); background: rgba(100, 70, 11, .45); }
+.super-power-slot.is-used-power .super-power-slot__name { color: #fff; }
+.super-power-slot.is-used-power .super-power-slot__state { color: #ffd600; }
+.super-power-slot.is-empty,
+.super-power-slot.is-locked { opacity: .72; border-style: dashed; border-color: rgba(255, 255, 255, .18); background: rgba(10, 3, 24, .32); }
+.super-power-slot.is-empty .super-power-slot__icon { color: rgba(255,255,255,.52); filter: grayscale(1); }
+.super-power-slot.is-empty .super-power-slot__name { color: rgba(255,255,255,.48); }
+.super-power-slot.is-empty .super-power-slot__state { color: rgba(255,255,255,.35); }
+.super-power-slot.is-active { border-color: #d4b4ff; box-shadow: 0 0 11px rgba(191, 149, 255, .35); }
+
+.super-sidebar-panel__hint {
+    margin: 1px 1px 0;
+    color: rgba(255, 255, 255, .38);
+    font-size: .5rem;
+    line-height: 1.5;
+}
+
+.super-power-mode .bib-btn-power {
+    border-color: rgba(255, 214, 0, .72);
+    background: linear-gradient(150deg, rgba(125, 78, 185, .72), rgba(61, 27, 94, .86));
+    box-shadow: 0 3px 0 rgba(111, 68, 0, .68), 0 0 18px rgba(255, 214, 0, .17);
+}
+
+.super-power-mode .bib-btn-power .bib-icon { color: var(--shadow-yellow); filter: drop-shadow(0 0 7px rgba(255, 214, 0, .5)); }
+.super-power-mode .bib-btn-power .bib-label { color: #fff; }
+
+.super-power-mode .power-audience-hud {
+    width: min(520px, calc(100% - 116px));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    align-items: stretch;
+    padding: 6px;
+    border: 1px solid rgba(190, 137, 255, .3);
+    border-radius: 15px;
+    background: rgba(12, 4, 27, .66);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, .31), 0 0 23px rgba(111, 61, 184, .18), inset 0 0 20px rgba(173, 117, 255, .06);
+    backdrop-filter: blur(12px);
+}
+
+.super-power-mode .power-audience-hud button { min-height: 53px; border-radius: 10px; }
+
+.super-power-mode .power-team-count {
+    position: relative;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: 7px;
+    padding: 6px 9px;
+    border-color: rgba(255,255,255,.16);
+    background: rgba(49, 24, 78, .76);
+    text-align: start;
+}
+
+.super-power-mode .power-team-count--one { border-inline-start: 3px solid #ff9d00; }
+.super-power-mode .power-team-count--two { border-inline-end: 3px solid #9b72ff; }
+.super-power-mode .power-team-count small { grid-column: 1; max-width: 100%; color: rgba(255,255,255,.72); font-size: .55rem; }
+.super-power-mode .power-team-count strong { grid-column: 2; grid-row: 1 / 3; color: var(--shadow-yellow); font-size: 1.4rem; line-height: 1; }
+.super-power-mode .power-team-count span { grid-column: 1; color: rgba(255,255,255,.45); font-size: .45rem; }
+.super-power-mode .power-team-count i { grid-column: 1; color: rgba(255,255,255,.52); font-size: .42rem; font-style: normal; }
+.super-power-mode .power-team-count.is-unlocked { border-color: rgba(77, 255, 168, .5); box-shadow: 0 0 16px rgba(77, 255, 168, .13), 0 4px 0 rgba(0,0,0,.35); }
+.super-power-mode .power-team-count.is-unlocked i { color: #78ffc2; }
+
+.super-power-mode .power-log-modal {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 14px;
+    background: rgba(7, 2, 17, .67);
+    backdrop-filter: blur(8px);
+}
+
+.super-power-mode .power-log-card {
+    width: min(390px, calc(100vw - 28px));
+    max-height: calc(100dvh - 28px);
+    margin-inline-start: 0;
+    margin-inline-end: auto;
+    overflow: auto;
+    border: 1px solid rgba(190, 137, 255, .42);
+    border-inline-start: 3px solid var(--shadow-yellow);
+    border-bottom: 5px solid #9b72ff;
+    border-radius: 17px;
+    background: linear-gradient(165deg, rgba(42, 17, 72, .97), rgba(13, 4, 28, .98));
+    box-shadow: 0 14px 0 rgba(0,0,0,.35), 0 0 45px rgba(141, 88, 224, .27);
+    text-align: right;
+}
+
+.super-power-mode .power-log-icon { color: var(--shadow-yellow); text-shadow: 0 0 15px rgba(255,214,0,.46); }
+.power-log-kicker { display: block; color: rgba(255,255,255,.48); font-size: .6rem; font-weight: 900; }
+.super-power-mode .power-log-card h2 { margin-top: 3px; color: #fff; font-size: 1.45rem; }
+.super-power-mode .power-log-card > p { color: rgba(255,255,255,.62); font-size: .72rem; line-height: 1.55; }
+.power-log-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 13px 0 8px; padding: 7px 9px; border: 1px solid rgba(169,120,255,.24); border-radius: 9px; background: rgba(169,120,255,.1); color: rgba(255,255,255,.58); font-size: .58rem; }
+.power-log-summary strong { color: #78ffc2; font-size: .55rem; }
+
+@keyframes shadowDotPulse { 50% { transform: scale(1.25); } }
+@keyframes shadowReadyPulse { from { filter: brightness(1); } to { filter: brightness(1.12); } }
+
+@media (max-width: 920px) {
+    .super-power-mode .power-audience-hud { width: min(520px, calc(100% - 84px)); }
+    .super-sidebar-panel { padding: 7px; }
+    .super-power-slots { gap: 3px; }
+    .super-power-slot { padding-inline: 4px; }
+}
+
+@media (max-width: 600px) {
+    .super-power-mode .power-audience-hud {
+        width: calc(100% - 72px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        padding: 4px;
+    }
+    .super-power-mode .power-audience-hud button { min-height: 45px; }
+    .super-power-mode .power-team-count { padding: 4px 6px; column-gap: 4px; }
+    .super-power-mode .power-team-count small { font-size: .44rem; }
+    .super-power-mode .power-team-count strong { font-size: 1.05rem; }
+    .super-power-mode .power-team-count span,
+    .super-power-mode .power-team-count i { font-size: .35rem; }
+    .super-sidebar-panel__hint { display: none; }
+    .super-power-slot__name { font-size: .41rem; }
+}
+
+@media (max-height: 620px) {
+    .super-sidebar-panel { gap: 4px; padding: 5px; }
+    .super-team-card { padding: 5px; gap: 3px; }
+    .super-power-slot { padding-block: 3px; }
+    .super-power-slot__icon { font-size: .7rem; }
+    .super-power-slot__name { font-size: .4rem; }
+    .super-power-slot__state { font-size: .36rem; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .super-power-mode .sidebar { gap: 3px; padding: 4px 6px 6px; }
+    .super-power-mode .sidebar .logo { transform: scale(.72); transform-origin: center top; margin-block: -8px -12px; }
+    .super-power-mode .presenter-toggle-top { padding: 2px; gap: 2px; }
+    .super-power-mode .pt-btn { padding-block: 4px; font-size: .62rem; }
+    .super-power-mode .round-label { padding-block: 4px; }
+    .super-power-mode .round-label #roundText { font-size: .78rem; }
+    .super-sidebar-panel { gap: 3px; padding: 5px; border-radius: 11px; }
+    .super-sidebar-panel__header strong { font-size: .76rem; }
+    .super-sidebar-panel__eyebrow { font-size: .46rem; }
+    .super-sidebar-panel__log { padding: 3px 6px; font-size: .5rem; }
+    .super-turn-chip { min-height: 20px; padding: 3px 5px; }
+    .super-turn-chip__label { font-size: .43rem; }
+    .super-turn-chip strong { font-size: .5rem; }
+    .super-team-card { gap: 3px; padding: 4px; border-radius: 8px; }
+    .super-team-card__name { font-size: .58rem; }
+    .super-team-card__score { font-size: 1rem; }
+    .super-team-card__meta { font-size: .44rem; }
+    .super-power-slot { padding: 3px; border-radius: 5px; }
+    .super-power-slot__icon { font-size: .64rem; }
+    .super-power-slot__name { font-size: .36rem; }
+    .super-power-slot__state { font-size: .32rem; }
+}
+
+body.presentation-mode .power-audience-hud { bottom: 8px; }

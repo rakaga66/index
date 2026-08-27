@@ -1,0 +1,4 @@
+/* Compatibility hide rules for cached pages from the former local-mode build. */
+.local-lobby-overlay,
+.local-sidebar-panel,
+.local-game-hud { display: none !important; }

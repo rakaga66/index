@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 
 <head>
+    <script src="js/auth-check.js?v=free-access-1"></script>
     <meta charset="UTF-8" />
-    <script src="js/auth-check.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>لوحة الإدارة — قاف</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
@@ -359,6 +359,12 @@
             }
         }
 
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -376,6 +382,134 @@
                 display: none;
             }
         }
+
+        /* مساحة أسئلة المتابعين ومكتبة الأسئلة */
+        .question-admin-head,
+        .question-admin-toolbar,
+        .inbox-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .question-admin-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .question-admin-stat {
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 13px;
+            text-align: center;
+            background: #fffef9;
+            box-shadow: 3px 3px 0 #000;
+        }
+
+        .question-admin-stat strong { display: block; font-size: 1.7rem; line-height: 1; }
+        .question-admin-stat span { display: block; margin-top: 6px; font-size: .8rem; font-weight: 800; }
+        .question-admin-toolbar input,
+        .question-admin-toolbar select,
+        .inbox-toolbar input,
+        .inbox-toolbar select,
+        .question-editor input,
+        .question-editor textarea,
+        .question-editor select {
+            width: auto;
+            min-width: 130px;
+            padding: 10px 12px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            box-shadow: 2px 2px 0 #000;
+            font: inherit;
+            font-size: .9rem;
+            background: #fff;
+        }
+
+        .question-admin-toolbar input,
+        .inbox-toolbar input { flex: 1 1 240px; }
+        .question-admin-toolbar select,
+        .inbox-toolbar select { flex: 0 1 170px; }
+        .question-admin-toolbar button,
+        .inbox-toolbar button,
+        .question-editor button,
+        .inbox-card button { font: inherit; font-weight: 900; cursor: pointer; }
+        .question-admin-toolbar button,
+        .inbox-toolbar button { padding: 10px 14px; }
+
+        .question-editor {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 2px dashed #000;
+            border-radius: 12px;
+            background: #fffef9;
+        }
+
+        .question-editor label { display: grid; gap: 6px; font-weight: 900; font-size: .83rem; }
+        .question-editor label.wide { grid-column: 1 / -1; }
+        .question-editor textarea { width: 100%; min-height: 84px; resize: vertical; }
+        .question-editor select { width: 100%; }
+        .question-editor-actions { grid-column: 1 / -1; display: flex; gap: 10px; }
+        .question-editor-actions button { flex: 1; }
+
+        .question-library-list,
+        .inbox-list { display: grid; gap: 12px; margin-top: 18px; }
+        .question-library-card,
+        .inbox-card {
+            padding: 15px;
+            border: 2px solid #000;
+            border-radius: 11px;
+            background: #fff;
+            box-shadow: 3px 3px 0 #000;
+        }
+        .question-library-card.is-disabled { opacity: .63; background: #f1f1f1; }
+        .question-library-card__meta,
+        .inbox-card__meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: .78rem; margin-bottom: 8px; }
+        .question-library-card__question,
+        .inbox-card__title { font-weight: 900; font-size: 1.05rem; margin-bottom: 7px; }
+        .question-library-card__answer,
+        .inbox-card__body { color: #333; line-height: 1.7; white-space: pre-wrap; }
+        .question-library-card__actions,
+        .inbox-card__actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+        .question-library-card__actions button,
+        .inbox-card__actions button { padding: 7px 10px; border: 2px solid #000; border-radius: 7px; background: #fff; box-shadow: 2px 2px 0 #000; }
+        .question-library-card__actions button:hover,
+        .inbox-card__actions button:hover { transform: translate(-1px, -1px); }
+        .question-badge { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid #000; border-radius: 99px; font-size: .73rem; font-weight: 900; background: #fff; }
+        .question-badge.is-active,
+        .question-badge.is-approved { background: #d6f8e4; }
+        .question-badge.is-pending { background: #fff1ae; }
+        .question-badge.is-in_review { background: #dce9ff; }
+        .question-badge.is-rejected { background: #ffd8dc; }
+        .question-badge.is-archived,
+        .question-badge.is-disabled { background: #e5e7eb; }
+        .inbox-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
+        .inbox-tabs button { padding: 7px 11px; border: 2px solid #000; border-radius: 7px; background: #fff; font: inherit; font-weight: 900; cursor: pointer; }
+        .inbox-tabs button.is-selected { background: #ffd600; }
+        .admin-pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 18px; }
+        .admin-pagination button { padding: 7px 12px; border: 2px solid #000; border-radius: 7px; background: #fff; font: inherit; font-weight: 900; cursor: pointer; }
+        .admin-empty { padding: 24px; text-align: center; border: 2px dashed #000; border-radius: 10px; font-weight: 800; }
+        .inbox-unread { border-right: 6px solid #ffd600; }
+
+        @media (max-width: 768px) {
+            .question-admin-stats { grid-template-columns: 1fr; }
+            .question-editor { grid-template-columns: 1fr; }
+            .question-editor label.wide,
+            .question-editor-actions { grid-column: auto; }
+            .question-admin-toolbar input,
+            .question-admin-toolbar select,
+            .inbox-toolbar input,
+            .inbox-toolbar select { width: 100%; flex-basis: 100%; }
+            .question-admin-toolbar button,
+            .inbox-toolbar button { width: 100%; }
+        }
     </style>
 </head>
 
@@ -383,11 +517,10 @@
 
     <div id="adminLogin" class="login-screen">
         <div class="login-card">
-            <!-- سيتم تعديل المسار ليكون محلياً بعد النقل للمجلد العام -->
             <img src="assets/portal/qaf_logo.png" alt="Qaf Logo" class="logo-img">
             <h2 id="authTitle">لوحة الإدارة</h2>
             <div id="loginForm">
-                <input type="text" id="adminUser" placeholder="اسم المستخدم" style="margin-bottom:12px;" />
+                <input type="email" id="adminUser" placeholder="البريد الإداري" autocomplete="username" style="margin-bottom:12px;" />
                 <input type="password" id="adminPassword" placeholder="كلمة السر" style="margin-bottom:24px;" />
                 <button class="btn-main" style="width:100%;" onclick="handleAuth()">دخول</button>
             </div>
@@ -472,13 +605,107 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="section" id="questionLibrarySection">
+                    <div class="question-admin-head">
+                        <div class="section-title" style="margin-bottom:0">إدارة الأسئلة الإضافية</div>
+                        <button class="btn-main" type="button" onclick="openQuestionEditor()">＋ إضافة سؤال</button>
+                    </div>
+                    <div class="question-admin-stats" aria-label="إحصائيات مكتبة الأسئلة">
+                        <div class="question-admin-stat"><strong id="qlBasicCount">0</strong><span>الأسئلة الأساسية</span></div>
+                        <div class="question-admin-stat"><strong id="qlTotal">0</strong><span>إجمالي الأسئلة</span></div>
+                        <div class="question-admin-stat"><strong id="qlActive">0</strong><span>أسئلة فعّالة</span></div>
+                        <div class="question-admin-stat"><strong id="qlDisabled">0</strong><span>أسئلة معطّلة</span></div>
+                        <div class="question-admin-stat"><strong id="qlPendingCount">0</strong><span>طلبات جديدة</span></div>
+                        <div class="question-admin-stat"><strong id="qlApprovedCount">0</strong><span>أسئلة مقبولة</span></div>
+                        <div class="question-admin-stat"><strong id="qlRejectedCount">0</strong><span>أسئلة مرفوضة</span></div>
+                        <div class="question-admin-stat"><strong id="qlSuggestionsCount">0</strong><span>اقتراحات جديدة</span></div>
+                    </div>
+                    <div class="question-admin-toolbar">
+                        <input id="qlSearch" type="search" placeholder="ابحث في السؤال أو الإجابة أو التصنيف...">
+                        <select id="qlLetterFilter" aria-label="تصفية بالحرف"><option value="">كل الحروف</option></select>
+                        <select id="qlDifficultyFilter" aria-label="تصفية بالصعوبة"><option value="">كل الصعوبات</option><option>سهل</option><option>متوسط</option><option>صعب</option></select>
+                        <select id="qlStatusFilter" aria-label="تصفية بالحالة"><option value="">كل الحالات</option><option value="active">فعّال</option><option value="disabled">معطّل</option></select>
+                        <select id="qlSourceFilter" aria-label="تصفية بالمصدر"><option value="">كل المصادر</option><option value="follower">متابع</option><option value="admin">أدمن</option></select>
+                        <select id="qlDateFilter" aria-label="تصفية بالتاريخ"><option value="">كل التواريخ</option><option value="7">آخر 7 أيام</option><option value="30">آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option></select>
+                    </div>
+                    <form class="question-editor" id="questionEditor" hidden onsubmit="saveQuestionFromAdmin(event)">
+                        <input type="hidden" id="qlEditingId">
+                        <input type="hidden" id="qlPendingSubmissionId">
+                        <label class="wide">السؤال
+                            <textarea id="qlQuestion" required maxlength="500" placeholder="اكتب السؤال"></textarea>
+                        </label>
+                        <label>الإجابة الصحيحة
+                            <input id="qlAnswer" required maxlength="240" placeholder="تبدأ بالحرف المحدد">
+                        </label>
+                        <label>الحرف
+                            <input id="qlLetter" required maxlength="2" placeholder="مثال: ق">
+                        </label>
+                        <label>التصنيف
+                            <input id="qlCategory" maxlength="50" placeholder="عام">
+                        </label>
+                        <label>الصعوبة
+                            <select id="qlDifficulty"><option>سهل</option><option selected>متوسط</option><option>صعب</option></select>
+                        </label>
+                        <label>الحالة
+                            <select id="qlStatus"><option value="active">فعّال</option><option value="disabled">معطّل</option></select>
+                        </label>
+                        <label class="wide">ملاحظات داخلية
+                            <textarea id="qlNotes" maxlength="500" placeholder="اختياري"></textarea>
+                        </label>
+                        <div class="question-editor-actions">
+                            <button class="btn-main" type="submit">حفظ السؤال</button>
+                            <button class="btn-nav" type="button" onclick="closeQuestionEditor()">إلغاء</button>
+                        </div>
+                    </form>
+                    <div class="question-library-list" id="questionLibraryList"><div class="admin-empty">جاري تحميل المكتبة...</div></div>
+                    <div class="admin-pagination">
+                        <button type="button" id="qlPrev">السابق</button><span id="qlPage">1 / 1</span><button type="button" id="qlNext">التالي</button>
+                    </div>
+                </div>
+
+                <div class="section" id="followerInboxSection">
+                    <div class="inbox-toolbar">
+                        <div class="section-title" style="margin-bottom:0">أسئلة واقتراحات المتابعين <span id="followerInboxBadge" class="question-badge is-pending">0 جديد</span></div>
+                        <input id="inboxSearch" type="search" placeholder="ابحث في الوارد...">
+                    </div>
+                    <div class="inbox-tabs" role="tablist" aria-label="تصفية الوارد">
+                        <button type="button" class="is-selected" data-inbox-filter="all">الكل</button>
+                        <button type="button" data-inbox-filter="question">الأسئلة</button>
+                        <button type="button" data-inbox-filter="suggestion">الاقتراحات</button>
+                        <button type="button" data-inbox-filter="pending">قيد المراجعة</button>
+                        <button type="button" data-inbox-filter="approved">مقبول</button>
+                        <button type="button" data-inbox-filter="rejected">مرفوض</button>
+                        <button type="button" data-inbox-filter="archived">مؤرشف</button>
+                    </div>
+                    <div class="inbox-list" id="followerInboxList"><div class="admin-empty">جاري تحميل الوارد...</div></div>
+                </div>
+
+                <div class="section" id="onlineAiSettingsSection">
+                    <div class="section-title">إعدادات تحقق إجابات الأونلاين</div>
+                    <div class="form-grid">
+                        <input type="text" id="onlineAiProvider" placeholder="Provider">
+                        <input type="text" id="onlineAiModel" placeholder="Model">
+                        <input type="password" id="onlineAiApiKey" placeholder="API Key — محفوظ في السيرفر فقط" autocomplete="new-password" readonly>
+                        <label style="display:flex;align-items:center;gap:8px;font-weight:800;">
+                            <input type="checkbox" id="onlineAiEnabled">
+                            تفعيل التحقق بالذكاء الاصطناعي
+                        </label>
+                        <button class="btn-main" type="button" id="onlineAiSaveBtn">حفظ التفضيلات</button>
+                        <button class="btn-main" type="button" id="onlineAiTestBtn">اختبار الاتصال</button>
+                    </div>
+                    <div id="onlineAiSettingsResult" class="result-box" aria-live="polite">جاري قراءة إعدادات السيرفر...</div>
+                    <small style="display:block;margin-top:10px;color:#666;line-height:1.7;">مفتاح API لا يُعرض ولا يُحفظ في الواجهة. يضبطه المطور في متغيرات بيئة السيرفر، واللعبة ترسل للسيرفر السؤال والإجابة الرسمية وإجابة اللاعب فقط.</small>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="js/question-library.js?v=followers-1"></script>
     <!-- Script Block -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
         import { observeAnalytics } from "./js/qaf-analytics.js?v=1";
  
@@ -493,45 +720,305 @@
         };
  
         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+        const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let authMode = 'login';
-        let analyticsStarted = false;
-
-        window.toggleAuthMode = () => {
-            authMode = (authMode === 'login' ? 'signup' : 'login');
-            document.getElementById('authTitle').textContent = (authMode === 'login' ? 'دخول المشرف' : 'إنشاء حساب مسؤول');
-            document.getElementById('toggleMode').textContent = (authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ سجل دخولك');
-        };
-
-        window.handleAuth = () => {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPassword').value;
-            const errBox = document.getElementById('loginErr');
-            
-            if (user === 'hojas01' && pass === 'Rr74417441') {
-                sessionStorage.setItem('isAdmin', 'true');
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('adminName').textContent = 'المشرف: ' + user;
-                initDashboard();
-            } else {
-                errBox.textContent = "اسم المستخدم أو كلمة السر غير صحيحة!";
-                errBox.style.display = 'block';
+        async function loadOnlineAiSettings() {
+            const result = document.getElementById('onlineAiSettingsResult');
+            try {
+                const response = await fetch('/api/online/settings', { headers: { Accept: 'application/json' } });
+                const data = await response.json();
+                if (!response.ok || !data.ok) throw new Error('settings-unavailable');
+                document.getElementById('onlineAiProvider').value = data.provider || 'deepseek';
+                document.getElementById('onlineAiModel').value = data.model || '—';
+                document.getElementById('onlineAiEnabled').checked = Boolean(data.enabled);
+                result.className = 'result-box ' + (data.enabled && data.configured ? 'success' : 'error');
+                result.textContent = data.enabled && data.configured ? 'التحقق بالذكاء الاصطناعي مفعّل ومهيأ من السيرفر ✅' : 'التحقق البرمجي مفعّل، والذكاء الاصطناعي غير مهيأ بعد من السيرفر.';
+            } catch (_) {
+                result.className = 'result-box error';
+                result.textContent = 'تعذر قراءة إعدادات التحقق من السيرفر.';
             }
-        };
+        }
+        document.getElementById('onlineAiTestBtn')?.addEventListener('click', async () => {
+            const result = document.getElementById('onlineAiSettingsResult');
+            result.className = 'result-box';
+            result.textContent = 'جارٍ فحص إعدادات السيرفر...';
+            await loadOnlineAiSettings();
+        });
+        document.getElementById('onlineAiSaveBtn')?.addEventListener('click', async () => {
+            const result = document.getElementById('onlineAiSettingsResult');
+            try {
+                await set(ref(db, 'onlineAiSettings'), {
+                    provider: document.getElementById('onlineAiProvider').value.trim() || 'deepseek',
+                    model: document.getElementById('onlineAiModel').value.trim() || 'deepseek-v4-flash',
+                    enabled: document.getElementById('onlineAiEnabled').checked,
+                    updatedAt: Date.now()
+                });
+                result.className = 'result-box success';
+                result.textContent = 'تم حفظ التفضيلات. المفتاح السري يبقى في السيرفر فقط ✅';
+            } catch (_) {
+                result.className = 'result-box error';
+                result.textContent = 'تعذر حفظ التفضيلات — تحقق من صلاحية الأدمن.';
+            }
+        });
+        loadOnlineAiSettings();
 
-        if (sessionStorage.getItem('isAdmin') === 'true') {
-            queueMicrotask(() => {
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('adminName').textContent = 'المشرف المتصل';
-                initDashboard();
+        let analyticsStarted = false;
+        let dashboardStarted = false;
+        let questionRecords = [];
+        let questionSubmissions = [];
+        let followerSuggestions = [];
+        let questionInboxFilter = 'all';
+        let questionLibraryPage = 1;
+        let questionLibraryUnsub;
+        let questionSubmissionUnsub;
+        let suggestionUnsub;
+        let baseQuestionCount = 0;
+        const QUESTION_PAGE_SIZE = 12;
+
+        const escapeAdminHtml = (value) => String(value == null ? '' : value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+        const adminDate = value => value ? new Date(Number(value)).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+        const statusLabel = value => ({ pending: 'قيد المراجعة', approved: 'مقبول', active: 'فعّال', disabled: 'معطّل', rejected: 'مرفوض', archived: 'مؤرشف', in_review: 'قيد المتابعة' }[value] || value || '—');
+        const recordKey = (kind, id) => `${kind}:${id}`;
+
+        function initQuestionWorkspace() {
+            if (!window.QuestionLibrary || document.body.dataset.questionWorkspaceReady) return;
+            document.body.dataset.questionWorkspaceReady = 'true';
+            const redrawLibrary = records => { questionRecords = Array.isArray(records) ? records : []; renderQuestionLibrary(); };
+            const redrawSubmissions = records => { questionSubmissions = Array.isArray(records) ? records : []; renderQuestionLibrary(); renderFollowerInbox(); };
+            const redrawSuggestions = records => { followerSuggestions = Array.isArray(records) ? records : []; renderFollowerInbox(); };
+            window.QuestionLibrary.subscribeLibrary(redrawLibrary).then(unsub => { questionLibraryUnsub = unsub; }).catch(error => console.warn('تعذر ربط مكتبة الأسئلة', error));
+            window.QuestionLibrary.subscribeSubmissions(redrawSubmissions).then(unsub => { questionSubmissionUnsub = unsub; }).catch(error => console.warn('تعذر ربط أسئلة المتابعين', error));
+            window.QuestionLibrary.subscribeSuggestions(redrawSuggestions).then(unsub => { suggestionUnsub = unsub; }).catch(error => console.warn('تعذر ربط اقتراحات المتابعين', error));
+            (async () => {
+                for (const path of ['data/questions (1).json', '../data/questions (1).json']) {
+                    try { const response = await fetch(path); if (response.ok) { const data = await response.json(); baseQuestionCount = Array.isArray(data) ? data.length : 0; break; } } catch (_) { /* جرّب المسار التالي */ }
+                }
+                const basic = document.getElementById('qlBasicCount'); if (basic) basic.textContent = baseQuestionCount.toLocaleString('ar-SA');
+            })();
+            ['qlSearch', 'qlLetterFilter', 'qlDifficultyFilter', 'qlStatusFilter', 'qlSourceFilter', 'qlDateFilter'].forEach(id => document.getElementById(id)?.addEventListener('input', () => { questionLibraryPage = 1; renderQuestionLibrary(); }));
+            document.getElementById('inboxSearch')?.addEventListener('input', renderFollowerInbox);
+            document.querySelectorAll('[data-inbox-filter]').forEach(button => button.addEventListener('click', () => {
+                questionInboxFilter = button.dataset.inboxFilter || 'all';
+                document.querySelectorAll('[data-inbox-filter]').forEach(item => item.classList.toggle('is-selected', item === button));
+                renderFollowerInbox();
+            }));
+            document.getElementById('qlPrev')?.addEventListener('click', () => { if (questionLibraryPage > 1) { questionLibraryPage -= 1; renderQuestionLibrary(); } });
+            document.getElementById('qlNext')?.addEventListener('click', () => { questionLibraryPage += 1; renderQuestionLibrary(); });
+            renderQuestionLibrary();
+            renderFollowerInbox();
+        }
+
+        function updateQuestionFilterLetters() {
+            const select = document.getElementById('qlLetterFilter');
+            if (!select) return;
+            const current = select.value;
+            const letters = [...new Set(questionRecords.map(item => item.letter).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
+            select.innerHTML = '<option value="">كل الحروف</option>' + letters.map(letter => `<option value="${escapeAdminHtml(letter)}">${escapeAdminHtml(letter)}</option>`).join('');
+            select.value = letters.includes(current) ? current : '';
+        }
+
+        function filteredQuestionRecords() {
+            const search = String(document.getElementById('qlSearch')?.value || '').trim().toLowerCase();
+            const letter = document.getElementById('qlLetterFilter')?.value || '';
+            const difficulty = document.getElementById('qlDifficultyFilter')?.value || '';
+            const status = document.getElementById('qlStatusFilter')?.value || '';
+            const source = document.getElementById('qlSourceFilter')?.value || '';
+            const dateDays = Number(document.getElementById('qlDateFilter')?.value || 0);
+            const dateLimit = dateDays ? Date.now() - dateDays * 86400000 : 0;
+            return questionRecords.filter(item => {
+                const haystack = [item.question, item.answer, item.letter, item.category, item.notes].join(' ').toLowerCase();
+                return (!search || haystack.includes(search)) && (!letter || item.letter === letter) && (!difficulty || item.difficulty === difficulty) && (!status || item.status === status) && (!source || item.source === source) && (!dateLimit || Number(item.createdAt || 0) >= dateLimit);
             });
         }
 
+        function renderQuestionLibrary() {
+            updateQuestionFilterLetters();
+            const total = questionRecords.length;
+            document.getElementById('qlTotal').textContent = total.toLocaleString('ar-SA');
+            document.getElementById('qlActive').textContent = questionRecords.filter(item => item.status === 'active').length.toLocaleString('ar-SA');
+            document.getElementById('qlDisabled').textContent = questionRecords.filter(item => item.status === 'disabled').length.toLocaleString('ar-SA');
+            const allInbox = inboxRecords();
+            document.getElementById('qlPendingCount').textContent = allInbox.filter(item => item.status === 'pending' && !item.readAt).length.toLocaleString('ar-SA');
+            document.getElementById('qlApprovedCount').textContent = questionSubmissions.filter(item => item.status === 'approved').length.toLocaleString('ar-SA');
+            document.getElementById('qlRejectedCount').textContent = questionSubmissions.filter(item => item.status === 'rejected').length.toLocaleString('ar-SA');
+            document.getElementById('qlSuggestionsCount').textContent = followerSuggestions.filter(item => item.status === 'pending' && !item.readAt).length.toLocaleString('ar-SA');
+            const records = filteredQuestionRecords();
+            const pages = Math.max(1, Math.ceil(records.length / QUESTION_PAGE_SIZE));
+            questionLibraryPage = Math.min(questionLibraryPage, pages);
+            const start = (questionLibraryPage - 1) * QUESTION_PAGE_SIZE;
+            const visible = records.slice(start, start + QUESTION_PAGE_SIZE);
+            const list = document.getElementById('questionLibraryList');
+            if (list) list.innerHTML = visible.length ? visible.map(item => {
+                const id = encodeURIComponent(item.id);
+                return `<article class="question-library-card ${item.status === 'disabled' ? 'is-disabled' : ''}">
+                    <div class="question-library-card__meta"><span class="question-badge">${escapeAdminHtml(item.letter || '—')}</span><span class="question-badge ${item.status === 'active' ? 'is-active' : 'is-disabled'}">${statusLabel(item.status)}</span><span class="question-badge">${escapeAdminHtml(item.category || 'عام')}</span><span class="question-badge">${escapeAdminHtml(item.difficulty || 'متوسط')}</span><small>${escapeAdminHtml(item.source === 'follower' ? 'متابع' : 'أدمن')} · ${adminDate(item.createdAt)}</small></div>
+                    <div class="question-library-card__question">${escapeAdminHtml(item.question)}</div>
+                    <div class="question-library-card__answer">الإجابة: ${escapeAdminHtml(item.answer)}</div>
+                    <div class="question-library-card__actions"><button type="button" onclick="editLibraryQuestion('${id}')">تعديل</button><button type="button" onclick="toggleLibraryQuestion('${id}')">${item.status === 'active' ? 'تعطيل' : 'تفعيل'}</button><button type="button" onclick="deleteLibraryQuestion('${id}')">حذف</button></div>
+                </article>`;
+            }).join('') : '<div class="admin-empty">لا توجد أسئلة مطابقة.</div>';
+            const pageLabel = document.getElementById('qlPage');
+            if (pageLabel) pageLabel.textContent = `${questionLibraryPage} / ${pages}`;
+            const prev = document.getElementById('qlPrev'); const next = document.getElementById('qlNext');
+            if (prev) prev.disabled = questionLibraryPage <= 1;
+            if (next) next.disabled = questionLibraryPage >= pages;
+        }
+
+        function openQuestionEditor(record = null, pendingId = '') {
+            const editor = document.getElementById('questionEditor');
+            if (!editor) return;
+            editor.hidden = false;
+            document.getElementById('qlEditingId').value = record?.id || '';
+            document.getElementById('qlPendingSubmissionId').value = pendingId || '';
+            document.getElementById('qlQuestion').value = record?.question || '';
+            document.getElementById('qlAnswer').value = record?.answer || '';
+            document.getElementById('qlLetter').value = record?.letter || '';
+            document.getElementById('qlCategory').value = record?.category || 'عام';
+            document.getElementById('qlDifficulty').value = record?.difficulty || 'متوسط';
+            document.getElementById('qlStatus').value = record?.status === 'disabled' ? 'disabled' : 'active';
+            document.getElementById('qlNotes').value = record?.notes || '';
+            editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function closeQuestionEditor() {
+            const editor = document.getElementById('questionEditor');
+            if (editor) { editor.reset(); editor.hidden = true; }
+        }
+
+        async function saveQuestionFromAdmin(event) {
+            event.preventDefault();
+            const id = document.getElementById('qlEditingId').value;
+            const pendingId = document.getElementById('qlPendingSubmissionId').value;
+            const data = {
+                question: document.getElementById('qlQuestion').value.trim(), answer: document.getElementById('qlAnswer').value.trim(), letter: document.getElementById('qlLetter').value.trim().slice(0, 2),
+                category: document.getElementById('qlCategory').value.trim(), difficulty: document.getElementById('qlDifficulty').value, status: document.getElementById('qlStatus').value, notes: document.getElementById('qlNotes').value.trim()
+            };
+            if (!id) data.source = pendingId ? 'follower' : 'admin';
+            if (!data.question || !window.QuestionLibrary.answerMatchesLetter(data.answer, data.letter)) { alert('تأكد من السؤال وأن الإجابة تبدأ بالحرف المحدد.'); return; }
+            const duplicate = questionRecords.find(item => item.id !== id && window.QuestionLibrary.similarityScore(item.question, data.question) >= .78);
+            if (duplicate && !confirm('هذا السؤال موجود مسبقًا أو يوجد سؤال مشابه جدًا. هل تريد الحفظ على أي حال؟')) return;
+            try {
+                let libraryId = id;
+                if (id) await window.QuestionLibrary.updateQuestion(id, data);
+                else libraryId = await window.QuestionLibrary.addQuestion(data);
+                if (pendingId) await window.QuestionLibrary.updateSubmission(pendingId, { status: 'approved', libraryId, reviewedAt: Date.now(), readAt: Date.now() });
+                closeQuestionEditor();
+                alert('تم حفظ السؤال ✅');
+            } catch (error) { console.error(error); alert('تعذر حفظ السؤال. تحقق من اتصال Firebase.'); }
+        }
+
+        function findLibraryQuestion(id) { return questionRecords.find(item => item.id === decodeURIComponent(id)); }
+        window.openQuestionEditor = openQuestionEditor;
+        window.closeQuestionEditor = closeQuestionEditor;
+        window.saveQuestionFromAdmin = saveQuestionFromAdmin;
+        window.editLibraryQuestion = id => openQuestionEditor(findLibraryQuestion(id));
+        window.toggleLibraryQuestion = async id => { const item = findLibraryQuestion(id); if (item) await window.QuestionLibrary.updateQuestion(item.id, { status: item.status === 'active' ? 'disabled' : 'active' }); };
+        window.deleteLibraryQuestion = async id => { const item = findLibraryQuestion(id); if (item && confirm('حذف السؤال نهائيًا؟')) await window.QuestionLibrary.removeQuestion(item.id); };
+
+        function inboxRecords() {
+            return [
+                ...questionSubmissions.map(item => ({ ...item, kind: 'question' })),
+                ...followerSuggestions.map(item => ({ ...item, kind: 'suggestion' }))
+            ].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+        }
+
+        function renderFollowerInbox() {
+            const search = String(document.getElementById('inboxSearch')?.value || '').trim().toLowerCase();
+            const all = inboxRecords();
+            const unread = all.filter(item => item.status === 'pending' && !item.readAt).length;
+            const badge = document.getElementById('followerInboxBadge'); if (badge) badge.textContent = `${unread} جديد`;
+            const records = all.filter(item => {
+                const haystack = [item.name, item.question, item.answer, item.title, item.text, item.category, item.letter].join(' ').toLowerCase();
+                const pendingMatches = questionInboxFilter === 'pending' && ['pending', 'in_review'].includes(item.status);
+                const filterMatches = questionInboxFilter === 'all' || questionInboxFilter === item.kind || questionInboxFilter === item.status || pendingMatches;
+                return filterMatches && (!search || haystack.includes(search));
+            });
+            const list = document.getElementById('followerInboxList');
+            if (!list) return;
+            list.innerHTML = records.length ? records.map(item => {
+                const id = encodeURIComponent(item.id);
+                const title = item.kind === 'question' ? item.question : (item.title || item.category || 'اقتراح من متابع');
+                const body = item.kind === 'question' ? `الحرف: ${item.letter || '—'}\nالإجابة: ${item.answer || '—'}\nالتصنيف: ${item.category || 'عام'}` : item.text;
+                const actions = item.kind === 'question'
+                    ? `${item.status === 'pending' ? `<button type="button" onclick="approveInboxQuestion('${id}')">اعتماد للمكتبة</button>` : ''}<button type="button" onclick="editInboxQuestion('${id}')">تعديل</button>${item.status !== 'rejected' ? `<button type="button" onclick="setInboxStatus('question','${id}','rejected')">رفض</button>` : ''}`
+                    : `${['pending', 'in_review'].includes(item.status) ? `<button type="button" onclick="setInboxStatus('suggestion','${id}','approved')">قبول</button><button type="button" onclick="setInboxStatus('suggestion','${id}','in_review')">قيد المراجعة</button><button type="button" onclick="setInboxStatus('suggestion','${id}','rejected')">رفض</button>` : ''}`;
+                return `<article class="inbox-card ${item.status === 'pending' && !item.readAt ? 'inbox-unread' : ''}"><div class="inbox-card__meta"><span class="question-badge">${item.kind === 'question' ? 'سؤال' : 'اقتراح'}</span><span class="question-badge is-${escapeAdminHtml(item.status || 'pending')}">${statusLabel(item.status)}</span><span>${escapeAdminHtml(item.name || 'متابع')} · ${adminDate(item.createdAt)}</span></div><div class="inbox-card__title">${escapeAdminHtml(title)}</div><div class="inbox-card__body">${escapeAdminHtml(body)}</div><div class="inbox-card__actions">${actions}<button type="button" onclick="markInboxRead('${item.kind}','${id}')">${item.readAt ? 'مقروء' : 'تحديد كمقروء'}</button><button type="button" onclick="setInboxStatus('${item.kind}','${id}','archived')">أرشفة</button><button type="button" onclick="deleteInboxItem('${item.kind}','${id}')">حذف</button></div></article>`;
+            }).join('') : '<div class="admin-empty">لا توجد مشاركات في هذا التصنيف.</div>';
+        }
+
+        window.approveInboxQuestion = async id => { const item = questionSubmissions.find(record => record.id === decodeURIComponent(id)); if (!item) return; try { await window.QuestionLibrary.approveSubmission(item); alert('تم اعتماد السؤال وإضافته للمكتبة ✅'); } catch (error) { console.error(error); alert('تعذر اعتماد السؤال.'); } };
+        window.editInboxQuestion = id => {
+            const item = questionSubmissions.find(record => record.id === decodeURIComponent(id));
+            if (!item) return;
+            openQuestionEditor(null, item.id);
+            document.getElementById('qlQuestion').value = item.question || '';
+            document.getElementById('qlAnswer').value = item.answer || '';
+            document.getElementById('qlLetter').value = item.letter || '';
+            document.getElementById('qlCategory').value = item.category || 'عام';
+            document.getElementById('qlDifficulty').value = item.difficulty || 'متوسط';
+            document.getElementById('qlNotes').value = 'تمت المراجعة من صندوق المتابعين';
+        };
+        window.setInboxStatus = async (kind, id, status) => { const decoded = decodeURIComponent(id); if (kind === 'question') await window.QuestionLibrary.updateSubmission(decoded, { status, readAt: Date.now() }); else await window.QuestionLibrary.updateSuggestion(decoded, { status, readAt: Date.now() }); };
+        window.markInboxRead = async (kind, id) => { const decoded = decodeURIComponent(id); if (kind === 'question') await window.QuestionLibrary.updateSubmission(decoded, { readAt: Date.now() }); else await window.QuestionLibrary.updateSuggestion(decoded, { readAt: Date.now() }); };
+        window.deleteInboxItem = async (kind, id) => { if (!confirm('حذف المشاركة نهائيًا؟')) return; const decoded = decodeURIComponent(id); if (kind === 'question') await window.QuestionLibrary.removeSubmission(decoded); else await window.QuestionLibrary.removeSuggestion(decoded); };
+
+        async function enterAdminDashboard(user) {
+            if (!user?.uid) throw new Error('auth-required');
+            const adminSnapshot = await get(ref(db, `admins/${user.uid}`));
+            const adminRecord = adminSnapshot.val();
+            const isAdmin = adminRecord === true || adminRecord?.isAdmin === true || adminRecord?.role === 'admin';
+            if (!isAdmin) {
+                await signOut(auth).catch(() => {});
+                throw new Error('admin-required');
+            }
+            sessionStorage.setItem('isAdmin', 'true');
+            sessionStorage.setItem('adminUid', user.uid);
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminName').textContent = 'المشرف: ' + (user.email || user.uid);
+            initDashboard();
+        }
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPassword').value;
+            const errBox = document.getElementById('loginErr');
+            const button = document.querySelector('#loginForm button');
+            errBox.textContent = '';
+            errBox.style.display = 'none';
+            if (!email || !pass) {
+                errBox.textContent = 'أدخل البريد الإداري وكلمة المرور.';
+                errBox.style.display = 'block';
+                return;
+            }
+            if (button) button.disabled = true;
+            try {
+                const credential = await signInWithEmailAndPassword(auth, email, pass);
+                await enterAdminDashboard(credential.user);
+            } catch (error) {
+                errBox.textContent = error?.message === 'admin-required'
+                    ? 'الحساب صحيح لكنه لا يملك صلاحية الأدمن.'
+                    : 'تعذر تسجيل الدخول أو التحقق من صلاحية الأدمن.';
+                errBox.style.display = 'block';
+            } finally {
+                if (button) button.disabled = false;
+            }
+        };
+
+        onAuthStateChanged(auth, async user => {
+            if (sessionStorage.getItem('isAdmin') !== 'true') return;
+            try { await enterAdminDashboard(user); }
+            catch (_) { sessionStorage.removeItem('isAdmin'); sessionStorage.removeItem('adminUid'); }
+        });
+
+
+
 
         function initDashboard() {
+            if (dashboardStarted) return;
+            dashboardStarted = true;
+            initQuestionWorkspace();
             if (!analyticsStarted) {
                 analyticsStarted = true;
                 observeAnalytics(stats => {
@@ -545,14 +1032,16 @@
             }
             const usersRef = ref(db, 'users');
             onValue(usersRef, (snapshot) => {
-                // تفعيل المحتوى فوراً في وضع اليوزرنيم والباسورد
                 document.getElementById('adminContent').style.display = 'block';
                 document.getElementById('rbacWarning').style.display = 'none';
-                
                 const usersData = snapshot.val() || {};
                 const usersList = Object.keys(usersData).map(phone => ({ phone, ...usersData[phone] }));
                 updateStats(usersList);
                 renderUsersTable(usersList);
+            }, () => {
+                document.getElementById('adminContent').style.display = 'none';
+                document.getElementById('rbacWarning').style.display = 'block';
+                document.getElementById('myUid').textContent = auth.currentUser?.uid || '—';
             });
         }
 
@@ -598,8 +1087,10 @@
             if (confirm('حذف؟')) await remove(ref(db, `users/${phone}`));
         };
 
-        window.logout = () => {
+        window.logout = async () => {
             sessionStorage.removeItem('isAdmin');
+            sessionStorage.removeItem('adminUid');
+            await signOut(auth).catch(() => {});
             window.location.reload();
         };
     </script>

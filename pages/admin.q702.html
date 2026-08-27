@@ -219,6 +219,30 @@
         .ctrl-btn:active { transform: translateY(4px); }
         .ctrl-btn:disabled { opacity: .35; cursor: not-allowed; }
         .ctrl-btn:disabled:active { transform: none; }
+
+        .admin-timer-settings {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,.09);
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+        .admin-timer-field { display: flex; flex-direction: column; gap: 5px; }
+        .admin-timer-field label { color: rgba(255,255,255,.55); font-size: .7rem; font-weight: 800; }
+        .admin-timer-field input {
+            width: 100%; min-height: 42px; padding: 7px 9px;
+            border: 1px solid rgba(255,255,255,.14); border-bottom: 3px solid rgba(255,214,0,.42);
+            border-radius: 8px; outline: none; background: rgba(0,0,0,.24);
+            color: #fff; text-align: center; font-size: 1rem; font-weight: 900;
+        }
+        .admin-timer-save {
+            min-height: 42px; padding: 8px 13px; border: none; border-radius: 8px;
+            background: var(--yellow); color: #1a1a1a; font-size: .76rem; font-weight: 900;
+            cursor: pointer; box-shadow: 0 3px 0 rgba(145,95,0,.75);
+        }
+        .admin-timer-save:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(145,95,0,.75); }
         .btn-reveal {
             background: var(--green); color: #0d3018;
             box-shadow: 0 5px 0 rgba(20,120,60,.5), 0 8px 18px rgba(74,222,128,.12);
@@ -280,11 +304,40 @@
         }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+        .admin-suggestions { display: grid; gap: 10px; max-height: 520px; overflow: auto; }
+        .suggestions-empty { padding: 24px; text-align: center; color: rgba(255,255,255,.4); }
+        .suggestion-item {
+            padding: 12px; border-radius: 11px; background: rgba(0,0,0,.22);
+            border: 1px solid rgba(255,255,255,.1); border-right: 4px solid var(--yellow);
+        }
+        .suggestion-item.status-approved { border-right-color: var(--green); }
+        .suggestion-item.status-rejected { border-right-color: var(--red); opacity: .72; }
+        .suggestion-item__top { display: grid; grid-template-columns: 34px 1fr auto; gap: 9px; align-items: center; }
+        .suggestion-item__top small { display: block; margin-top: 2px; color: rgba(255,255,255,.38); font-size: .65rem; }
+        .suggestion-letter {
+            width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px;
+            background: var(--yellow); color: #22102f; font-size: 1.25rem;
+        }
+        .suggestion-state { color: var(--yellow); font-size: .7rem; }
+        .suggestion-item p { margin: 11px 0 7px; color: #fff; line-height: 1.55; }
+        .suggestion-answer { color: var(--green); font-size: .82rem; }
+        .suggestion-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+        .suggestion-actions button {
+            border: 1px solid rgba(255,255,255,.12); border-radius: 7px; padding: 7px 10px;
+            background: rgba(255,255,255,.08); color: #fff; cursor: pointer;
+        }
+        .suggestion-actions button:first-child { background: rgba(74,222,128,.18); color: var(--green); }
+        .suggestion-actions button.danger { background: rgba(248,113,113,.12); color: var(--red); }
+
         @media (max-width: 580px) {
             .two-col { grid-template-columns: 1fr; }
             .ctrl-grid { grid-template-columns: 1fr; }
+            .admin-timer-settings { grid-template-columns: 1fr 1fr; }
+            .admin-timer-save { grid-column: 1 / -1; }
             .btn-buzz-open { grid-column: unset; }
             .teams-display { flex-direction: column; }
+            .suggestion-item__top { grid-template-columns: 32px 1fr; }
+            .suggestion-state { grid-column: 2; }
         }
     </style>
 </head>
@@ -351,6 +404,14 @@
                 ✨ إنشاء جلسة جديدة
             </button>
         </div>
+
+        <button onclick="openSuggestionsReview()" style="
+            padding:13px; border:none; border-radius:10px;
+            background:rgba(255,214,0,.14); border:1px solid rgba(255,214,0,.3);
+            border-bottom:3px solid rgba(255,214,0,.35); color:#FFD600;
+            font-size:.95rem; font-weight:900; cursor:pointer;">
+            💡 مراجعة أسئلة المتابعين
+        </button>
 
         <div class="join-err" id="joinErr"></div>
     </div>
@@ -429,6 +490,17 @@
                     <button class="ctrl-btn btn-next"   id="nextBtn"   onclick="doNext()" disabled>⏭ سؤال جديد</button>
                     <button class="ctrl-btn btn-buzz-open" onclick="doResetBuzzer()">🔔 فتح الجرس من جديد</button>
                 </div>
+                <div class="admin-timer-settings" aria-label="إعداد مدد الإجابة">
+                    <div class="admin-timer-field">
+                        <label for="adminAnswerSeconds">وقت الفريق الأسرع</label>
+                        <input id="adminAnswerSeconds" type="number" min="2" max="30" value="3" inputmode="numeric">
+                    </div>
+                    <div class="admin-timer-field">
+                        <label for="adminOtherSeconds">وقت الفريق الآخر</label>
+                        <input id="adminOtherSeconds" type="number" min="5" max="60" value="10" inputmode="numeric">
+                    </div>
+                    <button class="admin-timer-save" type="button" onclick="saveAdminTimerSettings()">حفظ الوقت</button>
+                </div>
             </div>
         </div>
     </div>
@@ -496,6 +568,19 @@
             </div>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-hd">
+            <span class="card-hd-icon">💡</span>
+            <span class="card-hd-title">أسئلة المتابعين للمراجعة</span>
+            <div class="card-hd-right"><span id="suggestionsCount">0 اقتراح</span></div>
+        </div>
+        <div class="card-bd">
+            <div class="admin-suggestions" id="adminSuggestions">
+                <div class="suggestions-empty">جاري تحميل الاقتراحات...</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="toast"></div>
@@ -503,11 +588,11 @@
 <!-- ══════════════ SCRIPT ══════════════ -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, update, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const PIN        = "7878";
-const BUZZER_SRV = "https://rakaga66.github.io/buzzer-server-qaf/";
+const BUZZER_SRV = new URL('/buzzer-server-qaf/', location.origin).href;
 const AUD_URL    = (() => { const u = new URL(location.href); return u.origin + u.pathname.replace('admin.q702.html','q702.html'); })();
 const LETTERS    = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
 
@@ -527,6 +612,61 @@ onValue(ref(db,'.info/connected'), s => {
     document.getElementById('connDot').className    = on ? 'on' : 'off';
     document.getElementById('connLabel').textContent = on ? '● متصل' : '○ منقطع';
 });
+
+onValue(ref(db,'questionSuggestions'), snap => {
+    renderQuestionSuggestions(snap.val() || {});
+});
+
+function escapeSuggestion(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[char]);
+}
+
+function renderQuestionSuggestions(raw) {
+    const host = document.getElementById('adminSuggestions');
+    const count = document.getElementById('suggestionsCount');
+    if (!host || !count) return;
+    const items = Object.entries(raw)
+        .map(([id, value]) => ({ id, ...value }))
+        .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    const pending = items.filter(item => item.status === 'pending').length;
+    count.textContent = `${items.length} اقتراح — ${pending} بانتظار المراجعة`;
+    if (!items.length) {
+        host.innerHTML = '<div class="suggestions-empty">لا توجد اقتراحات حتى الآن.</div>';
+        return;
+    }
+    host.innerHTML = items.map(item => `
+        <article class="suggestion-item status-${escapeSuggestion(item.status || 'pending')}">
+            <div class="suggestion-item__top">
+                <span class="suggestion-letter">${escapeSuggestion(item.letter)}</span>
+                <div><strong>${escapeSuggestion(item.name || 'متابع')}</strong><small>${item.createdAt ? new Date(item.createdAt).toLocaleString('ar-SA') : ''}</small></div>
+                <span class="suggestion-state">${item.status === 'approved' ? 'مقبول' : item.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة'}</span>
+            </div>
+            <p>${escapeSuggestion(item.question)}</p>
+            <div class="suggestion-answer">الإجابة: <strong>${escapeSuggestion(item.answer)}</strong></div>
+            <div class="suggestion-actions">
+                <button data-id="${item.id}" data-status="approved">اعتماد</button>
+                <button data-id="${item.id}" data-status="rejected">رفض</button>
+                <button data-copy="${item.id}">نسخ السؤال</button>
+                <button class="danger" data-delete="${item.id}">حذف</button>
+            </div>
+        </article>`).join('');
+    host.querySelectorAll('[data-status]').forEach(button => button.onclick = () =>
+        update(ref(db, `questionSuggestions/${button.dataset.id}`), {
+            status: button.dataset.status,
+            reviewedAt: Date.now()
+        }).then(() => toast(button.dataset.status === 'approved' ? 'تم اعتماد الاقتراح' : 'تم رفض الاقتراح'))
+    );
+    host.querySelectorAll('[data-delete]').forEach(button => button.onclick = () =>
+        remove(ref(db, `questionSuggestions/${button.dataset.delete}`)).then(() => toast('تم حذف الاقتراح'))
+    );
+    host.querySelectorAll('[data-copy]').forEach(button => button.onclick = () => {
+        const item = items.find(value => value.id === button.dataset.copy);
+        if (!item) return;
+        navigator.clipboard.writeText(`${item.letter} | ${item.question} | ${item.answer}`).then(() => toast('تم نسخ السؤال'));
+    });
+}
 
 // ── State ────────────────────────────────────────────────────────────────────
 let sess='', letter='', allQ=[], curQ=null, revealed=false, buzzerLocked=false;
@@ -598,6 +738,12 @@ window.doCreateNew = async function() {
     document.getElementById('joinScreen').classList.add('hidden');
     subscribe();
     toast('✅ جلسة جديدة: ' + sess);
+};
+
+window.openSuggestionsReview = function() {
+    document.getElementById('joinScreen').classList.add('hidden');
+    document.getElementById('sessDisp').textContent = 'مراجعة الأسئلة';
+    document.getElementById('adminSuggestions')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 window.leaveSession = () => {
@@ -701,10 +847,29 @@ window.doNext    = () => { if (!letter) return; pickQ(letter); toast('⏭ سؤا
 window.doShuffle = () => { if (!letter) return; pickQ(letter); toast('🔀 تم تغيير السؤال'); };
 
 window.doResetBuzzer = () => {
-    update(buzr(), { locked:false, buzzer:null });
+    update(buzr(), {
+        locked:false,
+        buzzer:null,
+        timer:{ phase:'open', team:'', durationMs:0, startedAt:Date.now() }
+    });
     clearBuzzerUI();
     setChip('chipBuzz', true);
     toast('🔔 الجرس مفتوح للجميع');
+};
+
+window.saveAdminTimerSettings = async () => {
+    if (!sess) { toast('⚠️ اتصل بجلسة أولاً'); return; }
+    const first = Math.max(2, Math.min(30, Number(document.getElementById('adminAnswerSeconds').value) || 3));
+    const other = Math.max(5, Math.min(60, Number(document.getElementById('adminOtherSeconds').value) || 10));
+    document.getElementById('adminAnswerSeconds').value = first;
+    document.getElementById('adminOtherSeconds').value = other;
+    await set(buzr('presenterCommand'), {
+        id: crypto.randomUUID(),
+        type: 'updateSettings',
+        payload: { answerSeconds:first, otherTeamSeconds:other },
+        createdAt: Date.now()
+    });
+    toast(`⏱ تم حفظ الوقت: ${first} ثم ${other} ثوانٍ`);
 };
 
 // ── Firebase Listeners ────────────────────────────────────────────────────────
@@ -721,6 +886,12 @@ function subscribe() {
     // Room locked state
     unsubs.push(onValue(buzr('locked'), snap => {
         buzzerLocked = !!snap.val();
+    }));
+
+    unsubs.push(onValue(buzr('game/settings'), snap => {
+        const settings = snap.val() || {};
+        document.getElementById('adminAnswerSeconds').value = Number(settings.answerSeconds) || 3;
+        document.getElementById('adminOtherSeconds').value = Number(settings.otherTeamSeconds) || 10;
     }));
 
     // q702 state (track what audience sees)

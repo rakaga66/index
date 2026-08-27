@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>جرس طور القوى الخارقة</title>
+    <link rel="stylesheet" href="/modes/super-powers/css/power-announcement.css?v=1">
+    <style>
+        @font-face {
+            font-family: 'HrofFont';
+            src: url('/assets/hroof.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        :root {
+            --bg-grad-1: #3D1A6E;
+            --bg-grad-2: #4A2570;
+            --yellow: #FFD600;
+            --orange: #FF8C00;
+            --card-bg: rgba(18, 8, 35, 0.95);
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'HrofFont', 'Cairo', sans-serif;
+            background: linear-gradient(145deg, #3D1A6E 0%, #6B3FA0 45%, #4A2570 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+            color: var(--white);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.3v34.6L30 69.3 0 52V17.3zM30 104l30-17.3V52L30 34.6 0 52v34.6z' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E");
+            background-size: 60px 104px;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow {
+            position: absolute;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(123,63,190,0.5) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px; left: -100px;
+            pointer-events: none; z-index: 0;
+        }
+        .glow:nth-child(2) {
+            top: auto; bottom: -150px; right: -100px;
+            background: radial-gradient(circle, rgba(255,214,0,0.15) 0%, transparent 70%);
+        }
+
+        .container {
+            position: relative; z-index: 10;
+            width: 100%; max-width: 500px;
+            padding: 24px 20px;
+            display: flex; flex-direction: column; gap: 20px;
+            min-height: 100vh;
+        }
+
+        /* ===== LOGIN ===== */
+        #loginScreen {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            flex: 1; gap: 30px;
+            animation: popIn 0.4s ease;
+        }
+
+        .logo-hroof {
+            font-family: 'HrofFont', sans-serif;
+            font-size: 4rem; color: var(--yellow);
+            line-height: 1;
+            -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+            text-shadow: 2px 2px 0 #000, 4px 4px 0 #000, 6px 6px 0 rgba(0,0,0,0.35);
+        }
+        .logo-sub {
+            font-family: 'HrofFont', sans-serif;
+            font-size: 2rem; color: var(--orange);
+            margin-top: -10px;
+            -webkit-text-stroke: 1.5px #000; paint-order: stroke fill;
+            text-shadow: 2px 2px 0 #000, 4px 4px 0 #000, 6px 6px 0 rgba(0,0,0,0.35);
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 4px solid rgba(255, 214, 0, 0.5);
+            border-radius: 16px; padding: 30px 24px;
+            width: 100%; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 20px;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .input-grp { display: flex; flex-direction: column; gap: 8px; }
+        .input-grp label { font-weight: 700; font-size: 0.95rem; color: rgba(255,255,255,0.9); padding-right: 4px; }
+
+        .inp-field {
+            width: 100%; padding: 16px 20px;
+            border-radius: 12px;
+            font-family: 'HrofFont', sans-serif; font-size: 1.1rem; font-weight: normal;
+            background: rgba(0,0,0,0.25); color: var(--white); outline: none;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-bottom: 3px solid rgba(255,255,255,0.2);
+            transition: border-color 0.2s;
+        }
+        .inp-field:focus { border-color: var(--yellow); border-bottom-color: #ccaa00; }
+
+        .team-select { display: flex; gap: 12px; }
+        .team-opt {
+            flex: 1; padding: 14px; border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1); border-bottom: 3px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: #fff; font-family: 'HrofFont', sans-serif; font-weight: normal;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+        }
+        .team-opt[data-team="team1"].active { background: rgba(255,152,0,0.2); border-color: var(--orange); border-bottom-color: #e65100; color: var(--orange); }
+        .team-opt[data-team="team2"].active { background: rgba(139,95,191,0.2); border-color: #ba8fed; border-bottom-color: #6a3699; color: #ba8fed; }
+        .team-opt:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+        .join-btn {
+            width: 100%; padding: 16px 24px; border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255, 214, 0, 0.9);
+            color: #1a1a1a; font-family: 'HrofFont', sans-serif;
+            font-size: 1.4rem; font-weight: normal; cursor: pointer;
+            border-bottom: 4px solid #ccaa00;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.15s ease; margin-top: 10px;
+        }
+        .join-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+            border-bottom-width: 0px; margin-bottom: 4px;
+        }
+
+        /* ===== MAIN SCREEN ===== */
+        #mainScreen {
+            display: none; flex-direction: column; align-items: center;
+            flex: 1; gap: 16px; width: 100%;
+            padding-top: 10px; padding-bottom: 20px;
+        }
+
+        .top-card {
+            background: var(--card-bg); border-radius: 16px; padding: 20px;
+            width: 100%; text-align: center; backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(255, 255, 255, 0.1); border-bottom: 4px solid rgba(255, 214, 0, 0.5);
+            box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .room-badge {
+            display: inline-block; background: rgba(255,255,255,0.15);
+            padding: 6px 16px; border-radius: 10px;
+            font-size: 0.9rem; font-weight: normal; letter-spacing: 1px; margin-top: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .player-card {
+            background: var(--card-bg); border-radius: 16px; padding: 24px;
+            width: 100%; text-align: center; backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(255, 255, 255, 0.1); border-bottom: 4px solid rgba(255, 214, 0, 0.5);
+            box-shadow: 0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.5);
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+        }
+
+        .pc-label { font-size: 1rem; font-weight: normal; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+        .pc-name { 
+            font-size: 2.2rem; font-weight: normal; color: #fff; margin-bottom: 16px; 
+            -webkit-text-stroke: 1.5px #000; paint-order: stroke fill;
+            text-shadow: 2px 2px 0 #000, 4px 4px 0 #000, 6px 6px 0 rgba(0,0,0,0.35);
+        }
+
+        .team-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 50px;
+            font-weight: normal; font-size: 0.95rem; background: rgba(0,0,0,0.3);
+        }
+        .team-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        .instruction { font-size: 0.95rem; color: rgba(255,255,255,0.8); line-height: 1.5; margin-top: 24px; margin-bottom: auto; }
+
+        .player-timer {
+            display: none; width: 100%; margin-top: 14px; padding: 12px 16px;
+            border-radius: 12px; background: rgba(0,0,0,.28);
+            border: 1px solid rgba(255,214,0,.3); color: var(--yellow);
+            font-size: 1.05rem; text-align: center;
+        }
+
+        .player-timer.show { display: block; }
+        .player-timer strong { font-size: 1.45rem; margin-inline-start: 6px; }
+
+        /* ===== HEX BUZZER ===== */
+        .hex-buzzer-wrap {
+            position: relative; width: 250px; height: 280px;
+            margin-top: 20px; margin-bottom: 20px;
+            transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+            cursor: pointer; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4));
+        }
+        .hex-buzzer-wrap:active { transform: scale(0.95); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+
+        .hex-bg {
+            width: 100%; height: 100%;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(180deg, var(--orange) 0%, #D84315 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; transition: background 0.3s;
+        }
+        .hex-bg.team2 { background: linear-gradient(180deg, #ba8fed 0%, #4A2570 100%); }
+        .hex-bg::after {
+            content: ''; position: absolute; inset: 4px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hex-icon { font-size: 3rem; margin-bottom: -5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .hex-text { 
+            font-family: 'HrofFont', sans-serif; font-size: 3.5rem; color: #fff; line-height: 1; 
+            -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+            text-shadow: 2px 2px 0 #000, 4px 4px 0 #000, 6px 6px 0 rgba(0,0,0,0.35);
+        }
+        .hex-sub { font-size: 0.9rem; font-weight: normal; opacity: 0.9; margin-top: 5px; }
+
+        .locked .hex-bg { background: #555 !important; filter: grayscale(1); }
+        .locked { cursor: not-allowed; opacity: 0.7; }
+        .locked:active { transform: none; }
+
+        .btn-secondary {
+            width: 100%; padding: 16px 24px; border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            color: #fff; font-family: 'HrofFont', sans-serif;
+            font-weight: normal; font-size: 1.2rem; cursor: pointer;
+            border-bottom: 4px solid rgba(255,214,0,0.55);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.15s ease; margin-top: 10px;
+        }
+        .btn-secondary:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+            border-bottom-width: 0px; margin-bottom: 4px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ===== TOAST ===== */
+        #toast {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--yellow); color: #1a1a1a;
+            padding: 14px 24px; border-radius: 50px;
+            font-weight: normal; font-size: 1rem;
+            transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+            z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.3); white-space: nowrap;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        #toast.error { background: #E53935; color: #fff; }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: var(--yellow);
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .powers-card{width:100%;margin-top:14px;padding:14px;border:1px solid rgba(255,214,0,.35);border-bottom:4px solid #a87900;border-radius:16px;background:rgba(43,18,72,.92)}.powers-head{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--yellow)}.powers-head small{color:#d4c4e2}.powers-list{display:grid;gap:8px;margin-top:10px}.power-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);text-align:right}.power-item small{display:block;margin-top:3px;color:#cbb8da;font-size:.68rem}.power-item .power-item__rules{color:#ffe27a;font-size:.62rem;line-height:1.5}.power-item button{border:0;border-radius:8px;padding:8px 10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:#28123f;font:inherit;cursor:pointer}.power-item button:disabled{opacity:.38;cursor:not-allowed}.power-empty{text-align:center;color:#c9b8d7;font-size:.78rem;padding:12px}.opponent-power{margin-top:8px;text-align:center;font-size:.72rem;color:#d5c7e1}
+
+        /* ===== POWER TARGET DIALOG ===== */
+        .power-target-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,3,22,.72);backdrop-filter:blur(8px)}
+        .power-target-modal.show{display:flex;animation:popIn .2s ease}
+        .power-target-card{position:relative;width:min(100%,430px);max-height:min(90vh,680px);overflow:auto;padding:24px 20px 20px;border-radius:18px;background:linear-gradient(145deg,rgba(67,33,108,.98),rgba(25,10,49,.98));border:1.5px solid rgba(255,255,255,.2);border-bottom:4px solid rgba(255,214,0,.72);box-shadow:0 18px 50px rgba(0,0,0,.55);text-align:right}
+        .power-target-close{position:absolute;top:10px;left:10px;width:36px;height:36px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font:normal 1.5rem/1 HrofFont,sans-serif;cursor:pointer}
+        .power-target-icon{font-size:2.4rem;text-align:center;margin-bottom:4px}.power-target-title{font:normal 1.55rem HrofFont,sans-serif;color:var(--yellow);text-align:center}.power-target-description{margin:8px 0 18px;color:rgba(255,255,255,.82);font-size:.9rem;line-height:1.7;text-align:center}.power-target-prompt{display:block;margin:0 4px 8px;color:#fff;font-size:.95rem}.power-target-modal .inp-field{padding:12px 14px;font-size:1rem}.power-target-select{display:none}.power-target-input{display:none}.power-target-input.show,.power-target-select.show{display:block}.power-target-hint{display:none;margin-top:8px;color:#cfbddc;font-size:.78rem}.power-target-hint.show{display:block}.power-target-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px;margin-top:18px}.power-target-actions button{padding:12px 14px;border:0;border-radius:10px;font:normal 1rem HrofFont,sans-serif;cursor:pointer}.power-target-cancel{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)!important}.power-target-confirm{background:linear-gradient(135deg,var(--yellow),var(--orange));color:#28123f;box-shadow:0 4px 0 rgba(0,0,0,.25)}.power-target-actions button:active{transform:translateY(2px)}
+        @media (max-width:420px){.power-target-modal{padding:10px}.power-target-card{padding:20px 14px 16px}.power-target-title{font-size:1.3rem}.power-target-description{font-size:.82rem}.power-target-actions button{font-size:.9rem}}
+    </style>
+</head>
+
+<body>
+    <div class="app-background"></div>
+    <div id="toast"></div>
+
+    <div class="container">
+
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen">
+            <div style="text-align:center;">
+                <div class="logo-hroof">حروف</div>
+                <div class="logo-sub">جرس الفرق</div>
+            </div>
+
+            <div class="login-card">
+                <div style="font-size:0.95rem; color:rgba(255,255,255,0.8); text-align:center; margin-bottom:10px;">
+                    ادخل بياناتك، اختر فريقك، وابقَ جاهزاً للحظة الحسم.
+                </div>
+
+                <div class="input-grp" id="roomCodeGrp">
+                    <label>كود الجلسة</label>
+                    <input type="text" id="roomInput" class="inp-field" placeholder="مثال: ABC123" maxlength="10" style="text-transform:uppercase;">
+                </div>
+
+                <div class="input-grp">
+                    <label>اسم اللاعب</label>
+                    <input type="text" id="nameInput" class="inp-field" placeholder="اسمك" maxlength="20">
+                </div>
+
+                <div class="input-grp">
+                    <label>اختر فريقك</label>
+                    <div class="team-select">
+                        <button class="team-opt active" data-team="team1" onclick="selectTeam('team1')">الفريق الأول 🟠</button>
+                        <button class="team-opt"        data-team="team2" onclick="selectTeam('team2')">الفريق الثاني 🟣</button>
+                    </div>
+                </div>
+
+                <button class="join-btn" onclick="joinRoom()">دخول الجرس</button>
+            </div>
+        </div>
+
+        <!-- MAIN SCREEN -->
+        <div id="mainScreen">
+
+            <div class="top-card">
+                <div class="logo-hroof" style="font-size:2.5rem;">حروف</div>
+                <div class="room-badge" id="displayRoomCode">جلسة ----</div>
+            </div>
+
+            <div class="player-card">
+                <div class="pc-label">اللاعب</div>
+                <div class="pc-name" id="displayMyName">----</div>
+
+                <div class="team-badge">
+                    <span id="displayMyTeamName">الفريق الأول</span>
+                    <span class="team-dot" id="displayMyTeamDot" style="background:var(--orange);"></span>
+                </div>
+
+                <div class="instruction">
+                    اضغط فور معرفتك للإجابة.<br>إذا قُفل الجرس فانتظر إعادة التفعيل من المقدم.
+                </div>
+                <div class="player-timer" id="playerTimer"></div>
+
+                <div class="hex-buzzer-wrap" id="buzzerWrap" onclick="pressBuzzer()">
+                    <div class="hex-bg" id="buzzerBg">
+                        <div class="hex-icon">👆</div>
+                        <div class="hex-text">اضغط</div>
+                        <div class="hex-sub" id="buzzerSub">جاهز</div>
+                    </div>
+                </div>
+
+                <button class="btn-secondary" onclick="leaveRoom()">
+                    <span>✏️</span> تغيير الاسم أو الفريق
+                </button>
+                <section class="powers-card">
+                    <div class="powers-head"><strong>⚡ قواك الخارقة</strong><small id="powerUsage">0 / 2 هذه الجولة</small></div>
+                    <div class="powers-list" id="powersList"><div class="power-empty">بانتظار بيانات القوى</div></div>
+                    <div class="opponent-power" id="opponentPowerCount"></div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Power target selection -->
+    <div class="power-target-modal" id="powerTargetModal" role="dialog" aria-modal="true" aria-labelledby="powerTargetTitle">
+        <section class="power-target-card">
+            <button class="power-target-close" type="button" id="powerTargetClose" aria-label="إغلاق">×</button>
+            <div class="power-target-icon" id="powerTargetIcon">⚡</div>
+            <h2 class="power-target-title" id="powerTargetTitle">تحديد هدف القوة</h2>
+            <p class="power-target-description" id="powerTargetDescription"></p>
+            <label class="power-target-prompt" id="powerTargetPrompt" for="powerTargetSelect">ما الهدف المطلوب؟</label>
+            <select class="inp-field power-target-select" id="powerTargetSelect"></select>
+            <input class="inp-field power-target-input" id="powerTargetInput" type="text" maxlength="80" autocomplete="off" placeholder="اكتب الهدف هنا">
+            <div class="power-target-hint" id="powerTargetHint">سيصل الهدف للمقدم مع طلب القوة.</div>
+            <div class="power-target-actions">
+                <button class="power-target-cancel" type="button" id="powerTargetCancel">إلغاء</button>
+                <button class="power-target-confirm" type="button" id="powerTargetConfirm">إرسال الطلب</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="/modes/super-powers/js/power-announcement.js?v=1"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getDatabase, ref, set, update, onValue, runTransaction, push, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+        // ── Firebase Config ──────────────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey:            "AIzaSyCV2ZAVYhMbzgVFPmNtooCHR6C4aMOE3A",
+            authDomain:        "buzzer-game-f2983.firebaseapp.com",
+            databaseURL:       "https://buzzer-game-f2983-default-rtdb.firebaseio.com",
+            projectId:         "buzzer-game-f2983",
+            storageBucket:     "buzzer-game-f2983.firebasestorage.app",
+            messagingSenderId: "125573747954",
+            appId:             "1:125573747954:web:8dac681836e326b8b2c6b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        // ── State ────────────────────────────────────────────────────────────
+        let currentRoom = '';
+        let myName      = '';
+        let myTeam      = 'team1';
+        let myId        = '';
+        let buzzerLocked = false;
+        let team1Name   = 'الفريق الأول';
+        let team2Name   = 'الفريق الثاني';
+        let currentQuestionId = 'lobby';
+        let lastPressedQuestionId = '';
+        let serverOffset = 0;
+        let playerTimerInterval = null;
+        let currentPowerView = null;
+        let currentLiveGame = null;
+        let currentPlayers = {};
+        let pendingPowerTarget = null;
+        const announcedPowerIntents = new Set();
+
+        function genId() { return Math.random().toString(36).substr(2, 9) + Date.now().toString(36); }
+
+        // ── Read URL Params ──────────────────────────────────────────────────
+        window.addEventListener('DOMContentLoaded', () => {
+            const p = new URLSearchParams(window.location.search);
+            const room = p.get('room');
+            const name = p.get('name');
+            const team = p.get('team');
+            const t1   = p.get('team1');
+            const t2   = p.get('team2');
+
+            if (t1) { team1Name = t1; document.querySelector('.team-opt[data-team="team1"]').textContent = t1 + ' 🟠'; }
+            if (t2) { team2Name = t2; document.querySelector('.team-opt[data-team="team2"]').textContent = t2 + ' 🟣'; }
+
+            if (room) {
+                document.getElementById('roomInput').value = room.toUpperCase();
+                document.getElementById('roomCodeGrp').style.display = 'none';
+            }
+            if (name) document.getElementById('nameInput').value = name;
+            if (team === 'team1' || team === 'team2') selectTeam(team);
+
+            // Auto-join if all present
+            if (room && name && team) setTimeout(() => joinRoom(), 300);
+        });
+
+        // ── Join Room ────────────────────────────────────────────────────────
+        window.joinRoom = function () {
+            const rc = document.getElementById('roomInput').value.trim().toUpperCase();
+            const nm = document.getElementById('nameInput').value.trim();
+
+            if (!rc) return showToast('⚠️ أدخل كود الجلسة أولاً', true);
+            if (!nm) return showToast('⚠️ يرجى إدخال اسمك', true);
+
+            currentRoom = rc;
+            myName      = nm;
+            myId        = localStorage.getItem(`hojas_superpowers_player_${rc}`) || genId();
+            localStorage.setItem(`hojas_superpowers_player_${rc}`, myId);
+
+            const playerRef = ref(db, `superPowerRooms/${rc}/players/${myId}`);
+            update(playerRef, {
+                name: nm, team: myTeam, joinedAt: serverTimestamp(),
+                lastSeen: serverTimestamp(), connected: true
+            })
+                .then(() => {
+                    onDisconnect(playerRef).update({ connected: false, lastSeen: serverTimestamp() });
+                    setInterval(() => update(playerRef, { connected: true, lastSeen: serverTimestamp() }), 15000);
+                    showMainScreen();
+                    listenToRoom(rc);
+                })
+                .catch(err => showToast('❌ ' + err.message, true));
+        };
+
+        function showMainScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display  = 'flex';
+            document.getElementById('displayRoomCode').textContent = 'جلسة ' + currentRoom;
+            document.getElementById('displayMyName').textContent   = myName;
+
+            const isT1 = myTeam === 'team1';
+            document.getElementById('displayMyTeamName').textContent = isT1 ? team1Name : team2Name;
+            document.getElementById('displayMyTeamDot').style.background = isT1 ? 'var(--orange)' : '#ba8fed';
+            const bBg = document.getElementById('buzzerBg');
+            if (isT1) bBg.classList.remove('team2'); else bBg.classList.add('team2');
+
+            if ('vibrate' in navigator) navigator.vibrate(50);
+        }
+
+        // ── Listen to Room State (Real-Time) ─────────────────────────────────
+        function listenToRoom(roomCode) {
+            onValue(ref(db, '.info/serverTimeOffset'), snap => { serverOffset = Number(snap.val() || 0); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/powerViews/${myTeam}`), snap => {
+                currentPowerView = snap.val() || null;
+                renderPowers(currentPowerView);
+            });
+            onValue(ref(db, `superPowerRooms/${roomCode}/powerIntents/${myTeam}`), snap => {
+                Object.entries(snap.val() || {}).forEach(([id, intent]) => {
+                    if (!intent?.processed || intent.playerId !== myId || announcedPowerIntents.has(id)) return;
+                    announcedPowerIntents.add(id);
+                    showToast(intent.ok ? (intent.type === 'CANCEL' ? 'تم إلغاء الطلب' : 'وصل طلبك إلى المقدم') : (intent.reason || 'تعذر طلب القوة'), !intent.ok);
+                });
+            });
+
+            let liveTimer = null, liveGame = null, liveBuzz = null;
+            const refresh = () => {
+                const locked = Boolean(liveBuzz);
+                const nextQuestionId = liveTimer?.questionId || liveGame?.updatedAt || 'lobby';
+                if (nextQuestionId !== currentQuestionId) {
+                    currentQuestionId = String(nextQuestionId);
+                    lastPressedQuestionId = '';
+                }
+                renderPlayerTimer(liveTimer);
+
+                if (locked !== buzzerLocked) {
+                    buzzerLocked = locked;
+                    updateBuzzerUI();
+                }
+
+                if (liveBuzz) {
+                    const isMe = (liveBuzz.id === myId);
+                    document.getElementById('buzzerSub').textContent = isMe ? 'انت الأسرع! ✅' : 'سبقك ' + liveBuzz.name;
+                    if (!isMe && 'vibrate' in navigator) navigator.vibrate(200);
+                } else if (!locked) {
+                    // Reset happened
+                    document.getElementById('buzzerSub').textContent = 'جاهز';
+                    if ('vibrate' in navigator) navigator.vibrate(50);
+                }
+            };
+            onValue(ref(db, `superPowerRooms/${roomCode}/timer`), snap => { liveTimer = snap.val() || null; refresh(); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/game`), snap => { liveGame = snap.val() || null; currentLiveGame = liveGame; window.syncPowerAnnouncement?.(liveGame?.powerAnnouncement); refresh(); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/buzzer`), snap => { liveBuzz = snap.val() || null; refresh(); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/players`), snap => { currentPlayers = snap.val() || {}; });
+        }
+
+        // ── Press Buzzer (First Press Wins via Transaction) ───────────────────
+        window.pressBuzzer = function () {
+            if (lastPressedQuestionId === currentQuestionId) {
+                return showToast('تم تسجيل ضغطتك في الترتيب');
+            }
+            lastPressedQuestionId = currentQuestionId;
+
+            const buzzerRef = ref(db, `superPowerRooms/${currentRoom}/buzzer`);
+            const queueRef = push(ref(db, `superPowerRooms/${currentRoom}/buzzQueue`));
+            set(queueRef, {
+                playerId: myId, name: myName, team: myTeam,
+                questionId: currentQuestionId,
+                pressedAt: serverTimestamp(), clientAt: Date.now()
+            });
+
+            runTransaction(buzzerRef, (current) => {
+                if (current !== null) return; // already buzzed → abort
+                return { name: myName, team: myTeam, id: myId, time: Date.now(), questionId: currentQuestionId };
+            }).then(({ committed }) => {
+                if (committed) {
+                    // Lock the room
+                    update(ref(db, `superPowerRooms/${currentRoom}`), { locked: true });
+                    buzzerLocked = true;
+                    updateBuzzerUI();
+                    if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+                }
+                if (!committed) showToast('تم تسجيلك ضمن ترتيب الضغطات');
+            });
+        };
+
+        function renderPlayerTimer(timer) {
+            clearInterval(playerTimerInterval);
+            const el = document.getElementById('playerTimer');
+            if (!timer || timer.phase === 'idle') { el.classList.remove('show'); return; }
+            el.classList.add('show');
+            if (timer.phase === 'open') {
+                el.innerHTML = 'الجرس مفتوح للجميع <strong>🔔</strong>';
+                return;
+            }
+            const draw = () => {
+                const elapsed = Date.now() + serverOffset - Number(timer.startedAt || Date.now());
+                const left = Math.max(0, Math.ceil((Number(timer.durationMs || 0) - elapsed) / 1000));
+                const teamName = timer.team === 'team2' ? team2Name : team1Name;
+                el.innerHTML = `وقت ${teamName} <strong>${left}</strong>`;
+            };
+            draw();
+            playerTimerInterval = setInterval(draw, 250);
+        }
+
+        function renderPowers(state) {
+            const host = document.getElementById('powersList');
+            const usage = document.getElementById('powerUsage');
+            const opponent = document.getElementById('opponentPowerCount');
+            if (!state?.teams?.[myTeam]) { host.innerHTML = '<div class="power-empty">بانتظار بدء طور القوى</div>'; return; }
+            const own = state.teams[myTeam], otherId = myTeam === 'team1' ? 'team2' : 'team1', other = state.teams[otherId];
+            usage.textContent = `${Number(own.roundPowerUsage || 0)} / ${Number(state.settings?.maxPowersPerTeamPerRound || 2)} هذه الجولة`;
+            const inventory = own.inventory || [];
+            if (state.awaitingCatalog || !inventory.length) host.innerHTML = '<div class="power-empty">قائمة القوى ستظهر هنا بعد إضافتها للعبة</div>';
+            else host.innerHTML = inventory.map(item => {
+                const ready = own.unlocked && item.status === 'ready', pending = item.status === 'pending';
+                const label = item.status === 'used' ? 'مستخدمة' : pending ? 'إلغاء الطلب' : ready ? 'طلب الاستخدام' : 'مقفلة';
+                const rules = [item.metadata?.usage ? `طريقة الاستخدام: ${item.metadata.usage}` : '', item.metadata?.limit ? `القيد: ${item.metadata.limit}` : ''].filter(Boolean).join(' ');
+                return `<div class="power-item"><div><strong>${safe(item.icon || '⚡')} ${safe(item.name || item.powerId)}</strong><small>${safe(item.shortDescription || '')}</small>${rules ? `<small class="power-item__rules">${safe(rules)}</small>` : ''}</div><button data-power-id="${safeAttr(item.instanceId)}" data-request-id="${safeAttr(item.requestId || '')}" ${ready || pending ? '' : 'disabled'}>${label}</button></div>`;
+            }).join('');
+            host.querySelectorAll('[data-power-id]').forEach(button => button.onclick = () => {
+                if (button.dataset.requestId) return cancelPower(button.dataset.requestId);
+                const item = inventory.find(power => power.instanceId === button.dataset.powerId);
+                if (item) openPowerTargetModal(item, state.activationWindow);
+            });
+            const remaining = (other?.inventory || []).filter(item => item.status !== 'used').length;
+            opponent.textContent = `قوى الخصم المتبقية: ${remaining}`;
+        }
+
+        function targetKind(item) {
+            return String(item?.targetType || item?.metadata?.targetType || 'TEAM').toUpperCase();
+        }
+
+        function matrixRows(value) {
+            if (Array.isArray(value)) {
+                if (value.length && !Array.isArray(value[0]) && (typeof value[0] !== 'object' || value[0] === null)) return [value];
+                return value;
+            }
+            if (!value || typeof value !== 'object') return [];
+            return Object.keys(value).sort((a, b) => Number(a) - Number(b)).map(key => value[key]);
+        }
+
+        function matrixRow(value) {
+            if (Array.isArray(value)) return value;
+            if (!value || typeof value !== 'object') return value == null ? [] : [value];
+            return Object.keys(value).sort((a, b) => Number(a) - Number(b)).map(key => value[key]);
+        }
+
+        function boardCells(kind) {
+            const letters = matrixRows(currentLiveGame?.cellLetters);
+            const board = matrixRows(currentLiveGame?.board);
+            const opponent = myTeam === 'team1' ? 'team2' : 'team1';
+            const cells = [];
+            letters.forEach((row, r) => matrixRow(row).forEach((letter, c) => {
+                if (!letter) return;
+                const owner = matrixRow(board?.[r])[c] || '';
+                if (kind === 'OWN_CELL' && owner !== myTeam) return;
+                if (kind === 'OPPONENT_CELL' && owner !== opponent) return;
+                cells.push({ row: r, col: c, letter, owner });
+            }));
+            return cells;
+        }
+
+        function opponentPlayers() {
+            const opponent = myTeam === 'team1' ? 'team2' : 'team1';
+            return Object.entries(currentPlayers || {})
+                .map(([id, player]) => ({ id, ...(player || {}) }))
+                .filter(player => player.team === opponent && player.name)
+                .sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar'));
+        }
+
+        function resetPowerTargetModal() {
+            pendingPowerTarget = null;
+            document.getElementById('powerTargetModal')?.classList.remove('show');
+            const select = document.getElementById('powerTargetSelect');
+            const input = document.getElementById('powerTargetInput');
+            if (select) { select.classList.remove('show'); select.innerHTML = ''; }
+            if (input) { input.classList.remove('show'); input.value = ''; }
+            document.getElementById('powerTargetHint')?.classList.remove('show');
+        }
+
+        function openPowerTargetModal(item, activationWindow) {
+            const modal = document.getElementById('powerTargetModal');
+            const select = document.getElementById('powerTargetSelect');
+            const input = document.getElementById('powerTargetInput');
+            const hint = document.getElementById('powerTargetHint');
+            const kind = targetKind(item);
+            pendingPowerTarget = { instanceId: item.instanceId, activationWindow, kind };
+            document.getElementById('powerTargetIcon').textContent = item.icon || '⚡';
+            document.getElementById('powerTargetTitle').textContent = item.name || 'تحديد هدف القوة';
+            const rules = [item.shortDescription || 'حدد الهدف الذي تريد استخدام القوة عليه.', item.metadata?.usage ? `طريقة الاستخدام: ${item.metadata.usage}` : '', item.metadata?.limit ? `القيد: ${item.metadata.limit}` : ''].filter(Boolean).join(' ');
+            document.getElementById('powerTargetDescription').textContent = rules;
+            document.getElementById('powerTargetPrompt').textContent = ['TEAM', 'QUESTION', 'BOARD'].includes(kind) ? 'هل تريد إرسال الطلب بهذه القوة؟' : 'اختر الهدف المطلوب:';
+            select.classList.remove('show');
+            input.classList.remove('show');
+            hint.classList.remove('show');
+            select.innerHTML = '';
+
+            const cells = ['OWN_CELL', 'OPPONENT_CELL', 'CELL'].includes(kind) ? boardCells(kind) : [];
+            const players = ['OPPONENT_PLAYER', 'PLAYER'].includes(kind) ? opponentPlayers() : [];
+            if (cells.length) {
+                cells.forEach(cell => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ cell: { row: cell.row, col: cell.col, letter: cell.letter } });
+                    option.textContent = `الخلية ${cell.letter} (${cell.row + 1}، ${cell.col + 1})`;
+                    select.appendChild(option);
+                });
+                select.classList.add('show');
+                hint.textContent = kind === 'OWN_CELL' ? 'اختر خلية من خلايا فريقك.' : kind === 'OPPONENT_CELL' ? 'اختر خلية يملكها الفريق المنافس.' : 'اختر خلية من الشبكة.';
+                hint.classList.add('show');
+            } else if (players.length) {
+                players.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ player: { id: player.id, name: player.name, team: player.team } });
+                    option.textContent = player.name;
+                    select.appendChild(option);
+                });
+                select.classList.add('show');
+                hint.textContent = 'اختر لاعبًا من الفريق المنافس.';
+                hint.classList.add('show');
+            } else if (kind === 'POWER') {
+                input.placeholder = 'اسم القوة المراد استبدالها أو نسخها';
+                input.classList.add('show');
+                hint.textContent = 'اكتب اسم القوة إن كان معروفًا، أو اتركه فارغًا ليحدده المقدم.';
+                hint.classList.add('show');
+            } else if (kind === 'PLAYER_PAIR') {
+                input.placeholder = 'اكتب اسمي اللاعبين أو اتركها للمقدم';
+                input.classList.add('show');
+                hint.textContent = 'سيحدد المقدم اللاعبين إذا لم تكتب أسماءهما.';
+                hint.classList.add('show');
+            } else if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) {
+                input.placeholder = 'اكتب اسم اللاعب المستهدف';
+                input.classList.add('show');
+                hint.textContent = 'لا يظهر لاعب من الفريق المنافس حاليًا؛ اكتب الاسم ليحدده المقدم.';
+                hint.classList.add('show');
+            } else if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) {
+                input.placeholder = 'اكتب حرف الخلية';
+                input.classList.add('show');
+                hint.textContent = 'لا توجد خلايا متاحة من هذا النوع حاليًا؛ اكتب الحرف ليحدده المقدم.';
+                hint.classList.add('show');
+            }
+            modal.classList.add('show');
+            (select.classList.contains('show') ? select : input.classList.contains('show') ? input : document.getElementById('powerTargetConfirm')).focus();
+        }
+
+        function confirmPowerTarget() {
+            if (!pendingPowerTarget) return;
+            const { kind } = pendingPowerTarget;
+            const select = document.getElementById('powerTargetSelect');
+            const input = document.getElementById('powerTargetInput');
+            let target = null;
+            if (select.classList.contains('show') && select.value) {
+                try { target = JSON.parse(select.value); } catch { target = null; }
+            } else if (input.classList.contains('show') && input.value.trim()) {
+                const value = input.value.trim();
+                if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) target = { cell: { letter: value } };
+                else if (kind === 'POWER') target = { power: { name: value } };
+                else if (kind === 'PLAYER_PAIR') target = { playersText: value };
+                else if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) target = { player: { name: value } };
+                else target = { note: value };
+            }
+            const request = { ...pendingPowerTarget };
+            resetPowerTargetModal();
+            requestPower(request.instanceId, request.activationWindow, target).catch(error => showToast('❌ ' + (error?.message || 'تعذر إرسال الطلب'), true));
+        }
+
+        async function requestPower(instanceId, activationWindow, target = null) {
+            const intentId = crypto.randomUUID();
+            const intentRef = ref(db, `superPowerRooms/${currentRoom}/powerIntents/${myTeam}/${intentId}`);
+            await set(intentRef, { id:intentId, type:'REQUEST', teamId:myTeam, instanceId, activationWindow, target, playerId:myId, playerName:myName, createdAt:serverTimestamp() });
+            showToast('⚡ أُرسل الطلب للمقدم');
+        }
+        async function cancelPower(requestId) {
+            const intentId = crypto.randomUUID();
+            await set(ref(db, `superPowerRooms/${currentRoom}/powerIntents/${myTeam}/${intentId}`), { id:intentId, type:'CANCEL', teamId:myTeam, requestId, playerId:myId, playerName:myName, createdAt:serverTimestamp() });
+            showToast('تم إرسال إلغاء الطلب');
+        }
+
+        // ── UI Helpers ───────────────────────────────────────────────────────
+        function updateBuzzerUI() {
+            const wrap = document.getElementById('buzzerWrap');
+            if (buzzerLocked) {
+                wrap.classList.add('locked');
+                if (document.getElementById('buzzerSub').textContent === 'جاهز') {
+                    document.getElementById('buzzerSub').textContent = 'مقفل 🔒';
+                }
+            } else {
+                wrap.classList.remove('locked');
+                document.getElementById('buzzerSub').textContent = 'جاهز';
+            }
+        }
+
+        window.showToast = function (msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            isError ? t.classList.add('error') : t.classList.remove('error');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        };
+
+        window.selectTeam = function (t) {
+            myTeam = t;
+            document.querySelectorAll('.team-opt').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.team-opt[data-team="${t}"]`).classList.add('active');
+        };
+
+        window.leaveRoom = function () { location.reload(); };
+        document.getElementById('powerTargetClose').addEventListener('click', resetPowerTargetModal);
+        document.getElementById('powerTargetCancel').addEventListener('click', resetPowerTargetModal);
+        document.getElementById('powerTargetConfirm').addEventListener('click', confirmPowerTarget);
+        document.getElementById('powerTargetModal').addEventListener('click', event => { if (event.target.id === 'powerTargetModal') resetPowerTargetModal(); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') resetPowerTargetModal(); });
+        function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+        function safeAttr(v){return String(v??'').replace(/[^a-zA-Z0-9_-]/g,'')}
+    </script>
+
+</body>
+</html>

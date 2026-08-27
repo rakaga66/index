@@ -1,0 +1,83 @@
+/* Shared announcement shown to every device when a team uses a power. */
+.power-use-announcement {
+    position: fixed;
+    inset: 0;
+    z-index: 1000002;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .18s ease, visibility .18s ease;
+    font-family: 'HrofFont', 'Cairo', sans-serif;
+}
+
+.power-use-announcement.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.power-use-announcement__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 5, 35, .62);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+.power-use-announcement__card {
+    position: relative;
+    z-index: 1;
+    width: min(520px, 92vw);
+    padding: clamp(24px, 5vw, 42px) 24px 30px;
+    border: 2px solid #ffd600;
+    border-radius: 24px;
+    text-align: center;
+    color: #fff;
+    background: linear-gradient(145deg, rgba(62, 25, 100, .98), rgba(25, 8, 51, .98));
+    box-shadow: 0 0 0 4px rgba(255, 214, 0, .12), 0 20px 80px rgba(0, 0, 0, .65), 0 0 45px rgba(255, 214, 0, .3);
+    transform: translateY(16px) scale(.9);
+    animation: powerAnnouncementPop .36s cubic-bezier(.2, 1.35, .45, 1) both;
+}
+
+.power-use-announcement__icon {
+    display: grid;
+    place-items: center;
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 10px;
+    border-radius: 22px;
+    font-size: 2.8rem;
+    background: rgba(255, 214, 0, .14);
+    box-shadow: inset 0 0 0 1px rgba(255, 214, 0, .3);
+}
+
+.power-use-announcement__eyebrow {
+    color: #ffd600;
+    font-size: clamp(.95rem, 2.4vw, 1.2rem);
+}
+
+.power-use-announcement__power {
+    display: block;
+    margin-top: 6px;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    line-height: 1.15;
+    text-shadow: 3px 4px 0 rgba(0, 0, 0, .55);
+}
+
+.power-use-announcement__team {
+    margin-top: 12px;
+    color: rgba(255, 255, 255, .88);
+    font-size: clamp(1.1rem, 3vw, 1.55rem);
+}
+
+@keyframes powerAnnouncementPop {
+    from { opacity: 0; transform: translateY(16px) scale(.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 520px) {
+    .power-use-announcement__card { border-radius: 18px; padding-inline: 18px; }
+    .power-use-announcement__icon { width: 62px; height: 62px; font-size: 2.3rem; border-radius: 18px; }
+}

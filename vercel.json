@@ -5,9 +5,9 @@
   "rewrites": [
     { "source": "/", "destination": "/pages/playground.html" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/auth", "destination": "/login.html" },
-    { "source": "/game", "destination": "/index.html" },
-    { "source": "/questions", "destination": "/pages/q702.html" },
-    { "source": "/buzzer", "destination": "/buzzer-server/public/index.html" }
+    { "source": "/auth", "destination": "/login" },
+    { "source": "/game", "destination": "/" },
+    { "source": "/questions", "destination": "/pages/q702" },
+    { "source": "/buzzer", "destination": "/buzzer-server-qaf" }
   ]
 }

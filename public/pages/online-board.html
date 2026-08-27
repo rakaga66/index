@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>حروف | اللعب أونلاين</title>
+    <meta name="description" content="لعبة حروف الجماعية أونلاين مع جلسة ومشاركة كود الغرفة.">
+    <link rel="stylesheet" href="../css/online-board.css?v=online-board-16">
+    <link rel="stylesheet" href="../css/first-game-tour.css?v=first-game-tour-1">
+</head>
+<body>
+    <main class="online-board-shell">
+        <header class="online-board-header">
+            <a class="online-board-back" id="onlineBoardHomeBtn" href="../index.html" aria-label="العودة للرئيسية">⌂</a>
+            <div class="online-board-brand"><strong>حروف</strong><span>اللعب الجماعي أونلاين</span></div>
+            <div class="online-connection" id="onlineBoardConnection"><i></i><span id="onlineBoardConnectionText">جاري الاتصال</span></div>
+        </header>
+        <button class="online-board-help-btn" id="onlineBoardHelpBtn" type="button" aria-label="طريقة اللعب" title="طريقة اللعب">!</button>
+
+        <section class="online-board-view online-board-welcome" id="onlineBoardWelcome">
+            <div class="online-board-hero">
+                <span class="online-board-kicker">REALTIME HEX MATCH</span>
+                <h1>العبوا حروف<br><em>من أي مكان</em></h1>
+                <p>أنشئ جلسة، شارك الكود، واختاروا الفريق قبل بداية المباراة.</p>
+            </div>
+            <div class="online-entry-cards">
+                <form class="online-entry-card online-entry-card--create" id="onlineBoardCreateForm">
+                    <span class="entry-icon">✦</span>
+                    <h2>إنشاء جلسة</h2>
+                    <p>أنت صاحب الجلسة وتتحكم في تسمية الفريقين وبدء المباراة.</p>
+                    <label for="onlineBoardCreateName">اسمك</label>
+                    <input id="onlineBoardCreateName" maxlength="24" autocomplete="nickname" placeholder="مثال: راكان" required>
+                    <button class="ob-primary-btn" type="submit">إنشاء الجلسة</button>
+                </form>
+                <form class="online-entry-card online-entry-card--join" id="onlineBoardJoinForm">
+                    <span class="entry-icon">↗</span>
+                    <h2>دخول جلسة</h2>
+                    <p>اكتب اسمك وكود الجلسة الذي أرسله لك صاحبها.</p>
+                    <label for="onlineBoardJoinName">اسمك</label>
+                    <input id="onlineBoardJoinName" maxlength="24" autocomplete="nickname" placeholder="مثال: محمد" required>
+                    <label for="onlineBoardJoinCode">كود الجلسة</label>
+                    <input id="onlineBoardJoinCode" class="ob-code-input" inputmode="numeric" maxlength="6" placeholder="000000" required>
+                    <button class="ob-secondary-btn" type="submit">دخول الجلسة</button>
+                </form>
+            </div>
+            <div class="online-board-note"><span>🎮</span><div><strong>شبكة السداسيات نفسها، لكن اللعب هذه المرة عبر الإنترنت.</strong><small>يختار كل لاعب فريقه قبل البداية، ولا يمكن تغيير الفريق بعد بدء المباراة.</small></div></div>
+            <div class="online-board-resume" id="onlineBoardResume" hidden><div><strong>لديك جلسة محفوظة</strong><span id="onlineBoardResumeText"></span></div><button class="ob-ghost-btn" type="button" id="onlineBoardResumeBtn">العودة للجلسة</button></div>
+        </section>
+
+        <section class="online-board-view online-board-lobby" id="onlineBoardLobby" hidden>
+            <div class="ob-section-head"><div><span class="online-board-kicker">LOBBY</span><h1>تجهيز الجلسة</h1></div><button class="ob-ghost-btn" type="button" id="onlineBoardLobbyLeave">مغادرة</button></div>
+            <div class="ob-room-code"><div><small>كود الجلسة</small><strong id="onlineBoardRoomCode">------</strong></div><button class="ob-primary-btn ob-copy-btn" type="button" id="onlineBoardCopyCode">نسخ الكود</button></div>
+            <div class="ob-lobby-layout">
+                <div class="ob-lobby-main">
+                    <div class="ob-team-name-grid" id="onlineBoardTeamNames">
+                        <label class="ob-team-field ob-team-field--one"><span><i></i>اسم الفريق الأول</span><input id="onlineBoardTeam1Name" maxlength="20" value="الفريق الأول"></label>
+                        <label class="ob-team-field ob-team-field--two"><span><i></i>اسم الفريق الثاني</span><input id="onlineBoardTeam2Name" maxlength="20" value="الفريق الثاني"></label>
+                    </div>
+                    <div class="ob-team-grid">
+                        <section class="ob-team-card ob-team-card--one"><header><strong><i></i><span id="onlineBoardTeam1Label">الفريق الأول</span></strong><b id="onlineBoardTeam1Count">0</b></header><div class="ob-team-player-list" id="onlineBoardTeam1Players"></div></section>
+                        <section class="ob-team-card ob-team-card--two"><header><strong><i></i><span id="onlineBoardTeam2Label">الفريق الثاني</span></strong><b id="onlineBoardTeam2Count">0</b></header><div class="ob-team-player-list" id="onlineBoardTeam2Players"></div></section>
+                    </div>
+                    <section class="ob-unassigned-card" id="onlineBoardUnassignedCard"><header>بانتظار اختيار الفريق <b id="onlineBoardUnassignedCount">0</b></header><div id="onlineBoardUnassignedPlayers"></div></section>
+                    <div class="ob-balance-note" id="onlineBoardLobbyNotice"></div>
+                    <div class="ob-host-actions" id="onlineBoardHostActions" hidden><button class="ob-primary-btn" type="button" id="onlineBoardStartBtn" disabled>ابدأ المباراة</button><small>يجب وجود لاعب واحد على الأقل في كل فريق.</small></div>
+                </div>
+                <aside class="ob-lobby-help"><div class="ob-help-icon">↔</div><h2>اختاروا اتجاه الفوز</h2><p><b class="orange-text">الفريق البرتقالي</b> يصل من اليسار إلى اليمين.</p><p><b class="purple-text">الفريق البنفسجي</b> يصل من الأعلى إلى الأسفل.</p><div class="ob-lobby-player-count"><span>اللاعبون في الجلسة</span><strong id="onlineBoardLobbyPlayerCount">0</strong></div></aside>
+            </div>
+        </section>
+
+        <section class="online-board-view online-board-game" id="onlineBoardGame" hidden>
+            <div class="ob-game-head"><div><span class="online-board-kicker">LIVE MATCH</span><h1>حروف أونلاين</h1></div><div class="ob-game-status"><span id="onlineBoardGameState">السؤال مفتوح</span><strong id="onlineBoardRound">الجولة الأولى</strong><strong id="onlineBoardCountdown">—</strong></div></div>
+            <section class="ob-ready-panel" id="onlineBoardReadyPanel" hidden>
+                <div><strong>استعدوا قبل بداية السؤال</strong><small id="onlineBoardReadyStatus">يجب أن يضغط جميع اللاعبين «أنا جاهز».</small></div>
+                <button class="ob-primary-btn" type="button" id="onlineBoardReadyBtn">أنا جاهز</button>
+                <div class="ob-ready-players" id="onlineBoardReadyPlayers"></div>
+            </section>
+            <div class="ob-game-layout">
+                <div class="ob-game-main">
+                    <div class="ob-direction-bar"><span class="ob-direction ob-direction--one"><i></i><b id="onlineBoardGameTeam1">الفريق الأول</b> يسار ↔ يمين</span><span class="ob-direction ob-direction--two"><i></i><b id="onlineBoardGameTeam2">الفريق الثاني</b> أعلى ↕ أسفل</span></div>
+                    <div class="ob-question-strip"><div><small>الحرف</small><strong id="onlineBoardLetter">—</strong></div><p><small id="onlineBoardQuestionRound">الجولة الأولى</small><span id="onlineBoardQuestion">اختر خلية لعرض السؤال</span></p><div><small>الوقت</small><strong id="onlineBoardTimer">—</strong></div></div>
+                    <div class="ob-board-wrap"><div class="ob-board-container" id="onlineBoardContainer"></div></div>
+                    <div class="ob-bell-row">
+                        <div class="ob-bell-bar" id="onlineBoardBellBar" hidden><button class="ob-bell ob-bell--one" type="button" id="onlineBoardBell1"><span>🔔</span><b>جرس <strong id="onlineBoardBellName1">الفريق الأول</strong></b></button><button class="ob-bell ob-bell--two" type="button" id="onlineBoardBell2"><span>🔔</span><b>جرس <strong id="onlineBoardBellName2">الفريق الثاني</strong></b></button></div>
+                        <div class="ob-public-game-actions"><button class="ob-secondary-btn ob-change-question" id="onlineBoardChangeQuestion" type="button" hidden>غير السؤال <span id="onlineBoardChangeQuestionVotes">0/0</span></button></div>
+                    </div>
+                    <div class="ob-answer-panel" id="onlineBoardAnswerPanel" hidden><div class="ob-answer-status-line"><strong id="onlineBoardAnswerStatus">الفريق الأسرع يجيب الآن</strong><b id="onlineBoardAnswerCountdown">—</b></div><form id="onlineBoardAnswerForm"><input id="onlineBoardAnswerInput" maxlength="120" autocomplete="off" placeholder="اكتب الإجابة هنا" required><button class="ob-primary-btn" type="submit">تحقق</button></form></div>
+                    <div class="ob-feedback" id="onlineBoardFeedback" aria-live="polite"></div>
+                    <div class="ob-game-actions" id="onlineBoardHostGameActions" hidden><button class="ob-primary-btn" id="onlineBoardNextRound" type="button">الجولة التالية</button><button class="ob-danger-btn" id="onlineBoardFinish" type="button">إنهاء الجلسة</button></div>
+                </div>
+                <aside class="ob-game-side"><section class="ob-live-teams"><header><span>الفرق والنتيجة</span><small id="onlineBoardLiveRoomCode">—</small></header><div class="ob-live-team ob-live-team--one"><div><i></i><strong id="onlineBoardLiveTeam1">الفريق الأول</strong><b id="onlineBoardLiveScore1">0</b></div><p id="onlineBoardLivePlayers1"></p></div><div class="ob-live-team ob-live-team--two"><div><i></i><strong id="onlineBoardLiveTeam2">الفريق الثاني</strong><b id="onlineBoardLiveScore2">0</b></div><p id="onlineBoardLivePlayers2"></p></div></section><section class="ob-answer-log"><header><span>سجل الإجابات والجرس</span><small id="onlineBoardAnswerLogCount">0</small></header><div id="onlineBoardAnswerLogItems"><small>لم تُسجّل إجابات بعد.</small></div></section><section class="ob-chat"><header><span>شات الجلسة</span><small>مباشر</small></header><div id="onlineBoardChatMessages"></div><form id="onlineBoardChatForm"><input id="onlineBoardChatInput" maxlength="240" placeholder="اكتب رسالة..."><button type="submit" aria-label="إرسال">➤</button></form></section></aside>
+            </div>
+        </section>
+
+        <section class="online-board-view online-board-results" id="onlineBoardResults" hidden><div class="ob-results-card"><span class="online-board-kicker">MATCH FINISHED</span><div>🏆</div><h1 id="onlineBoardResultTitle">انتهت المباراة</h1><p id="onlineBoardResultText"></p><div id="onlineBoardResultScores"></div><section class="ob-rematch-panel"><strong>إعادة المباراة</strong><small id="onlineBoardRematchStatus">اضغطوا «جاهز» جميعًا للبدء من جديد، أو اختاروا المغادرة.</small><div id="onlineBoardRematchPlayers"></div></section><div class="ob-results-actions"><button class="ob-primary-btn" id="onlineBoardPlayAgain" type="button">جاهز لمباراة جديدة</button><button class="ob-secondary-btn" id="onlineBoardResultsLobby" type="button">العودة للجلسة</button><button class="ob-ghost-btn" id="onlineBoardResultsLeave" type="button">مغادرة</button></div></div></section>
+
+        <div class="ob-site-confirm" id="onlineBoardConfirm" role="dialog" aria-modal="true" aria-labelledby="onlineBoardConfirmTitle" aria-describedby="onlineBoardConfirmMessage" aria-hidden="true" hidden>
+            <div class="ob-site-confirm__card">
+                <div class="ob-site-confirm__icon" aria-hidden="true">؟</div>
+                <h2 id="onlineBoardConfirmTitle">تأكيد العملية</h2>
+                <p id="onlineBoardConfirmMessage"></p>
+                <div class="ob-site-confirm__actions">
+                    <button type="button" class="ob-secondary-btn" id="onlineBoardConfirmCancel">إلغاء</button>
+                    <button type="button" class="ob-danger-btn" id="onlineBoardConfirmAccept">تأكيد</button>
+                </div>
+            </div>
+        </div>
+        <div class="ob-help-modal" id="onlineBoardHelpModal" role="dialog" aria-modal="true" aria-labelledby="onlineBoardHelpTitle" aria-describedby="onlineBoardHelpDescription" aria-hidden="true" hidden>
+            <section class="ob-help-modal__card">
+                <button class="ob-help-modal__close" id="onlineBoardHelpClose" type="button" aria-label="إغلاق">×</button>
+                <span class="online-board-kicker">دليل سريع</span>
+                <h2 id="onlineBoardHelpTitle">طريقة اللعب</h2>
+                <ol id="onlineBoardHelpDescription">
+                    <li>اضغط زر <strong>المقدم</strong> لفتح لوحة التحكم الخاصة به.</li>
+                    <li>اختاروا فريقًا، ثم حدّدوا الخلية وأجيبوا عن سؤالها.</li>
+                    <li>استخدموا الجرس عند الجاهزية، والمقدم يمنح الخلية للفريق المستحق.</li>
+                </ol>
+                <p class="ob-help-warning">⚠️ هذا الباركود للمقدم فقط؛ لا تفتحه من أجهزة اللاعبين.</p>
+            </section>
+        </div>
+        <div class="online-board-toast" id="onlineBoardToast" role="status" aria-live="polite"></div>
+    </main>
+    <script src="../js/questionsData.js"></script>
+    <script src="../js/question-library.js?v=followers-1"></script>
+    <script src="../js/first-game-tour.js?v=first-game-tour-1"></script>
+    <script type="module" src="../js/online-board.js?v=online-board-17"></script>
+</body>
+</html>

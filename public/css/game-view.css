@@ -231,3 +231,43 @@ body.presentation-mode .game-view-scores {
         font-size: 0.58rem;
     }
 }
+
+/* The presentation header and bell overlay share the same typeface as the
+   board letters. Keep the compact score rail readable on phones. */
+.gv-current-round,
+.gv-logo-line,
+.gv-score-num,
+.gv-team-name { font-family:'HrofFont', sans-serif !important; }
+body.presentation-mode .gv-current-round,
+body.presentation-mode .gv-current-round * { font-family:'HrofFont', sans-serif !important; }
+
+@media (max-width: 600px) {
+    body.presentation-mode .main-area { padding-top:54px !important; }
+    body.presentation-mode .board-wrap { transform:scale(.72) !important; transform-origin:center center; }
+    body.presentation-mode .game-view-header { height:58px; padding-inline:8px; }
+    body.presentation-mode .gv-logo-container { transform:translate(-50%, -3px) scale(.36); }
+    body.presentation-mode .gv-current-round { font-size:1rem; padding:4px 10px; gap:5px; }
+    body.presentation-mode .game-view-scores { left:8px; right:8px; bottom:max(8px, env(safe-area-inset-bottom)); gap:6px; }
+    body.presentation-mode .gv-score-card { min-width:0; width:clamp(94px, 31vw, 132px); padding:5px 7px; border-radius:10px; }
+    body.presentation-mode .gv-score-num { font-size:1.45rem; }
+    body.presentation-mode .gv-team-name { font-size:.52rem; }
+}
+
+
+/* v1.5: presentation score cards use the same solid team colors as board cells. */
+.gv-score-card.team-1 {
+    background: var(--team1-bg, #ff9800) !important;
+    border-color: var(--team1-border, #e65100) !important;
+    border-right-color: var(--team1-border, #e65100) !important;
+    color: #fff !important;
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--team1-bg, #ff9800), #000 42%), 0 12px 26px rgba(0,0,0,.28) !important;
+}
+.gv-score-card.team-2 {
+    background: var(--team2-bg, #8b5fbf) !important;
+    border-color: var(--team2-border, #4a2570) !important;
+    border-left-color: var(--team2-border, #4a2570) !important;
+    color: #fff !important;
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--team2-bg, #8b5fbf), #000 42%), 0 12px 26px rgba(0,0,0,.28) !important;
+}
+.gv-score-card.team-1 .gv-team-name,
+.gv-score-card.team-2 .gv-team-name { color: #fff !important; text-shadow: 0 2px 0 rgba(0,0,0,.42); }

@@ -1,0 +1,643 @@
+/* ===== HOME: ADVERTISING SPACE ===== */
+.home-ad-space {
+    position: absolute;
+    z-index: 8;
+    right: 50%;
+    bottom: clamp(58px, 7vh, 88px);
+    width: min(760px, calc(100vw - 40px));
+    transform: translateX(50%);
+    color: #fff;
+    direction: rtl;
+}
+
+.home-ad-space__header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 4px 8px;
+    text-align: right;
+}
+
+.home-ad-space__eyebrow {
+    display: block;
+    margin-bottom: 2px;
+    color: #ffd600;
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+}
+
+.home-ad-space__header h2 {
+    margin: 0;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    font-size: clamp(0.85rem, 1.6vw, 1.14rem);
+    line-height: 1.35;
+}
+
+.home-ad-space__header > span {
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    border: 1px solid rgba(255, 214, 0, 0.55);
+    border-radius: 999px;
+    background: rgba(255, 214, 0, 0.12);
+    color: #ffe56d;
+    font-size: 0.62rem;
+    font-weight: 900;
+}
+
+.home-ad-space__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(190px, 0.85fr);
+    gap: 10px;
+    align-items: stretch;
+}
+
+.home-ad-card {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 4px solid rgba(255, 214, 0, 0.62);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(76, 39, 112, 0.94), rgba(27, 10, 48, 0.96));
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
+
+.home-ad-card--qaf {
+    display: grid;
+    grid-template-columns: minmax(145px, 0.9fr) minmax(0, 1.1fr);
+    min-height: 112px;
+    text-decoration: none;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.home-ad-card--qaf:hover,
+.home-ad-card--qaf:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(255, 214, 0, 0.75);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38), 0 0 0 3px rgba(255, 214, 0, 0.1);
+    outline: none;
+}
+
+.home-ad-card__media {
+    min-width: 0;
+    min-height: 112px;
+    background: #071020;
+}
+
+.home-ad-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 112px;
+    object-fit: cover;
+}
+
+.home-ad-card__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 11px 13px;
+    text-align: right;
+}
+
+.home-ad-card__badge {
+    align-self: flex-start;
+    margin-bottom: 5px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: rgba(74, 222, 128, 0.16);
+    color: #86efac;
+    font-size: 0.58rem;
+    font-weight: 900;
+}
+
+.home-ad-card__body h3,
+.home-ad-card--invite h3 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    font-size: clamp(0.78rem, 1.35vw, 0.98rem);
+    line-height: 1.5;
+}
+
+.home-ad-card__body p,
+.home-ad-card--invite p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.66);
+    font-size: clamp(0.58rem, 1vw, 0.68rem);
+    font-weight: 700;
+    line-height: 1.65;
+}
+
+.home-ad-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 7px;
+    color: #ffd600;
+    font-size: 0.62rem;
+    font-weight: 900;
+}
+
+.home-ad-card--invite {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 13px 15px;
+    text-align: right;
+    background: linear-gradient(145deg, rgba(255, 214, 0, 0.17), rgba(77, 39, 111, 0.92));
+}
+
+.home-ad-card--invite__icon {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.home-ad-card--invite strong {
+    display: block;
+    margin-top: 8px;
+    color: #ffe56d;
+    font-size: 0.62rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+    .home-ad-space {
+        right: 50%;
+        bottom: 53px;
+        width: min(420px, calc(100vw - 22px));
+    }
+
+    .home-ad-space__header {
+        margin-bottom: 5px;
+    }
+
+    .home-ad-space__eyebrow,
+    .home-ad-space__header > span {
+        font-size: 0.5rem;
+    }
+
+    .home-ad-space__header h2 {
+        font-size: 0.68rem;
+    }
+
+    .home-ad-space__grid {
+        grid-template-columns: minmax(0, 1.45fr) minmax(110px, 0.8fr);
+        gap: 6px;
+    }
+
+    .home-ad-card {
+        border-bottom-width: 3px;
+        border-radius: 10px;
+    }
+
+    .home-ad-card--qaf {
+        grid-template-columns: minmax(76px, 0.8fr) minmax(0, 1.2fr);
+        min-height: 66px;
+    }
+
+    .home-ad-card__media,
+    .home-ad-card__media img {
+        min-height: 66px;
+    }
+
+    .home-ad-card__body {
+        padding: 6px 8px;
+    }
+
+    .home-ad-card__badge {
+        margin-bottom: 2px;
+        padding: 2px 5px;
+        font-size: 0.45rem;
+    }
+
+    .home-ad-card__body h3,
+    .home-ad-card--invite h3 {
+        margin-bottom: 2px;
+        font-size: 0.56rem;
+    }
+
+    .home-ad-card__body p,
+    .home-ad-card--invite p {
+        font-size: 0.47rem;
+        line-height: 1.45;
+    }
+
+    .home-ad-card__link,
+    .home-ad-card--invite strong {
+        margin-top: 3px;
+        font-size: 0.46rem;
+    }
+
+    .home-ad-card--invite {
+        padding: 7px 8px;
+    }
+
+    .home-ad-card--invite__icon {
+        margin-bottom: 1px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    .home-ad-space {
+        right: 8px;
+        bottom: max(7px, env(safe-area-inset-bottom));
+        width: min(260px, 42vw);
+        transform: none;
+    }
+
+    .home-ad-space__header {
+        display: none;
+    }
+
+    .home-ad-space__grid {
+        display: block;
+    }
+
+    .home-ad-card--invite {
+        display: none;
+    }
+
+    .home-ad-card--qaf {
+        grid-template-columns: 82px minmax(0, 1fr);
+        min-height: 54px;
+    }
+
+    .home-ad-card__media,
+    .home-ad-card__media img {
+        min-height: 54px;
+    }
+
+    .home-ad-card__body {
+        padding: 5px 7px;
+    }
+
+    .home-ad-card__body p {
+        display: none;
+    }
+
+    .home-ad-card__body h3 {
+        font-size: 0.52rem;
+        line-height: 1.35;
+    }
+
+    .home-ad-card__link {
+        margin-top: 2px;
+        font-size: 0.42rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-ad-card--qaf {
+        transition: none;
+    }
+}
+
+/* ===== GAME PORTAL: ADVERTISING SPACE ===== */
+.portal-ad-space {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 48px 28px;
+    direction: rtl;
+}
+
+.portal-ad-space__intro {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.portal-ad-space__intro h2 {
+    margin: 0;
+    color: #000;
+    font-family: 'HrofFont', 'Cairo', sans-serif;
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    line-height: 1.2;
+}
+
+.portal-ad-space__intro p {
+    margin: 5px 0 0;
+    color: #333;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.portal-ad-space__eyebrow,
+.portal-ad-space__label {
+    display: inline-block;
+    color: #1a56db;
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.portal-ad-space__label {
+    padding: 6px 12px;
+    border: 2px solid #000;
+    background: #fff;
+    box-shadow: 3px 3px 0 #000;
+}
+
+.portal-ad-space__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.8fr);
+    gap: 16px;
+}
+
+.portal-ad-space__qaf,
+.portal-ad-space__invite {
+    box-sizing: border-box;
+    min-width: 0;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 6px 6px 0 #000;
+}
+
+.portal-ad-space__qaf {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.05fr) minmax(0, 1fr);
+    min-height: 182px;
+    overflow: hidden;
+    color: #000;
+    text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.portal-ad-space__qaf:hover,
+.portal-ad-space__qaf:focus-visible {
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0 #000;
+    outline: none;
+}
+
+.portal-ad-space__media {
+    min-height: 182px;
+    background: #071020;
+}
+
+.portal-ad-space__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 182px;
+    object-fit: cover;
+}
+
+.portal-ad-space__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 22px;
+    text-align: right;
+}
+
+.portal-ad-space__status {
+    align-self: flex-start;
+    margin-bottom: 8px;
+    padding: 4px 9px;
+    border: 2px solid #000;
+    background: #d9fbe7;
+    color: #087f3f;
+    font-size: 0.66rem;
+    font-weight: 900;
+}
+
+.portal-ad-space__body h3,
+.portal-ad-space__invite h3 {
+    margin: 0 0 7px;
+    color: #000;
+    font-family: 'HrofFont', 'Cairo', sans-serif;
+    font-size: clamp(1rem, 1.9vw, 1.45rem);
+    line-height: 1.35;
+}
+
+.portal-ad-space__body p,
+.portal-ad-space__invite p {
+    margin: 0;
+    color: #333;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.75;
+}
+
+.portal-ad-space__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 13px;
+    color: #1a56db;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.portal-ad-space__invite {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 22px;
+    background: #f1e8ff;
+    text-align: right;
+}
+
+.portal-ad-space__invite-icon {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.7rem;
+    line-height: 1;
+}
+
+.portal-ad-space__invite strong {
+    display: block;
+    margin-top: 12px;
+    color: #6d28d9;
+    font-size: 0.74rem;
+    line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+    .portal-ad-space {
+        padding: 0 18px 22px;
+    }
+
+    .portal-ad-space__intro h2 {
+        font-size: 1.18rem;
+    }
+
+    .portal-ad-space__intro p {
+        font-size: 0.68rem;
+    }
+
+    .portal-ad-space__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-ad-space__qaf {
+        grid-template-columns: minmax(135px, 0.85fr) minmax(0, 1.15fr);
+        min-height: 128px;
+    }
+
+    .portal-ad-space__media,
+    .portal-ad-space__media img {
+        min-height: 128px;
+    }
+
+    .portal-ad-space__body,
+    .portal-ad-space__invite {
+        padding: 13px 14px;
+    }
+
+    .portal-ad-space__body h3,
+    .portal-ad-space__invite h3 {
+        font-size: 0.95rem;
+    }
+
+    .portal-ad-space__body p,
+    .portal-ad-space__invite p {
+        font-size: 0.65rem;
+    }
+}
+
+/* ===== HOME LAYOUT OVERRIDE =====
+   The home page now owns the ad block inside its right-aligned flow column.
+   Reset the old viewport-absolute placement so it cannot cover buttons or
+   information cards on short screens. */
+.home-layout-shell > .home-ad-space {
+    position: relative;
+    inset: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    transform: none;
+}
+
+@media (max-width: 900px) {
+    .home-layout-shell > .home-ad-space {
+        width: 100%;
+    }
+
+    .home-layout-shell > .home-ad-space .home-ad-space__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .home-layout-shell > .home-ad-space .home-ad-space__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-layout-shell > .home-ad-space .home-ad-card--invite {
+        display: none;
+    }
+}
+
+/* Desktop advert compactness: preserve every line of copy without letting
+   the fixed version badge cover the card at the bottom of the viewport. */
+@media (min-width: 901px) {
+    .home-screen .home-layout-shell > .home-ad-space {
+        position: relative !important;
+        inset: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        transform: none !important;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-space__header {
+        margin-bottom: 4px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-space__eyebrow {
+        font-size: .55rem;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-space__header h2 {
+        font-size: .88rem;
+        line-height: 1.2;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-space__header > span {
+        padding: 3px 7px;
+        font-size: .52rem;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-space__grid {
+        gap: 7px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--qaf {
+        min-height: 124px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__media,
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__media img {
+        min-height: 124px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__body {
+        padding: 8px 10px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__badge {
+        margin-bottom: 3px;
+        padding: 2px 5px;
+        font-size: .5rem;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__body h3,
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--invite h3 {
+        margin-bottom: 2px;
+        font-size: .72rem;
+        line-height: 1.25;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__body p,
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--invite p {
+        font-size: .52rem;
+        line-height: 1.35;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card__link,
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--invite strong {
+        margin-top: 4px;
+        font-size: .52rem;
+        line-height: 1.2;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--invite {
+        padding: 8px 10px;
+    }
+
+    .home-screen .home-layout-shell > .home-ad-space .home-ad-card--invite__icon {
+        margin-bottom: 2px;
+        font-size: .95rem;
+    }
+}
+
+/* Absolute placement from the base rule is unsafe on phones: it can sit
+   over the version labels and crop the advert at the viewport edge. */
+@media (max-width: 900px) {
+    .home-screen .home-layout-shell > .home-ad-space {
+        position: relative !important;
+        inset: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        transform: none !important;
+    }
+}

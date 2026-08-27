@@ -1,0 +1,260 @@
+/* ===== Game Presentation Mode Styles ===== */
+
+/* Hide unwanted UI elements when in presentation mode */
+body.presentation-mode .sidebar,
+body.presentation-mode .bottom-icon-bar,
+body.presentation-mode #darkModeToggleBtn {
+    display: none !important;
+}
+
+body.presentation-mode .main-area {
+    padding-left: 0 !important;
+    padding-bottom: 0 !important;
+    padding-top: 92px !important;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.presentation-mode .board-wrap {
+    transform: scale(1.02);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ===== Game View Header (TV Show Style) ===== */
+.game-view-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(180deg, rgba(30, 15, 55, 0.8) 0%, rgba(30, 15, 55, 0) 100%);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    padding: 0 40px;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideDownFade 0.6s ease forwards;
+}
+
+body.presentation-mode .game-view-header {
+    display: flex;
+    height: 88px;
+}
+
+.gv-current-round {
+    font-family: 'Lalezar', cursive;
+    font-size: 1.85rem;
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    background: rgba(139, 95, 191, 0.4);
+    padding: 6px 22px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 10px;
+}
+
+.gv-word-1 { color: #fff; }
+.gv-word-2 { color: #FFD600; } /* Yellow for "الأولى" etc */
+
+/* ===== 3D logo container ===== */
+.gv-logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 0.75;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -2px) scale(0.52);
+    transform-origin: center center;
+}
+
+.gv-logo-line {
+    font-family: "Lalezar", sans-serif;
+    -webkit-text-stroke: 3px #000;
+    paint-order: stroke fill;
+    text-shadow:
+        2px 2px 0 #000,
+        4px 4px 0 #000,
+        6px 6px 0 #000,
+        8px 8px 0 rgba(0,0,0,0.5);
+    position: relative;
+    white-space: nowrap;
+}
+
+.gv-logo-line1 { font-size: 4rem; color: #FFD600; }
+.gv-logo-line2 { font-size: 3rem; color: #00E5FF; }
+.gv-logo-line3 { font-size: 5rem; color: #FF1744; }
+
+.gv-exit-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    opacity: 0.3;
+}
+
+.gv-exit-btn:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #EF4444;
+}
+
+/* ===== Game View Scores (Floating cards) ===== */
+.game-view-scores {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 70px;
+    right: 70px;
+    z-index: 10000;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+body.presentation-mode .game-view-scores {
+    display: flex;
+}
+
+.gv-score-card {
+    background: rgba(18, 8, 35, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 122px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    animation: slideUpFade 0.6s ease forwards;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.gv-score-card:hover {
+    filter: brightness(1.12);
+    transform: translateY(-3px);
+}
+
+.gv-score-card.ready {
+    box-shadow:
+        0 0 0 3px #ffd600,
+        0 0 28px rgba(255, 214, 0, 0.68),
+        0 15px 35px rgba(0, 0, 0, 0.5);
+    animation: gvScoreReady 0.85s ease-in-out infinite alternate;
+}
+
+@keyframes gvScoreReady {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-3px) scale(1.035); }
+}
+
+.gv-score-card.team-1 {
+    border-right: 6px solid var(--team1-bg, #FF9800);
+}
+
+.gv-score-card.team-2 {
+    border-left: 6px solid var(--team2-bg, #8B5FBF);
+}
+
+.gv-team-name {
+    font-weight: 800;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.gv-score-num {
+    font-family: 'Lalezar', cursive;
+    font-size: 2.35rem;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+/* Mobile Optimization for Presentation Mode */
+@media (max-width: 768px) {
+    body.presentation-mode .main-area {
+        padding-top: 60px !important;
+    }
+
+    body.presentation-mode .board-wrap {
+        transform: scale(0.85); /* Shrink board for mobile */
+    }
+
+    body.presentation-mode .game-view-header {
+        height: 90px;
+        padding: 0 15px;
+    }
+
+    .gv-logo-container {
+        transform: translate(-50%, -7px) scale(0.48);
+    }
+
+    .gv-current-round {
+        font-size: 1.2rem;
+        padding: 5px 15px;
+        gap: 8px;
+    }
+
+    .game-view-scores {
+        bottom: 12px;
+        left: 14px;
+        right: 14px;
+        gap: 10px;
+    }
+
+    .gv-score-card {
+        padding: 7px 11px;
+        min-width: 96px;
+        border-radius: 13px;
+    }
+
+    .gv-score-num {
+        font-size: 1.8rem;
+    }
+
+    .gv-team-name {
+        font-size: 0.58rem;
+    }
+}
+
+/* Use the same embedded game font in presentation mode (never Lalezar). */
+.gv-current-round,
+.gv-logo-line,
+.gv-score-num,
+.gv-team-name { font-family:'HrofFont', sans-serif !important; }
+body.presentation-mode .gv-current-round,
+body.presentation-mode .gv-current-round * { font-family:'HrofFont', sans-serif !important; }
+
+
+/* v1.5: presentation score cards use the same solid team colors as board cells. */
+.gv-score-card.team-1 {
+    background: var(--team1-bg, #ff9800) !important;
+    border-color: var(--team1-border, #e65100) !important;
+    border-right-color: var(--team1-border, #e65100) !important;
+    color: #fff !important;
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--team1-bg, #ff9800), #000 42%), 0 12px 26px rgba(0,0,0,.28) !important;
+}
+.gv-score-card.team-2 {
+    background: var(--team2-bg, #8b5fbf) !important;
+    border-color: var(--team2-border, #4a2570) !important;
+    border-left-color: var(--team2-border, #4a2570) !important;
+    color: #fff !important;
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--team2-bg, #8b5fbf), #000 42%), 0 12px 26px rgba(0,0,0,.28) !important;
+}
+.gv-score-card.team-1 .gv-team-name,
+.gv-score-card.team-2 .gv-team-name { color: #fff !important; text-shadow: 0 2px 0 rgba(0,0,0,.42); }

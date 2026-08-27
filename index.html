@@ -27,8 +27,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=home-fit-37">
-    <link rel="stylesheet" href="css/game-view.css?v=presentation-interactive-4">
+    <link rel="stylesheet" href="css/style.css?v=home-layout-7">
+    <link rel="stylesheet" href="css/game-view.css?v=presentation-interactive-5">
+    <link rel="stylesheet" href="css/first-game-tour.css?v=first-game-tour-1">
+    <link rel="stylesheet" href="css/ads.css?v=home-layout-2">
     <style>
         /* ===== LEFT ICON BAR ===== */
         .bottom-icon-bar {
@@ -147,6 +149,11 @@
         <!-- Background Pattern -->
         <div class="hex-bg-pattern"></div>
 
+        <!-- All visible home content lives in one responsive column. Keeping the
+             layout in a wrapper prevents the side cards and adverts from
+             overlapping the main actions at different viewport sizes. -->
+        <div class="home-layout-shell">
+
         <!-- Logo -->
         <div class="logo-home" onclick="window.location.href='pages/playground.html'" style="cursor: pointer;">
             <span class="logo-line1">حروف</span>
@@ -157,7 +164,14 @@
         <!-- Action Buttons -->
         <div class="home-buttons">
             <button class="btn-pill" onclick="startGame()">بدء اللعبة</button>
-            <button class="btn-pill btn-online" onclick="openOnlineModal()" style="background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; border-color: #F57C00;">العب اونلاين 🌐</button>
+            <button type="button" class="btn-pill btn-online home-available-btn" onclick="openOnlineModal()" style="background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; border-color: #F57C00;">
+                <span>العب اونلاين 🌐</span>
+                <span class="availability-badge" role="status">متاح الآن</span>
+            </button>
+            <button class="btn-pill btn-superpowers home-available-btn" onclick="window.location.href='modes/super-powers/index.html?entry=home'">
+                <span>العب بالقوى الخارقة ⚡</span>
+                <span class="availability-badge" role="status">متاح الآن</span>
+            </button>
             <button class="btn-pill" onclick="showSettings()">إعدادات</button>
             <button class="btn-pill" onclick="openRulesModal()">القوانين</button>
         </div>
@@ -166,7 +180,7 @@
         <div class="home-extra-links">
             <button class="hex-btn" onclick="window.location.href='pages/playground.html'">
                 <span class="icon">🎮</span>
-                العاب قاف
+                <span class="home-link-copy"><strong>ألعاب قاف</strong></span>
             </button>
             <button class="hex-btn tiktok"
                 onclick="window.open('https://www.tiktok.com/@hojas.1?is_from_webapp=1&sender_device=pc', '_blank')">
@@ -174,49 +188,142 @@
                     <path
                         d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" />
                 </svg>
-                حساب التيك توك
+                <span class="home-link-copy"><strong>حساب التيك توك</strong></span>
+            </button>
+            <button class="hex-btn question-suggestion-link" onclick="openQuestionSuggestionModal()">
+                <span class="icon">💡</span>
+                <span class="home-link-copy"><strong>أسئلة المتابعين</strong></span>
             </button>
         </div>
 
-        <!-- Compact home information cards -->
-        <div class="home-info-panels" aria-label="معلومات اللعبة">
-            <section class="home-info-card home-updates-card">
-                <div class="home-info-card__heading">
-                    <span class="home-info-card__icon" aria-hidden="true">✨</span>
-                    <div>
-                        <small>جديد اللعبة</small>
-                        <h2>آخر التحديثات</h2>
-                    </div>
+        <!-- Homepage footer: advert and version badges stay together at the bottom. -->
+        <footer class="home-footer" aria-label="تذييل الصفحة">
+        <!-- Advertising space -->
+        <section class="home-ad-space" aria-labelledby="homeAdTitle">
+            <div class="home-ad-space__header">
+                <div>
+                    <span class="home-ad-space__eyebrow">مساحة إعلانية</span>
+                    <h2 id="homeAdTitle">خلك أول شخص يعلن لبراندك هنا</h2>
                 </div>
-                <div class="home-info-preview" id="homeUpdatesPreview"></div>
-                <button type="button" class="home-info-more" onclick="openHomeInfoModal('updates')">
-                    عرض سجل التحديثات
-                </button>
-            </section>
-
-            <section class="home-info-card home-features-card">
-                <div class="home-info-card__heading">
-                    <span class="home-info-card__icon" aria-hidden="true">⚡</span>
-                    <div>
-                        <small>متاحة الآن</small>
-                        <h2>ميزات اللعبة</h2>
-                    </div>
+                <span>إعلان</span>
+            </div>
+            <div class="home-ad-space__grid">
+                <a class="home-ad-card home-ad-card--qaf" href="https://qaf-srv.netlify.app/" target="_blank"
+                    rel="noopener noreferrer" aria-label="زيارة موقع قاف لتصميم المواقع">
+                    <span class="home-ad-card__media">
+                        <img src="public/assets/ads/qaf-company.jpg" alt="قاف لتصميم مواقع إلكترونية احترافية في السعودية"
+                            loading="lazy">
+                    </span>
+                    <span class="home-ad-card__body">
+                        <span class="home-ad-card__badge">إعلان</span>
+                        <h3>قاف — تصميم مواقع إلكترونية احترافية</h3>
+                        <p>حلول رقمية وهوية احترافية للمنشآت السعودية.</p>
+                        <span class="home-ad-card__link">زيارة موقع قاف ↗</span>
+                    </span>
+                </a>
+                <div class="home-ad-card home-ad-card--invite">
+                    <span class="home-ad-card--invite__icon" aria-hidden="true">📣</span>
+                    <h3>أعلن عن مشروعك أمام مجتمع حروف</h3>
+                    <p>مساحة مميزة لعرض براندك في الشاشة الرئيسية.</p>
+                    <strong>خلك أول شخص يعلن لبراندك هنا</strong>
                 </div>
-                <div class="home-info-preview home-features-preview" id="homeFeaturesPreview"></div>
-                <button type="button" class="home-info-more" onclick="openHomeInfoModal('features')">
-                    مشاهدة 11 ميزة
-                </button>
-            </section>
-        </div>
+            </div>
+        </section>
 
         <!-- Version Tag -->
-        <div class="home-version-badges" style="position: absolute; bottom: 15px; font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
+        <div class="home-version-badges" style="font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.85rem; background: rgba(74, 222, 128, 0.18); color: #4ADE80; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(74, 222, 128, 0.35);">النسخة الكاملة المجانية</span>
-            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.2</span>
+            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.55</span>
+        </div>
+        </footer>
         </div>
     </div>
 
-    <!-- Full updates and features archive -->
+    <!-- Superpowers preview -->
+    <div class="site-confirm superpowers-modal" id="superpowersModal" role="dialog" aria-modal="true"
+        aria-labelledby="superpowersTitle" aria-hidden="true"
+        onclick="if (event.target === this) closeSuperpowersModal()">
+        <div class="superpowers-modal__card">
+            <button type="button" class="home-info-modal__close" onclick="closeSuperpowersModal()"
+                aria-label="إغلاق">×</button>
+            <div class="superpowers-modal__heading">
+                <span aria-hidden="true">⚡</span>
+                <div>
+                    <small>وضع قادم داخل حروف مع هوجاس</small>
+                    <h2 id="superpowersTitle">القوى الخارقة</h2>
+                </div>
+            </div>
+            <p class="superpowers-modal__intro">كل فريق يحصل على 3 قوى تتجدد مع بداية كل جولة:</p>
+            <div class="superpowers-modal__grid">
+                <section><span>⚡</span><div><strong>هجوم</strong><small>أفضلية هجومية تربك خطة الخصم.</small></div></section>
+                <section><span>🛡️</span><div><strong>حماية</strong><small>تحمي إحدى خلايا فريقك من التأثير.</small></div></section>
+                <section><span>🔄</span><div><strong>تبديل</strong><small>تبدّل حرفًا متاحًا في لوحة اللعب.</small></div></section>
+            </div>
+            <div class="superpowers-modal__note">الميزة تحت التطوير وستظهر داخل اللعبة عند اكتمالها.</div>
+            <button type="button" class="superpowers-modal__done" onclick="closeSuperpowersModal()">فهمت</button>
+        </div>
+    </div>
+
+    <!-- Follower questions and suggestions -->
+    <div class="site-confirm question-suggestion-modal" id="questionSuggestionModal" role="dialog" aria-modal="true"
+        aria-labelledby="questionSuggestionTitle" aria-hidden="true"
+        onclick="if (event.target === this) closeQuestionSuggestionModal()">
+        <form class="question-suggestion-card" id="questionSuggestionForm" onsubmit="submitQuestionSuggestion(event)">
+            <button type="button" class="home-info-modal__close" onclick="closeQuestionSuggestionModal()" aria-label="إغلاق">×</button>
+            <span class="question-suggestion-kicker">شارك في تطوير اللعبة</span>
+            <h2 id="questionSuggestionTitle">أسئلة المتابعين</h2>
+            <p id="questionSuggestionIntro">اختر ما تريد إرساله، وستصل مشاركتك إلى الأدمن للمراجعة.</p>
+            <div class="question-suggestion-choices" id="questionSuggestionChoices">
+                <button type="button" class="question-suggestion-choice" onclick="selectSuggestionMode('question')"><span>❓</span><strong>أرسل سؤالًا</strong><small>أضف سؤالًا جديدًا لبنك اللعبة</small></button>
+                <button type="button" class="question-suggestion-choice" onclick="selectSuggestionMode('suggestion')"><span>💡</span><strong>أرسل اقتراحًا</strong><small>شارك فكرة أو بلّغ عن مشكلة</small></button>
+            </div>
+            <div class="question-suggestion-panel" id="suggestionQuestionPanel" hidden>
+                <div class="question-suggestion-grid">
+                    <label>اسمك <small>(اختياري)</small>
+                        <input id="suggestionName" maxlength="40" placeholder="اسم المتابع">
+                    </label>
+                    <label>الحرف
+                        <input id="suggestionLetter" maxlength="2" placeholder="مثال: ق">
+                    </label>
+                    <label class="wide">السؤال
+                        <textarea id="suggestionQuestion" maxlength="500" placeholder="اكتب السؤال بوضوح"></textarea>
+                    </label>
+                    <label class="wide">الإجابة الصحيحة
+                        <input id="suggestionAnswer" maxlength="240" placeholder="يجب أن تبدأ بالحرف المحدد">
+                    </label>
+                    <label>التصنيف <small>(اختياري)</small>
+                        <input id="suggestionCategory" maxlength="50" placeholder="رياضة، تاريخ...">
+                    </label>
+                    <label>الصعوبة
+                        <select id="suggestionDifficulty"><option value="سهل">سهل</option><option value="متوسط" selected>متوسط</option><option value="صعب">صعب</option></select>
+                    </label>
+                </div>
+            </div>
+            <div class="question-suggestion-panel" id="suggestionProposalPanel" hidden>
+                <div class="question-suggestion-grid">
+                    <label>اسمك <small>(اختياري)</small>
+                        <input id="proposalName" maxlength="40" placeholder="اسم المتابع">
+                    </label>
+                    <label>نوع الاقتراح
+                        <select id="proposalType"><option>سؤال جديد</option><option>تعديل على اللعبة</option><option>فكرة طور جديد</option><option>مشكلة</option><option>اقتراح عام</option></select>
+                    </label>
+                    <label class="wide">العنوان <small>(اختياري)</small>
+                        <input id="proposalTitle" maxlength="120" placeholder="عنوان مختصر">
+                    </label>
+                    <label class="wide">تفاصيل الاقتراح
+                        <textarea id="proposalText" maxlength="1000" placeholder="اكتب اقتراحك أو المشكلة بالتفصيل"></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="question-suggestion-actions">
+                <button type="button" class="question-suggestion-back" id="questionSuggestionBack" onclick="selectSuggestionMode('choice')" hidden>← تغيير الاختيار</button>
+                <button class="question-suggestion-submit" id="questionSuggestionSubmit" type="submit" hidden>إرسال للمراجعة</button>
+            </div>
+            <div class="question-suggestion-status" id="questionSuggestionStatus" aria-live="polite"></div>
+        </form>
+    </div>
+
+    <!-- Full updates and upcoming archive -->
     <div class="site-confirm home-info-modal" id="homeInfoModal" role="dialog" aria-modal="true"
         aria-labelledby="homeInfoModalTitle" aria-hidden="true"
         onclick="if (event.target === this) closeHomeInfoModal()">
@@ -227,23 +334,23 @@
                 <span aria-hidden="true">✨</span>
                 <div>
                     <small>حروف مع هوجاس</small>
-                    <h2 id="homeInfoModalTitle">آخر التحديثات والميزات</h2>
+                    <h2 id="homeInfoModalTitle">آخر التحديثات والتحديثات القادمة</h2>
                 </div>
             </div>
             <div class="home-info-tabs" role="tablist" aria-label="معلومات اللعبة">
                 <button type="button" id="homeUpdatesTabButton" role="tab" aria-controls="homeUpdatesPanel"
                     onclick="switchHomeInfoTab('updates')">آخر التحديثات</button>
-                <button type="button" id="homeFeaturesTabButton" role="tab" aria-controls="homeFeaturesPanel"
-                    onclick="switchHomeInfoTab('features')">11 ميزة حالية</button>
+                <button type="button" id="homeUpcomingTabButton" role="tab" aria-controls="homeUpcomingPanel"
+                    onclick="switchHomeInfoTab('upcoming')">التحديثات القادمة</button>
             </div>
             <div class="home-info-modal__body">
                 <section id="homeUpdatesPanel" class="home-info-tab-panel" role="tabpanel"
                     aria-labelledby="homeUpdatesTabButton">
                     <div class="home-update-archive" id="homeUpdatesArchive"></div>
                 </section>
-                <section id="homeFeaturesPanel" class="home-info-tab-panel" role="tabpanel"
-                    aria-labelledby="homeFeaturesTabButton" hidden>
-                    <div class="home-feature-archive" id="homeFeaturesArchive"></div>
+                <section id="homeUpcomingPanel" class="home-info-tab-panel" role="tabpanel"
+                    aria-labelledby="homeUpcomingTabButton" hidden>
+                    <div class="home-update-archive home-upcoming-archive" id="homeUpcomingArchive"></div>
                 </section>
             </div>
         </div>
@@ -444,7 +551,7 @@
                         <span class="timer-title">وقت الإجابة</span>
                         <div class="timer-stepper">
                             <button class="step-btn" onclick="adjTime('ansTime', 1)">+</button>
-                            <div class="step-val"><span id="ansTimeVal">3</span> ثانية</div>
+                            <div class="step-val"><span id="ansTimeVal">3</span> ثوانٍ</div>
                             <button class="step-btn" onclick="adjTime('ansTime', -1)">-</button>
                         </div>
                     </div>
@@ -468,21 +575,15 @@
                     </div>
                 </div>
 
-                <!-- Row 9: Dark Mode -->
-                <div class="setting-card setting-card-theme">
-                    <div class="settings-label">مظهر الشاشة:</div>
-                    <div class="settings-control toggle-group" id="setThemeGroup">
-                        <button class="toggle-btn selected" data-value="light">☀️ فاتح</button>
-                        <button class="toggle-btn" data-value="dark">🌙 داكن</button>
-                    </div>
-                </div>
-
                 <!-- Internal buzzer connection; intentionally hidden from players. -->
-                <input type="hidden" id="setBuzzerUrl" value="https://rakaga66.github.io/buzzer-server-qaf/">
+                <input type="hidden" id="setBuzzerUrl" value="/buzzer-server-qaf/">
 
             </div>
 
-            <button class="btn-save" onclick="saveSettings()">حفظ ورجوع</button>
+            <div class="settings-footer-actions">
+                <button class="btn-save" onclick="saveSettings()">حفظ ورجوع</button>
+                <button class="settings-suggestion-button" type="button" onclick="openQuestionSuggestionModal()">💡 اقترح سؤالًا للعبة</button>
+            </div>
         </div>
     </div>
 
@@ -493,13 +594,6 @@
         <div class="presenter-toggle-top">
             <button class="pt-btn" id="ptBtnAi" onclick="setGamePresenter('ai')">مقدم آلي</button>
             <button class="pt-btn" id="ptBtnHuman" onclick="setGamePresenter('human')">مقدم بشري</button>
-        </div>
-
-        <!-- Questions Portal (Bawaba) - Visible only in Human mode -->
-        <div id="humanPortalArea" style="display:none; margin-top:10px; padding: 0 10px;">
-            <button onclick="showPortalQR()" class="portal-link-btn" style="width:100%; text-align:center; display:block;">
-                <span>🚪 بوابة الأسئلة</span>
-            </button>
         </div>
 
         <div class="logo" onclick="window.location.href='pages/playground.html'" style="cursor: pointer;">
@@ -571,20 +665,15 @@
     <!-- ===== MAIN AREA ===== -->
     <main class="main-area">
 
-        <button class="game-home-btn" type="button" onclick="returnToHomeWithWarning()"
+        <button class="game-home-btn" type="button" data-tour="home" onclick="returnToHomeWithWarning()"
             aria-label="العودة إلى الشاشة الرئيسية" title="العودة إلى الشاشة الرئيسية">
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M3 10.8 12 3l9 7.8v9.1a1.1 1.1 0 0 1-1.1 1.1h-5.2v-6.2H9.3V21H4.1A1.1 1.1 0 0 1 3 19.9z"/>
             </svg>
         </button>
 
-        <!-- Session Code Badge -->
-        <div id="sessionBadgeWrap" style="display:none; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:200; pointer-events:none;">
-            <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,214,0,0.25); border-radius:7px; padding:4px 13px; backdrop-filter:blur(8px); display:flex; align-items:center; gap:7px;">
-                <span style="font-size:0.68rem; color:rgba(255,255,255,0.38);">جلسة</span>
-                <span id="sessionBadgeCode" style="font-size:0.82rem; font-weight:900; letter-spacing:3px; color:rgba(255,214,0,0.7);">—</span>
-            </div>
-        </div>
+        <button class="player-help-btn" type="button" onclick="openPlayerHelp()"
+            aria-label="طريقة اللعب" title="طريقة اللعب">!</button>
 
         <!-- Timer Display (floating) -->
         <div class="timer-display" id="timerDisplay" style="display:none;">
@@ -594,31 +683,31 @@
 
         <!-- Bottom Icon Bar -->
         <div class="bottom-icon-bar">
-            <button class="bib-btn" onclick="openBuzzerModal()">
+            <button class="bib-btn" data-tour="presenter" onclick="openPresenterAccessModal()">
+                <span class="bib-icon">🎙️</span>
+                <span class="bib-label">المقدم</span>
+            </button>
+            <button class="bib-btn" data-tour="buzzer" onclick="openBuzzerModal()">
                 <span class="bib-icon">🔔</span>
                 <span class="bib-label">الجرس</span>
             </button>
-            <button class="bib-btn" id="bibMuteBtn" onclick="toggleGameSound()">
+            <button class="bib-btn" id="bibMuteBtn" data-tour="sound" onclick="toggleGameSound()">
                 <span class="bib-icon bib-icon-sound">🔊</span>
                 <span class="bib-label">الصوت</span>
             </button>
-            <button class="bib-btn" id="bibPresentationBtn" onclick="togglePresentationMode()">
+            <button class="bib-btn" id="bibPresentationBtn" data-tour="presentation" onclick="togglePresentationMode()">
                 <span class="bib-icon">📺</span>
                 <span class="bib-label">وضع العرض</span>
             </button>
-            <button class="bib-btn" onclick="showSettings()">
+            <button class="bib-btn" data-tour="settings" onclick="showSettings()">
                 <span class="bib-icon">⚙️</span>
                 <span class="bib-label">إعدادات</span>
             </button>
-            <button class="bib-btn" onclick="shuffleBoard()">
+            <button class="bib-btn" data-tour="shuffle" onclick="shuffleBoard()">
                 <span class="bib-icon">🔀</span>
                 <span class="bib-label">خلط</span>
             </button>
-            <button class="bib-btn" onclick="window.location.href='pages/playground.html'">
-                <span class="bib-icon">🎮</span>
-                <span class="bib-label">هوجاس</span>
-            </button>
-            <button class="bib-btn" onclick="resetGameGrid()">
+            <button class="bib-btn" data-tour="new-round" onclick="resetGameGrid()">
                 <span class="bib-icon">↺</span>
                 <span class="bib-label">جديد</span>
             </button>
@@ -676,13 +765,15 @@
     </div>
 
 
+    <div class="audience-answer-overlay" id="audienceAnswerOverlay" aria-live="assertive" aria-atomic="true">
+        <div class="audience-answer-overlay__label">الإجابة الصحيحة</div>
+        <div class="audience-answer-overlay__text" id="audienceAnswerText"></div>
+    </div>
+
     <audio id="enterSound" src="public/assets/sound/الدخول لخليه الحروف.mp4"></audio>
     <audio id="clickSound" src="public/assets/sound/ضغط.mp4"></audio>
     <audio id="correctSound" src="public/assets/sound/اجابه صحيحه.mp4"></audio>
     <audio id="deleteSound" src="public/assets/sound/حذف اجابه.mp4"></audio>
-    <!-- زر تبديل الوضع الداكن العائم -->
-    <button id="darkModeToggleBtn" onclick="toggleDarkMode()" title="تبديل المظهر">🌙</button>
-
     <!-- ===== BUZZER SHARE MODAL (Modern Premium Design) ===== -->
     <div id="buzzerShareModal" class="transition-screen"
         style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
@@ -743,42 +834,51 @@
         </div>
     </div>
 
-    <!-- ===== PORTAL SHARE MODAL ===== -->
-    <div id="portalShareModal" class="transition-screen"
-        style="display:none; background: rgba(8, 3, 18, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; align-items:center; justify-content:center; flex-direction:column; direction: rtl; animation: fadeIn 0.4s ease;">
-        
-        <div class="buzzer-modal-card" style="background: rgba(30, 15, 55, 0.75); border: 1.5px solid rgba(255, 255, 255, 0.1); border-left: 5px solid rgba(255, 214, 0, 0.7); border-radius: 16px; padding: 40px 36px; width: 95%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 0 rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.7); animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+    <!-- ===== PRESENTER ACCESS MODAL (separate from buzzer) ===== -->
+    <div id="presenterShareModal" class="transition-screen presenter-share-modal" style="display:none;">
+        <div class="presenter-share-card">
+            <button class="presenter-share-close" type="button" onclick="closePresenterAccessModal()" aria-label="إغلاق">×</button>
+            <span class="presenter-share-kicker">خاص بمقدم هذه الجلسة فقط</span>
+            <h2>دخول المقدم</h2>
+            <p>امسح الباركود من جوال المقدم الموجود معكم. الرابط سري، خاص بهذه الجلسة، وينتهي تلقائيًا.</p>
+            <div class="presenter-share-session">جلسة <strong id="presenterModalRoomCode">------</strong></div>
+            <div class="presenter-share-qr" id="modalPresenterQrcodeBox" aria-label="باركود دخول المقدم"></div>
+            <button type="button" class="presenter-share-open" onclick="openPresenterDirectly()">فتح صفحة المقدم على هذا الجهاز</button>
+            <small>يسمح النظام بمقدم واحد متصل فقط لكل جلسة.</small>
+        </div>
+    </div>
 
-            <button onclick="document.getElementById('portalShareModal').style.display='none'"
-                style="position:absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid rgba(255,255,255,0.15); color:#fff; width:42px; height:42px; border-radius:8px; cursor:pointer; font-size:1.4rem; transition: all 0.2s; display:flex; align-items:center; justify-content:center; z-index: 10; box-shadow: 0 3px 0 rgba(0,0,0,0.3);"
-                onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='rotate(90deg)'"
-                onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='rotate(0deg)'">✕</button>
-
-            <h2 style="font-family: 'Cairo', sans-serif; font-weight: 900; color: #fff; font-size: 2.3rem; margin-bottom: 20px; text-shadow: 0 5px 15px rgba(0,0,0,0.4); letter-spacing: -1px;">
-                بوابة الأسئلة
-            </h2>
-            <div style="color: rgba(255,255,255,0.7); margin-bottom: 25px; font-weight: 600; font-size: 1.1rem;">
-                اقرأ الباركود لفتح الأسئلة بجوالك الخاص لكي لا تتعارض جلستك هنا
-            </div>
-
-            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; border-bottom: 3px solid rgba(255,214,0,0.3); padding: 15px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 5px 0 rgba(0,0,0,0.25);">
-                <div id="modalPortalQrcodeBox" style="background:#fff; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; width: 180px; height: 180px; box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.2);">
-                </div>
-
+    <div id="playerHelpModal" class="site-confirm player-help-modal" role="dialog" aria-modal="true"
+        aria-labelledby="playerHelpTitle" aria-describedby="playerHelpText" aria-hidden="true"
+        onclick="if (event.target === this) closePlayerHelp()">
+        <div class="site-confirm__card player-help-card">
+            <button class="player-help-close" type="button" onclick="closePlayerHelp()" aria-label="إغلاق">×</button>
+            <div class="site-confirm__icon" aria-hidden="true">!</div>
+            <h2 id="playerHelpTitle">طريقة اللعب</h2>
+            <div id="playerHelpText" class="player-help-copy">
+                <p><strong>1.</strong> اضغط زر <b>المقدم</b> لفتح لوحة التحكم الخاصة به.</p>
+                <p><strong>2.</strong> يختار المقدم الخلية ويعرض السؤال، ثم اضغطوا الجرس للإجابة.</p>
+                <p><strong>3.</strong> بعد الإجابة يحدد المقدم الفريق الفائز بالخلية.</p>
+                <p class="player-help-warning">⚠️ هذا الباركود للمقدم فقط؛ لا تفتحه من أجهزة اللاعبين.</p>
             </div>
         </div>
     </div>
+
+    <!-- Question portal removed: the presenter controls questions privately from
+         the secure presenter page opened by the presenter button above. -->
 
     <!-- QRCode Library: CDN with local fallback -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
             onerror="this.onerror=null; var s=document.createElement('script'); s.src='js/qrcode.min.js'; document.head.appendChild(s);"></script>
     <script src="js/pdfData.js"></script>
     <script src="js/questionsData.js"></script>
+    <script src="js/question-library.js?v=followers-1"></script>
     <script>
         window.qafAnalyticsPendingStarts = 0;
         window.qafTrackGameStart = () => { window.qafAnalyticsPendingStarts += 1; };
     </script>
-    <script src="js/script.js?v=home-info-30"></script>
+    <script src="js/first-game-tour.js?v=first-game-tour-1"></script>
+    <script src="js/script.js?v=home-mobile-ui-3"></script>
     <script type="module">
         import { trackSection, trackGameStart } from './js/qaf-analytics.js?v=1';
         trackSection('game');

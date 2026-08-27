@@ -3,8 +3,12 @@ hojas-auth/
 node_modules/
 .DS_Store
 .env
+.env.*
+!.env.example
 dist/
 build/
 .vscode/
 package-lock.json
 *.log
+.vercel
+.env*
