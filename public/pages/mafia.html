@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>لعبة المافيا | قاف للألعاب</title>
+  <meta name="description" content="لعبة المافيا من قاف للألعاب — قريبًا.">
+  <link rel="canonical" href="https://8aaaf.com/mafia">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="قاف للألعاب">
+  <meta property="og:title" content="لعبة المافيا | قاف للألعاب">
+  <meta property="og:description" content="لعبة المافيا قادمة قريبًا إلى بوابة قاف للألعاب.">
+  <meta property="og:url" content="https://8aaaf.com/mafia">
+  <meta property="og:image" content="https://8aaaf.com/assets/portal/mafia.png">
+  <link rel="icon" type="image/png" href="/assets/qaf-favicon.png">
+  <style>
+    @font-face{font-family:HrofFont;src:url('/assets/حروف.ttf') format('truetype'),url('../public/assets/حروف.ttf') format('truetype');font-display:swap}
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:HrofFont,'Cairo',system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#60358d,#241239 70%);color:#fff}
+    main{width:min(720px,100%);text-align:center;background:rgba(44,19,72,.85);border:2px solid #f1b24a;border-radius:24px;padding:22px;box-shadow:8px 8px 0 rgba(0,0,0,.45)}
+    img{display:block;width:100%;max-height:420px;object-fit:contain;border-radius:16px;background:#050505}
+    h1{margin:22px 0 10px;color:#f1b24a;font-size:clamp(2rem,7vw,4rem)}
+    p{margin:0 auto 22px;font-size:1.15rem;line-height:1.8;color:#f6edf9}
+    a{display:inline-block;padding:13px 32px;border-radius:12px;background:#ffd600;color:#241239;text-decoration:none;font-weight:900;box-shadow:0 5px 0 #a56d00}
+    a:active{transform:translateY(3px);box-shadow:0 2px 0 #a56d00}
+  </style>
+</head>
+<body>
+  <main>
+    <img id="mafiaCover" src="/assets/portal/mafia.png" alt="غلاف لعبة المافيا" loading="eager">
+    <h1>لعبة المافيا</h1>
+    <p>لعبة جماعية مليئة بالخداع والتحقيق قادمة قريبًا إلى قاف للألعاب.</p>
+    <a href="/">العودة إلى متجر قاف</a>
+  </main>
+  <script>
+    const cover = document.getElementById('mafiaCover');
+    if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      cover.src = '../public/assets/portal/mafia.png';
+    }
+    cover.addEventListener('error', () => {
+      if (!cover.src.includes('../public/assets/')) cover.src = '../public/assets/portal/mafia.png';
+    }, {once:true});
+  </script>
+</body>
+</html>

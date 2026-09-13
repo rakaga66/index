@@ -46,6 +46,7 @@
             id: String(power.id),
             name: String(power.name),
             description: String(power.description),
+            simpleDescription: String(power.simpleDescription || power.metadata?.simpleDescription || power.description),
             icon: String(power.icon),
             category: power.category,
             rarity: String(power.rarity),
@@ -134,6 +135,7 @@
             name: definition.name,
             icon: definition.icon,
             shortDescription: definition.description,
+            simpleDescription: definition.simpleDescription,
             category: definition.category,
             rarity: definition.rarity,
             targetType: definition.targetType,
@@ -213,7 +215,34 @@
         return state?.teams?.[teamId]?.inventory?.find(item => item.instanceId === instanceId) || null;
     }
 
-    function validateRequest(state, { teamId, instanceId, activationWindow }) {
+    function targetType(definition) {
+        return String(definition?.targetType || 'TEAM').toUpperCase();
+    }
+
+    function validateTarget(definition, target) {
+        const kind = targetType(definition);
+        if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) {
+            if (!target?.player?.id || !String(target.player.name || '').trim()) {
+                return { ok: false, reason: 'اختر لاعبًا موجودًا من الفريق المنافس.' };
+            }
+        }
+        if (kind === 'PLAYER_PAIR') {
+            const players = Array.isArray(target?.players) ? target.players : [];
+            if (players.length !== 2 || players.some(player => !player?.id || !String(player.name || '').trim())) {
+                return { ok: false, reason: 'اختر لاعبين موجودين للمبارزة.' };
+            }
+        }
+        if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) {
+            const cell = target?.cell;
+            const row = Number(cell?.row), col = Number(cell?.col);
+            if (!cell || !String(cell.letter || '').trim() || !Number.isInteger(row) || !Number.isInteger(col) || row < 0 || col < 0) {
+                return { ok: false, reason: 'اختر خلية صحيحة من اللوحة.' };
+            }
+        }
+        return { ok: true };
+    }
+
+    function validateRequest(state, { teamId, instanceId, activationWindow, target } = {}) {
         const team = state?.teams?.[teamId];
         if (!team) return { ok: false, reason: 'الفريق غير معروف.' };
         const item = findItem(state, teamId, instanceId);
@@ -226,10 +255,12 @@
         if (team.roundPowerUsage >= state.settings.maxPowersPerTeamPerRound) return { ok: false, reason: 'استخدم الفريق الحد الأقصى لهذه الجولة.' };
         const windowName = activationWindow || state.activationWindow;
         if (!definition.activationWindow.includes(windowName)) return { ok: false, reason: 'لا يمكن استخدام القوة في هذا التوقيت.' };
+        const targetCheck = validateTarget(definition, target);
+        if (!targetCheck.ok) return targetCheck;
         return { ok: true, team, item, definition, activationWindow: windowName };
     }
 
-    function requestPower(state, request) {
+    function requestPower(state, request = {}) {
         const check = validateRequest(state, request);
         if (!check.ok) return check;
         const requestId = global.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -241,10 +272,16 @@
             teamId: request.teamId,
             instanceId: request.instanceId,
             powerId: check.definition.id,
+            powerName: check.definition.name,
+            simpleDescription: check.definition.simpleDescription,
             requestedBy: clone(check.item.requestedBy),
+            source: request.source || (request.playerId === 'presenter' ? 'presenter' : 'player'),
+            targetType: check.definition.targetType,
             target: clone(request.target || null),
+            round: state.currentRound,
             activationWindow: check.activationWindow,
             status: 'PENDING',
+            decision: 'PENDING',
             createdAt: Date.now()
         };
         appendEvent(state, { type: 'POWER_REQUESTED', teamId: request.teamId, private: true, message: `⏳ تم طلب ${check.definition.name}.` });
@@ -262,7 +299,10 @@
             item.requestedBy = null;
         }
         request.status = 'CANCELLED';
+        request.decision = actorTeamId ? 'CANCELLED' : 'DECLINED';
+        request.decisionMessage = actorTeamId ? 'ألغى اللاعب الطلب.' : 'رفض المقدم الطلب.';
         request.cancelledAt = Date.now();
+        request.decisionAt = request.cancelledAt;
         appendEvent(state, { type: 'POWER_REQUEST_CANCELLED', teamId: request.teamId, private: true, message: 'تم إلغاء طلب القوة.' });
         return { ok: true };
     }
@@ -273,7 +313,8 @@
         const check = validateRequest(state, {
             teamId: request.teamId,
             instanceId: request.instanceId,
-            activationWindow: state.activationWindow
+            activationWindow: state.activationWindow,
+            target: request.target
         });
         if (!check.ok && check.reason !== 'تم طلب هذه القوة بالفعل.') return check;
         const item = findItem(state, request.teamId, request.instanceId);
@@ -289,7 +330,9 @@
         if (!check.ok) return check;
         await effects.get(check.definition.id)({ state, request: clone(check.request), definition: clone(check.definition), context });
         check.request.status = 'ACTIVATED';
+        check.request.decision = 'APPROVED';
         check.request.activatedAt = Date.now();
+        check.request.decisionAt = check.request.activatedAt;
         check.item.status = check.definition.reusable ? POWER_STATUS.READY : POWER_STATUS.USED;
         check.item.usedAt = Date.now();
         check.item.usedRound = state.currentRound;
@@ -323,7 +366,7 @@
 
     function getTeamView(state, viewerTeamId) {
         if (!state?.teams) return null;
-        const result = { settings: clone(state.settings), currentRound: state.currentRound, activationWindow: state.activationWindow, awaitingCatalog: state.awaitingCatalog, teams: {}, eventLog: [] };
+        const result = { settings: clone(state.settings), currentRound: state.currentRound, activationWindow: state.activationWindow, awaitingCatalog: state.awaitingCatalog, teams: {}, requests: {}, eventLog: [] };
         for (const teamId of ['team1', 'team2']) {
             const own = teamId === viewerTeamId || state.settings.opponentVisibility === 'FULL';
             const team = state.teams[teamId];
@@ -334,6 +377,30 @@
                 roundPowerUsage: team.roundPowerUsage
             };
         }
+        // اللاعب يحتاج لمعرفة قرار المقدم على طلبات فريقه، لكن لا نكشف
+        // طلبات الفريق الآخر أو أي تفاصيل خاصة به.
+        result.requests = Object.fromEntries(Object.entries(state.requests || {})
+            .filter(([, request]) => request?.teamId === viewerTeamId)
+            .map(([id, request]) => [id, {
+                id,
+                teamId: request.teamId,
+                instanceId: request.instanceId,
+                powerId: request.powerId,
+                powerName: request.powerName || getDefinition(findItem(state, request.teamId, request.instanceId))?.name || request.powerId,
+                simpleDescription: request.simpleDescription || getDefinition(findItem(state, request.teamId, request.instanceId))?.simpleDescription || '',
+                requestedBy: clone(request.requestedBy || null),
+                source: request.source || (request.requestedBy?.id === 'presenter' ? 'presenter' : 'player'),
+                targetType: request.targetType || getDefinition(findItem(state, request.teamId, request.instanceId))?.targetType || 'TEAM',
+                target: clone(request.target || null),
+                round: Number(request.round || state.currentRound),
+                status: request.status,
+                createdAt: request.createdAt || null,
+                activatedAt: request.activatedAt || null,
+                cancelledAt: request.cancelledAt || null,
+                decisionAt: request.decisionAt || null,
+                decision: request.decision || (request.status === 'ACTIVATED' ? 'APPROVED' : request.status === 'CANCELLED' ? 'DECLINED' : 'PENDING'),
+                decisionMessage: request.decisionMessage || ''
+            }]));
         result.eventLog = (state.eventLog || []).filter(event => !event.private || event.teamId === viewerTeamId).map(clone);
         return result;
     }

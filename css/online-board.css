@@ -84,6 +84,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--ob-yellow);
 .online-board-help-btn:hover,
 .online-board-help-btn:focus-visible { filter: brightness(1.14); transform: translateY(calc(-50% - 2px)); }
 .online-board-help-btn:active { transform: translateY(calc(-50% + 3px)); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.online-board-help-btn[hidden] { display: none !important; }
 .online-board-view { margin-top: 24px; }
 .online-board-welcome { max-width: 1020px; margin-inline: auto; }
 .online-board-hero { margin: 25px 0 27px; text-align: center; }

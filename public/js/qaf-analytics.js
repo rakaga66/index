@@ -15,7 +15,8 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const ROOT = 'siteAnalytics';
 const activeSections = new Set();
-const isProductionSite = location.hostname === '7roof-main.vercel.app';
+const productionHosts = new Set(['8aaaf.com', 'www.8aaaf.com', '7roof-main.vercel.app']);
+const isProductionSite = productionHosts.has(location.hostname);
 
 function makeId() {
     return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -81,6 +82,19 @@ export async function trackGameStart() {
     }
 }
 
+// Count each online room once when it is created. The room code is used as a
+// local idempotency key so retries or a refresh do not inflate the metric.
+export async function trackOnlineSession(roomCode = '') {
+    if (!isProductionSite) return;
+    const cleanCode = String(roomCode || '').trim();
+    const key = `qaf_online_session_${cleanCode || 'unknown'}`;
+    try {
+        if (cleanCode && sessionStorage.getItem(key) === '1') return;
+        if (cleanCode) sessionStorage.setItem(key, '1');
+    } catch (_) { /* analytics must never block gameplay */ }
+    increment('onlineSessions').catch(console.warn);
+}
+
 export function observeAnalytics(callback) {
     return onValue(ref(db, ROOT), snapshot => {
         const data = snapshot.val() || {};
@@ -97,6 +111,7 @@ export function observeAnalytics(callback) {
             storeOnline: onlineCount('store'),
             gameVisits: Number(counters.gameVisits) || 0,
             gameStarts: Number(counters.gameStarts) || 0,
+            onlineSessions: Number(counters.onlineSessions) || 0,
             uniqueGamePlayers: Object.keys(data.uniqueGamePlayers || {}).length,
             storeVisits: Number(counters.storeVisits) || 0
         });

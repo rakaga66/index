@@ -419,3 +419,14 @@
 }
 
 body.presentation-mode .power-audience-hud { bottom: 8px; }
+
+/* Keep the round marker readable without the opaque black strip that used to
+   cover the super-powers board. */
+.super-power-mode .round-label,
+body.super-game-active .sidebar > .round-label,
+body.super-game-active .main-area ~ .sidebar > .round-label {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: 0 2px 6px rgba(0,0,0,.58);
+}

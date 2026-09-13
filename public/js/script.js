@@ -24,6 +24,20 @@ const ARABIC_LETTERS = [
     'ق','ك','ل','م','ن','هـ','و','ي'
 ];
 
+// Keep share links clean on the production domain while preserving the
+// extension-based paths used by the local file/static-server preview.
+function isLocalGameRuntime() {
+    return window.location.protocol === 'file:' ||
+        /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+}
+
+function getNormalBuzzerUrl() {
+    if (window.location.protocol === 'file:') {
+        return new URL('buzzer-server-qaf/', window.location.href).href.replace(/\/$/, '');
+    }
+    return `${window.location.origin}${isLocalGameRuntime() ? '/buzzer-server-qaf' : '/7roof/buzzer'}`;
+}
+
 // ===== Game State =====
 let board = [];
 let cellLetters = [];
@@ -59,10 +73,12 @@ function isAdminViewer() {
 }
 
 function isBoardEditingLocked() {
-    const presenterMode = typeof teamSetup !== 'undefined' && teamSetup?.presenter === 'human';
     const livePresenter = typeof _livePresenterConnected !== 'undefined' && _livePresenterConnected;
     const commandInProgress = typeof _presenterCommandInProgress !== 'undefined' && _presenterCommandInProgress;
-    return (isAdminViewer() || presenterMode || livePresenter) && !commandInProgress;
+    // A human presenter page locks the audience view only while it is actually
+    // connected. If the host is testing/playing from the same phone before a
+    // presenter joins, keep local cell selection and team assignment usable.
+    return (isAdminViewer() || livePresenter) && !commandInProgress;
 }
 
 function showEditingLockedNotice() {
@@ -751,11 +767,10 @@ function closeSuperpowersModal() {
 }
 
 function openOnlineModal() {
-    // Keep the destination stable when the home page is served from `/` or
-    // from a nested route such as `/pages/playground`.
+    // Keep the destination stable on the custom domain and during local file previews.
     window.location.href = window.location.protocol === 'file:'
         ? 'pages/online-board.html'
-        : '/pages/online-board.html';
+        : '/7roof/online/board';
 }
 
 function closeOnlineModal() {
@@ -908,8 +923,50 @@ let teamSetup = {
     manualTime: 5,
     presenter: 'ai',
     sound: 'on',
-    buzzerServerUrl: window.location.origin + '/buzzer-server-qaf'
+    buzzerServerUrl: getNormalBuzzerUrl()
 };
+
+// Keep the shared match branding/settings when switching between the normal
+// and super-powers modes.  Each mode still owns its board and round state.
+const SHARED_SETUP_KEY = 'hojas_shared_setup_v1';
+function persistSharedSetup() {
+    try {
+        localStorage.setItem(SHARED_SETUP_KEY, JSON.stringify({
+            version: 1,
+            competitionName: teamSetup.competitionName,
+            team1: { name: teamSetup.team1.name, color: teamSetup.team1.color },
+            team2: { name: teamSetup.team2.name, color: teamSetup.team2.color },
+            totalRounds: Number(teamSetup.totalRounds) || 3,
+            ansTime: Number(teamSetup.ansTime) || 3,
+            otherTime: Number(teamSetup.otherTime) || 10,
+            sound: teamSetup.sound === 'off' ? 'off' : 'on'
+        }));
+    } catch (error) {
+        console.warn('Could not save shared match setup', error);
+    }
+}
+
+function hydrateSharedSetup() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(SHARED_SETUP_KEY) || 'null');
+        if (!saved || typeof saved !== 'object') return;
+        if (typeof saved.competitionName === 'string' && saved.competitionName.trim()) {
+            teamSetup.competitionName = saved.competitionName.trim().slice(0, 40);
+        }
+        ['team1', 'team2'].forEach(team => {
+            const source = saved[team];
+            if (!source || typeof source !== 'object') return;
+            if (typeof source.name === 'string' && source.name.trim()) teamSetup[team].name = source.name.trim().slice(0, 30);
+            if (typeof source.color === 'string' && COLOR_MAP[source.color]) teamSetup[team].color = source.color;
+        });
+        if (Number.isFinite(Number(saved.totalRounds))) teamSetup.totalRounds = Math.max(1, Math.min(5, Number(saved.totalRounds)));
+        if (Number.isFinite(Number(saved.ansTime))) teamSetup.ansTime = Math.max(2, Math.min(15, Number(saved.ansTime)));
+        if (Number.isFinite(Number(saved.otherTime))) teamSetup.otherTime = Math.max(5, Math.min(30, Number(saved.otherTime)));
+        if (saved.sound === 'on' || saved.sound === 'off') teamSetup.sound = saved.sound;
+    } catch (error) {
+        console.warn('Could not load shared match setup', error);
+    }
+}
 
 // ===== Buzzer State =====
 let buzzerSocket = null;
@@ -975,7 +1032,7 @@ async function loadExtraQuestionLibrary() {
                 q: item.question,
                 a: item.answer,
                 letterMatch: normalizeQuestionLetter(item.letter),
-                source: 'follower'
+                source: item.source || 'follower'
             }))
             .filter(item => !existing.has(item.id));
         questionsBank = questionsBank.concat(mapped);
@@ -985,6 +1042,33 @@ async function loadExtraQuestionLibrary() {
         console.warn('تعذر تحميل أسئلة المتابعين، سيتم استخدام البنك الأساسي.', error);
     } finally {
         extraQuestionsLoaded = true;
+    }
+}
+
+async function loadQuestionOverrides() {
+    try {
+        if (!window.QuestionLibrary?.getQuestionOverrides) return;
+        const overrides = await window.QuestionLibrary.getQuestionOverrides(true);
+        if (!Array.isArray(overrides) || !overrides.length || !questionsBank.length) return;
+        const byId = new Map(overrides.map(item => [String(item.baseId || item.id), item]));
+        questionsBank = questionsBank.map(item => {
+            const override = byId.get(String(item.id));
+            if (!override) return item;
+            return {
+                ...item,
+                q: override.question || item.q,
+                a: override.answer || item.a,
+                letterMatch: normalizeQuestionLetter(override.letter || item.letterMatch),
+                category: override.category || item.category,
+                difficulty: override.difficulty || item.difficulty,
+                status: override.status || item.status || 'active',
+                source: 'static'
+            };
+        }).filter(item => item.status !== 'disabled');
+        if (overrides.length) console.log(`✅ Applied ${overrides.length} admin question overrides`);
+    } catch (error) {
+        // The bundled bank remains usable if Firebase is unavailable.
+        console.warn('تعذر تحميل تعديلات أسئلة الأدمن، سيتم استخدام البنك الأساسي.', error);
     }
 }
 
@@ -1016,6 +1100,7 @@ async function loadQuestionsFromJSON() {
                 source: 'static'
             }));
         }
+        await loadQuestionOverrides();
         await loadExtraQuestionLibrary();
         questionsLoaded = true;
         console.log(`✅ Bank Ready: ${questionsBank.length} questions`);
@@ -1182,6 +1267,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     applyDarkMode(savedTheme === 'dark');
     
+    hydrateSharedSetup();
     initSettingsUI();
     setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
     applyAdminViewerMode();
@@ -1192,10 +1278,12 @@ window.addEventListener('DOMContentLoaded', () => {
     // Aggressive Migration: If the saved URL is old Railway or old github.io, force local relative URL
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
     const isGithub = savedBuzzerUrl && savedBuzzerUrl.includes('rakaga66.github.io');
-    
-    if (isOldRailway || isGithub) {
+    const isLegacyProductionRoute = savedBuzzerUrl && !isLocalGameRuntime() &&
+        savedBuzzerUrl.includes('/buzzer-server-qaf') || savedBuzzerUrl.includes('/حروف/الجرس');
+
+    if (isOldRailway || isGithub || isLegacyProductionRoute) {
         console.log('🔄 Forced migration of buzzer server URL to local origin...');
-        savedBuzzerUrl = window.location.origin + '/buzzer-server-qaf';
+        savedBuzzerUrl = getNormalBuzzerUrl();
         localStorage.setItem('buzzerServerUrl', savedBuzzerUrl);
     }
 
@@ -1389,6 +1477,8 @@ function saveSettings() {
 
     // حفظ الوقت اليدوي
     localStorage.setItem('manualTime', teamSetup.manualTime);
+    persistSharedSetup();
+    syncLiveSetupNames().catch(() => {});
 
     // تطبيق التغييرات فوراً إذا كانت اللعبة شغالة
     if (settingsCalledFromGame) {
@@ -1879,6 +1969,7 @@ function startGameFromSetup() {
 
     teamSetup.team1.name = n1;
     teamSetup.team2.name = n2;
+    persistSharedSetup();
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
     roundWins = { team1: 0, team2: 0 };
@@ -1948,6 +2039,11 @@ function updateSidebar() {
 function shuffleBoard() {
     if (isBoardEditingLocked()) {
         showEditingLockedNotice();
+        return;
+    }
+    const hasClaimedCells = board.some(row => row.some(cell => cell === 'team1' || cell === 'team2'));
+    if (hasClaimedCells || currentRoundWinner === 'team1' || currentRoundWinner === 'team2') {
+        showGameToast('لا يمكن خلط الخلايا بعد منح أول خلية.', true);
         return;
     }
     const unclaimed = [];
@@ -2155,6 +2251,7 @@ function assignTeam(team) {
     stopTimer();
     
     const { row, col, el } = selectedCell;
+    const awardedAnswer = document.getElementById('sqAnswerText')?.textContent?.trim() || '';
 
     el.classList.remove('selected');
     el.classList.add('team-' + team);
@@ -2170,6 +2267,7 @@ function assignTeam(team) {
     selectedCell = null;
     updateSidebarReady(false);
     clearActiveQuestion();
+    if (awardedAnswer) showAudienceAnswerOverlay(awardedAnswer);
 
     // Check win for this team
     if (checkWin(team)) {
@@ -2682,13 +2780,29 @@ async function publishLiveGameState(extra = {}) {
     }
 }
 
+async function syncLiveSetupNames() {
+    if (!buzzerRoom || !gameIsActive) return;
+    const db = await ensureFirebase();
+    const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    await update(ref(db, 'rooms/' + buzzerRoom), {
+        competitionName: teamSetup.competitionName,
+        team1Name: teamSetup.team1.name,
+        team2Name: teamSetup.team2.name,
+        team1Color: teamSetup.team1.color,
+        team2Color: teamSetup.team2.color
+    });
+    await publishLiveGameState();
+}
+
 async function renderPresenterAccess(forceNew = false) {
     if (!buzzerRoom) return;
     const token = getPresenterToken(forceNew);
     const tokenHash = await hashSecureToken(token);
     const db = await ensureFirebase();
     const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    const basePath = location.pathname.includes('/public/') ? '../pages/presenter.html' : 'pages/presenter.html';
+    const basePath = isLocalGameRuntime()
+        ? (location.pathname.includes('/public/') ? '../pages/presenter.html' : 'pages/presenter.html')
+        : '/7roof/presenter';
     _presenterAccessUrl = new URL(basePath, location.href).href +
         `?room=${encodeURIComponent(buzzerRoom)}&token=${encodeURIComponent(token)}`;
 
@@ -3037,8 +3151,11 @@ async function setupLiveGameSession() {
     const { ref, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
     await update(ref(db, `rooms/${buzzerRoom}`), {
         openedAt: Date.now(),
+        competitionName: teamSetup.competitionName,
         team1Name: teamSetup.team1.name,
         team2Name: teamSetup.team2.name,
+        team1Color: teamSetup.team1.color,
+        team2Color: teamSetup.team2.color,
         locked: false,
         game: buildLiveGameState()
     });
@@ -3080,9 +3197,11 @@ function openBuzzerModal() {
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
         // Runtime safety: Force local origin if Railway or Github is still present
-        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
+        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') ||
+            teamSetup.buzzerServerUrl.includes('rakaga66.github.io') ||
+            (!isLocalGameRuntime() && teamSetup.buzzerServerUrl.includes('/buzzer-server-qaf'))) {
             console.warn('⚠️ Correcting buzzer URL at runtime to local origin:', teamSetup.buzzerServerUrl);
-            teamSetup.buzzerServerUrl = window.location.origin + '/buzzer-server-qaf';
+            teamSetup.buzzerServerUrl = getNormalBuzzerUrl();
         }
         
         const url = `${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
@@ -3157,8 +3276,10 @@ function openBuzzerDirectly() {
     const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
     // Runtime safety
-    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
-        teamSetup.buzzerServerUrl = window.location.origin + '/buzzer-server-qaf';
+    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') ||
+        teamSetup.buzzerServerUrl.includes('rakaga66.github.io') ||
+        (!isLocalGameRuntime() && teamSetup.buzzerServerUrl.includes('/buzzer-server-qaf'))) {
+        teamSetup.buzzerServerUrl = getNormalBuzzerUrl();
     }
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
 }

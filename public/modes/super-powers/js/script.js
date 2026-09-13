@@ -24,11 +24,30 @@ const ARABIC_LETTERS = [
     'ق','ك','ل','م','ن','هـ','و','ي'
 ];
 
+// Keep share links clean on the production domain while preserving the
+// extension-based paths used by the local file/static-server preview.
+function isLocalGameRuntime() {
+    return window.location.protocol === 'file:' ||
+        /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+}
+
+function getSuperBuzzerUrl() {
+    if (window.location.protocol === 'file:') {
+        return new URL('buzzer/', window.location.href).href.replace(/\/$/, '');
+    }
+    return `${window.location.origin}${isLocalGameRuntime() ? '/modes/super-powers/buzzer' : '/super-powers/buzzer'}`;
+}
+
 // ===== Game State =====
 let board = [];
 let cellLetters = [];
 let selectedCell = null;
 let scores = { team1: 0, team2: 0 };
+// `scores` counts claimed cells in the current round.  The visible match
+// score is the number of rounds won, tracked separately so resetting cells
+// never erases the result.
+let roundWins = { team1: 0, team2: 0 };
+let currentRoundWinner = '';
 let gameIsActive = false;
 let gameSessionId = null;
 let sessionStartedAt = null;
@@ -94,6 +113,8 @@ function saveGameState() {
         board,
         cellLetters,
         scores,
+        roundWins,
+        currentRoundWinner,
         teamSetup,
         buzzerRoom,
         gameSessionId,
@@ -139,14 +160,14 @@ function confirmReturnHome() {
     // Leave the independent mode completely. Reloading this page used to
     // restore the last super-powers round and made it impossible to return to
     // the regular game from the home button.
-    window.location.replace('../../index.html');
+    window.location.replace(window.location.protocol === 'file:' ? '../../index.html' : '/7roof');
 }
 
 function returnToNormalMode() {
     clearSavedGameState();
     localStorage.setItem(UI_SCREEN_KEY, 'home');
     localStorage.removeItem(SETTINGS_SOURCE_KEY);
-    window.location.replace('../../index.html');
+    window.location.replace(window.location.protocol === 'file:' ? '../../index.html' : '/7roof');
 }
 
 let pendingSiteConfirmAction = null;
@@ -428,8 +449,8 @@ function createSessionHistoryId() {
 }
 
 function recordCompletedSession() {
-    const team1Score = Number(scores.team1) || 0;
-    const team2Score = Number(scores.team2) || 0;
+    const team1Score = Number(roundWins.team1) || 0;
+    const team2Score = Number(roundWins.team2) || 0;
     const isDraw = team1Score === team2Score;
     const winnerTeam = isDraw ? null : (team1Score > team2Score ? 'team1' : 'team2');
     const sessionId = gameSessionId || createSessionHistoryId();
@@ -440,11 +461,13 @@ function recordCompletedSession() {
         team1: {
             name: teamSetup.team1.name || 'الفريق الأول',
             score: team1Score,
+            cells: Number(scores.team1) || 0,
             color: teamSetup.team1.color || 'orange'
         },
         team2: {
             name: teamSetup.team2.name || 'الفريق الثاني',
             score: team2Score,
+            cells: Number(scores.team2) || 0,
             color: teamSetup.team2.color || 'purple'
         },
         winnerTeam,
@@ -751,11 +774,10 @@ function closeSuperpowersModal() {
 }
 
 function openOnlineModal() {
-    // Online play is live now.  Use a stable root-relative destination so it
-    // works from both the normal and the super-powers home screens.
+    // Online play is live now. Use the clean custom-domain route.
     window.location.href = window.location.protocol === 'file:'
         ? '../../pages/online-board.html'
-        : '/pages/online-board.html';
+        : '/7roof/online/board';
 }
 
 function closeOnlineModal() {
@@ -840,8 +862,15 @@ function restoreSavedGameState() {
         team1: Number(state.scores?.team1) || 0,
         team2: Number(state.scores?.team2) || 0
     };
-    teamSetup.team1.score = scores.team1;
-    teamSetup.team2.score = scores.team2;
+    roundWins = {
+        team1: Number(state.roundWins?.team1) || 0,
+        team2: Number(state.roundWins?.team2) || 0
+    };
+    currentRoundWinner = state.currentRoundWinner === 'team1' || state.currentRoundWinner === 'team2'
+        ? state.currentRoundWinner
+        : '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
     buzzerRoom = state.buzzerRoom || generateBuzzerCode();
     gameSessionId = state.gameSessionId || createSessionHistoryId();
     sessionStartedAt = Number(state.sessionStartedAt) || Number(state.savedAt) || Date.now();
@@ -903,8 +932,50 @@ let teamSetup = {
         maxPowersPerTeamPerRound: 2,
         opponentVisibility: 'COUNT_ONLY'
     },
-    buzzerServerUrl: window.location.origin + '/modes/super-powers/buzzer'
+    buzzerServerUrl: getSuperBuzzerUrl()
 };
+
+// Carry the match title, team labels/colors and timer defaults across mode
+// switches so the super-powers board uses the same setup as the normal game.
+const SHARED_SETUP_KEY = 'hojas_shared_setup_v1';
+function persistSharedSetup() {
+    try {
+        localStorage.setItem(SHARED_SETUP_KEY, JSON.stringify({
+            version: 1,
+            competitionName: teamSetup.competitionName,
+            team1: { name: teamSetup.team1.name, color: teamSetup.team1.color },
+            team2: { name: teamSetup.team2.name, color: teamSetup.team2.color },
+            totalRounds: Number(teamSetup.totalRounds) || 3,
+            ansTime: Number(teamSetup.ansTime) || 3,
+            otherTime: Number(teamSetup.otherTime) || 10,
+            sound: teamSetup.sound === 'off' ? 'off' : 'on'
+        }));
+    } catch (error) {
+        console.warn('Could not save shared match setup', error);
+    }
+}
+
+function hydrateSharedSetup() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(SHARED_SETUP_KEY) || 'null');
+        if (!saved || typeof saved !== 'object') return;
+        if (typeof saved.competitionName === 'string' && saved.competitionName.trim()) {
+            teamSetup.competitionName = saved.competitionName.trim().slice(0, 40);
+        }
+        ['team1', 'team2'].forEach(team => {
+            const source = saved[team];
+            if (!source || typeof source !== 'object') return;
+            if (typeof source.name === 'string' && source.name.trim()) teamSetup[team].name = source.name.trim().slice(0, 30);
+            if (typeof source.color === 'string' && COLOR_MAP[source.color]) teamSetup[team].color = source.color;
+        });
+        if (Number.isFinite(Number(saved.totalRounds))) teamSetup.totalRounds = Math.max(1, Math.min(5, Number(saved.totalRounds)));
+        if (Number.isFinite(Number(saved.ansTime))) teamSetup.ansTime = Math.max(2, Math.min(15, Number(saved.ansTime)));
+        if (Number.isFinite(Number(saved.otherTime))) teamSetup.otherTime = Math.max(5, Math.min(30, Number(saved.otherTime)));
+        if (saved.sound === 'on' || saved.sound === 'off') teamSetup.sound = saved.sound;
+    } catch (error) {
+        console.warn('Could not load shared match setup', error);
+    }
+}
 
 // ===== Buzzer State =====
 let buzzerSocket = null;
@@ -947,9 +1018,58 @@ function toggleDarkMode() {
 }
 
 // ===== Questions System =====
-let questionsBank = [];   // Array of { q: string, a: string, letterMatch: string }
+let questionsBank = [];   // Array of { id, q: string, a: string, letterMatch: string }
 let currentQIndex = -1;
 let questionsLoaded = false;
+let extraQuestionsLoaded = false;
+
+function normalizeQuestionLetter(value) {
+    return (window.QuestionLibrary?.normalizeLetter?.(value) || String(value || ''))
+        .replace(/[أإآٱ]/g, 'ا').trim().slice(0, 1);
+}
+
+async function loadQuestionOverrides() {
+    try {
+        if (!window.QuestionLibrary?.getQuestionOverrides || !questionsBank.length) return;
+        const overrides = await window.QuestionLibrary.getQuestionOverrides(true);
+        const byId = new Map((overrides || []).map(item => [String(item.baseId || item.id), item]));
+        questionsBank = questionsBank.map(item => {
+            const override = byId.get(String(item.id));
+            if (!override) return item;
+            return {
+                ...item,
+                q: override.question || item.q,
+                a: override.answer || item.a,
+                letterMatch: normalizeQuestionLetter(override.letter || item.letterMatch),
+                status: override.status || item.status || 'active'
+            };
+        }).filter(item => item.status !== 'disabled');
+    } catch (error) {
+        console.warn('تعذر تحميل تعديلات أسئلة الأدمن في طور القوى الخارقة.', error);
+    }
+}
+
+async function loadExtraQuestionLibrary() {
+    if (extraQuestionsLoaded) return;
+    try {
+        if (!window.QuestionLibrary?.getActiveQuestions) return;
+        const records = await window.QuestionLibrary.getActiveQuestions(true);
+        const existing = new Set(questionsBank.map(item => item.id));
+        const extras = (records || []).filter(item => item.question && item.answer).map(item => ({
+            id: `extra-${item.id}`,
+            q: item.question,
+            a: item.answer,
+            letterMatch: normalizeQuestionLetter(item.letter) || 'عام',
+            source: item.source || 'admin',
+            status: item.status || 'active'
+        })).filter(item => !existing.has(item.id));
+        questionsBank = questionsBank.concat(extras);
+    } catch (error) {
+        console.warn('تعذر تحميل الأسئلة المضافة في طور القوى الخارقة.', error);
+    } finally {
+        extraQuestionsLoaded = true;
+    }
+}
 
 async function loadQuestionsFromJSON() {
     if (questionsLoaded) return;
@@ -971,11 +1091,16 @@ async function loadQuestionsFromJSON() {
         }
         
         if (data && data.length > 0) {
-            questionsBank = data.map(item => ({
+            questionsBank = data.map((item, index) => ({
+                id: String(item.id || `static-${index}`),
                 q: item.question || item.q || "",
                 a: item.answer || item.a || "",
-                letterMatch: item.letter ? item.letter.replace(/[أإآ]/g, 'ا') : 'عام'
+                letterMatch: normalizeQuestionLetter(item.letter) || 'عام',
+                source: 'static',
+                status: 'active'
             }));
+            await loadQuestionOverrides();
+            await loadExtraQuestionLibrary();
             questionsLoaded = true;
             console.log(`✅ Bank Ready: ${questionsBank.length} questions`);
         }
@@ -1107,6 +1232,27 @@ function nextQuestion() {
 
 function closeQuestionPanel() {
     safeSetDisplay('sidebarQuestion', 'none');
+}
+
+// Remove a resolved question from both the private presenter view and the
+// public game state so it cannot remain frozen while the next cell is played.
+function clearActiveQuestion({ publish = true } = {}) {
+    window.currentRequestedLetter = '';
+    const qEl = document.getElementById('sqQuestion');
+    const aEl = document.getElementById('sqAnswerText');
+    const numEl = document.getElementById('sqNum');
+    const answerRow = document.getElementById('sqAnswer');
+    const revealBtn = document.getElementById('sqRevealBtn');
+    if (qEl) qEl.textContent = '';
+    if (aEl) aEl.textContent = '';
+    if (numEl) numEl.textContent = '';
+    if (answerRow) answerRow.style.display = 'none';
+    if (revealBtn) revealBtn.style.display = 'none';
+    closeQuestionPanel();
+    if (teamSetup.presenter === 'human' && typeof publishPresenterQuestion === 'function') {
+        publishPresenterQuestion({ letter: '', text: '', answer: '', revealed: false, selectedCell: null }).catch(() => {});
+    }
+    if (publish) publishLiveGameState().catch(() => {});
 }
 
 // ===== First Game Guided Tour =====
@@ -1406,6 +1552,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     applyDarkMode(savedTheme === 'dark');
     
+    hydrateSharedSetup();
     initSettingsUI();
     setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
     applyAdminViewerMode();
@@ -1416,10 +1563,12 @@ window.addEventListener('DOMContentLoaded', () => {
     // Aggressive Migration: If the saved URL is old Railway or old github.io, force local relative URL
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
     const isGithub = savedBuzzerUrl && savedBuzzerUrl.includes('rakaga66.github.io');
-    
-    if (isOldRailway || isGithub) {
+    const isLegacyProductionRoute = savedBuzzerUrl && !isLocalGameRuntime() &&
+        savedBuzzerUrl.includes('/modes/super-powers/buzzer') || savedBuzzerUrl.includes('/قوى-خارقة/الجرس');
+
+    if (isOldRailway || isGithub || isLegacyProductionRoute) {
         console.log('🔄 Forced migration of buzzer server URL to local origin...');
-        savedBuzzerUrl = window.location.origin + '/modes/super-powers/buzzer';
+        savedBuzzerUrl = getSuperBuzzerUrl();
         localStorage.setItem('superpowersBuzzerServerUrl', savedBuzzerUrl);
     }
 
@@ -1646,6 +1795,8 @@ function saveSettings() {
 
     // حفظ الوقت اليدوي
     localStorage.setItem('superpowersManualTime', teamSetup.manualTime);
+    persistSharedSetup();
+    syncLiveSetupNames().catch(() => {});
     teamSetup.powerSettings = teamSetup.powerSettings || {};
     teamSetup.powerSettings.powerCountPerTeam = Number(document.getElementById('powerCountVal')?.textContent || 6);
 
@@ -1682,6 +1833,8 @@ function startGame() {
     sessionStartedAt = Date.now();
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    roundWins = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
     teamSetup.team1.score = 0;
     teamSetup.team2.score = 0;
     
@@ -2133,11 +2286,18 @@ function startGameFromSetup() {
 
     teamSetup.team1.name = n1;
     teamSetup.team2.name = n2;
+    persistSharedSetup();
     teamSetup.currentRound = 1;
     scores = { team1: 0, team2: 0 };
+    roundWins = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
     teamSetup.team1.score = 0;
     teamSetup.team2.score = 0;
     gameIsActive = true;
+    if (buzzerSocket) { buzzerSocket.disconnect(); buzzerSocket = null; }
+    buzzerRoom = generateBuzzerCode();
+    gameSessionId = createSessionHistoryId();
+    sessionStartedAt = Date.now();
     window.qafTrackGameStart?.();
 
     // Apply team colors to CSS variables
@@ -2154,7 +2314,11 @@ function startGameFromSetup() {
     renderBoard();
     updateRoundDisplay();
     updateSidebar();
+    setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
+    applyAdminViewerMode();
     saveGameState();
+    setupLiveGameSession().catch(error => console.error('Live session setup failed', error));
+    window.initializeSuperPowerMatch?.();
 }
 
 // ===== Apply Dynamic Team Colors =====
@@ -2183,8 +2347,8 @@ function applyTeamColors() {
 function updateSidebar() {
     document.getElementById('name1').textContent = teamSetup.team1.name;
     document.getElementById('name2').textContent = teamSetup.team2.name;
-    document.getElementById('score1').textContent = scores.team1;
-    document.getElementById('score2').textContent = scores.team2;
+    document.getElementById('score1').textContent = roundWins.team1;
+    document.getElementById('score2').textContent = roundWins.team2;
 }
 
 // ===== Round Display =====
@@ -2193,6 +2357,11 @@ function updateSidebar() {
 function shuffleBoard() {
     if (isBoardEditingLocked()) {
         showEditingLockedNotice();
+        return;
+    }
+    const hasClaimedCells = board.some(row => row.some(cell => cell === 'team1' || cell === 'team2'));
+    if (hasClaimedCells || currentRoundWinner === 'team1' || currentRoundWinner === 'team2') {
+        showGameToast('لا يمكن خلط الخلايا بعد منح أول خلية.', true);
         return;
     }
     const unclaimed = [];
@@ -2326,9 +2495,12 @@ function onHexClick(row, col, cellEl) {
     // Pulse the sidebar to show it's ready for assignment
     updateSidebarReady(true);
     
-    // Unlock buzzers for everyone silently when a new unclaimed letter is chosen
-    if (typeof clearBuzzerLock === 'function') clearBuzzerLock(false);
-    if (typeof setSharedTimer === 'function') setSharedTimer('idle').catch(() => {});
+    // Start a fresh buzzer cycle for the selected cell.  Keep the reset and
+    // timer state in one Firebase write so an older "open" reset cannot race
+    // the new idle state and accidentally start a timer for the wrong cell.
+    if (typeof clearBuzzerLock === 'function') {
+        clearBuzzerLock(false, { timerPhase: 'idle' });
+    }
     
     // Show question panel in AI presenter mode
     if (teamSetup.presenter === 'ai') {
@@ -2339,6 +2511,45 @@ function onHexClick(row, col, cellEl) {
         prepareHumanPresenterQuestion(cellLetters[row][col]).catch(console.error);
     }
     publishLiveGameState().catch(() => {});
+}
+
+// The presenter page sends the selected coordinates with every award command.
+// Re-select the same open cell when a Firebase update arrives before the
+// local selection render. This keeps awarding reliable on slower phones and
+// across a freshly restored presenter session.
+function ensurePresenterSelection(payload = {}) {
+    const requestedRow = Number(payload.row);
+    const requestedCol = Number(payload.col);
+    const hasRequestedCell = Number.isInteger(requestedRow) && Number.isInteger(requestedCol) &&
+        requestedRow >= 0 && requestedRow < BOARD_SIZE && requestedCol >= 0 && requestedCol < BOARD_SIZE;
+
+    if (hasRequestedCell) {
+        const matchesRequest = selectedCell && Number(selectedCell.row) === requestedRow &&
+            Number(selectedCell.col) === requestedCol && selectedCell.el?.isConnected &&
+            Array.isArray(board[requestedRow]) && board[requestedRow][requestedCol] === 0;
+        if (matchesRequest) return true;
+
+        // A newer presenter selection must win over a stale local selection.
+        selectedCell?.el?.classList.remove('selected');
+        selectedCell = null;
+        updateSidebarReady(false);
+        if (!Array.isArray(board[requestedRow]) || board[requestedRow][requestedCol] !== 0) return false;
+        const cell = document.querySelector(`.hex-cell[data-row="${requestedRow}"][data-col="${requestedCol}"]`);
+        if (!cell) return false;
+        onHexClick(requestedRow, requestedCol, cell);
+        return Boolean(selectedCell && Number(selectedCell.row) === requestedRow && Number(selectedCell.col) === requestedCol);
+    }
+
+    if (!selectedCell) return false;
+    const row = Number(selectedCell.row);
+    const col = Number(selectedCell.col);
+    const attached = selectedCell.el && selectedCell.el.isConnected;
+    if (Number.isInteger(row) && Number.isInteger(col) && attached &&
+        Array.isArray(board[row]) && board[row][col] === 0) return true;
+    selectedCell.el?.classList.remove('selected');
+    selectedCell = null;
+    updateSidebarReady(false);
+    return false;
 }
 
 // ===== Unclaim Cell =====
@@ -2377,18 +2588,20 @@ function unclaimCell() {
     el.classList.remove('selected');
     selectedCell = null;
     updateSidebarReady(false);
+    clearActiveQuestion();
     
-    // Unlock buzzers if we are connected
-    if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
+    // Reset the buzzer without leaving an old question in an open state.
+    if (typeof clearBuzzerLock === 'function') clearBuzzerLock(true, { timerPhase: 'idle' });
 }
 
 // ===== Assign Team =====
 function assignTeam(team) {
+    if (team !== 'team1' && team !== 'team2') return false;
     if (isBoardEditingLocked()) {
         showGameToast('منح النقاط من جوال المقدم فقط', true);
-        return;
+        return false;
     }
-    if (!selectedCell) return;
+    if (!selectedCell) return false;
     
     // Play correct answer sound
     if (teamSetup.sound === 'on') {
@@ -2402,6 +2615,16 @@ function assignTeam(team) {
     stopTimer();
     
     const { row, col, el } = selectedCell;
+    const awardedAnswer = document.getElementById('sqAnswerText')?.textContent?.trim() || '';
+
+    // A duplicate command must never overwrite a cell that another command
+    // has already claimed.
+    if (!Array.isArray(board[row]) || board[row][col] !== 0) {
+        el?.classList.remove('selected');
+        selectedCell = null;
+        updateSidebarReady(false);
+        return false;
+    }
 
     el.classList.remove('selected');
     el.classList.add('team-' + team);
@@ -2409,31 +2632,34 @@ function assignTeam(team) {
     const pointMultiplier = Math.max(1, Number(window.getSuperPowerPointMultiplier?.(team) || 1));
     scores[team] = Number(scores[team] || 0) + pointMultiplier;
     window.consumeSuperPowerPointMultiplier?.(team);
-    teamSetup[team].score = scores[team];
+    teamSetup[team].score = roundWins[team];
     updateScoreBoard();
     saveGameState();
     window.superPowersAfterBoardChange?.();
 
-    // Unlock buzzers when a team is officially assigned
-    if (typeof clearBuzzerLock === 'function') clearBuzzerLock();
-
-    // Score incremented only on round win (not per cell)
+    // Reset the buzzer when a team is officially assigned.  The next press
+    // belongs to the next selected question, not to this completed cell.
+    if (typeof clearBuzzerLock === 'function') clearBuzzerLock(true, { timerPhase: 'idle' });
 
     selectedCell = null;
     updateSidebarReady(false);
+    clearActiveQuestion();
+    if (awardedAnswer) showAudienceAnswerOverlay(awardedAnswer);
 
     // Check win for this team
     if (checkWin(team)) {
         highlightWinPath(team);
         setTimeout(() => showRoundWin(team), 600);
-        return;
+        return true;
     }
 
-    // Check if all cells claimed → next round
+    // A full board without a connected path has no winner.  Keep the round in
+    // place and let the presenter reset the cells instead of auto-advancing.
     if (isBoardFull()) {
         setTimeout(handleRoundEnd, 500);
     }
     publishLiveGameState().catch(() => {});
+    return true;
 }
 
 // ===== Cancel =====
@@ -2564,7 +2790,11 @@ function highlightWinPath(team) {
 // ===== Show Round Win (one team connected!) =====
 function showRoundWin(team) {
     window.setSuperPowerActivationWindow?.('ROUND_END');
-    // نقاط الفريق تُحتسب عند كل إجابة صحيحة/خلية، ولا تضاف نقطة أخرى عند نهاية الجولة.
+    if (team !== 'team1' && team !== 'team2') return;
+    if (currentRoundWinner === team) return;
+    currentRoundWinner = team;
+    roundWins[team] = Number(roundWins[team] || 0) + 1;
+    teamSetup[team].score = roundWins[team];
     updateScoreBoard();
     saveGameState();
     const roundLeader = getBestConnectedPlayer();
@@ -2612,13 +2842,26 @@ function nextRound() {
         showEditingLockedNotice();
         return;
     }
+    if (currentRoundWinner !== 'team1' && currentRoundWinner !== 'team2') {
+        showGameToast('لا يمكن بدء جولة جديدة قبل إعلان فائز بالجولة الحالية.', true);
+        return;
+    }
+    if (teamSetup.currentRound >= teamSetup.totalRounds) {
+        showFinalFromRound();
+        return;
+    }
     const overlay = document.getElementById('roundWinOverlay');
     if (overlay) overlay.remove();
     teamSetup.currentRound++;
+    scores = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
     updateRoundDisplay();
     initBoard();
     renderBoard();
     cancelSelect();
+    clearActiveQuestion();
     window.superPowersStartRound?.(teamSetup.currentRound);
     saveGameState();
     publishLiveGameState({ status: 'playing' }).catch(() => {});
@@ -2644,24 +2887,41 @@ function isBoardFull() {
 
 // ===== Handle Round End =====
 function handleRoundEnd() {
-    if (teamSetup.currentRound >= teamSetup.totalRounds) {
-        // Game over
-        showFinalResult();
-    } else {
-        teamSetup.currentRound++;
-        updateRoundDisplay();
-        initBoard();
-        renderBoard();
-        cancelSelect();
-        window.superPowersStartRound?.(teamSetup.currentRound);
-        saveGameState();
+    if (currentRoundWinner) return;
+    showGameToast('اكتملت الخلايا — لا يوجد فائز بعد. استخدم «تصفير الخلايا» من جوال المقدم.', true);
+    publishLiveGameState({ status: 'playing', boardFull: true }).catch(() => {});
+}
+
+// Clear only cell ownership while keeping the round score and all match
+// settings intact.
+function resetCells() {
+    if (isBoardEditingLocked()) {
+        showEditingLockedNotice();
+        return false;
     }
+    stopTimer();
+    clearBuzzerLock(false, { timerPhase: 'idle' });
+    board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
+    selectedCell = null;
+    scores = { team1: 0, team2: 0 };
+    currentRoundWinner = '';
+    teamSetup.team1.score = roundWins.team1;
+    teamSetup.team2.score = roundWins.team2;
+    renderBoard();
+    updateSidebarReady(false);
+    updateScoreBoard();
+    clearActiveQuestion({ publish: false });
+    saveGameState();
+    publishLiveGameState({ status: 'playing', roundWinner: null, boardFull: false, cellsResetAt: Date.now() }).catch(() => {});
+    window.superPowersAfterBoardChange?.();
+    showGameToast('تم تصفير الخلايا — نتيجة الجولات لم تتغير.', true);
+    return true;
 }
 
 // ===== Final Result =====
 function showFinalResult() {
-    const s1 = scores.team1;
-    const s2 = scores.team2;
+    const s1 = Number(roundWins.team1) || 0;
+    const s2 = Number(roundWins.team2) || 0;
     const n1 = teamSetup.team1.name;
     const n2 = teamSetup.team2.name;
     const c1 = COLOR_MAP[teamSetup.team1.color];
@@ -2675,7 +2935,7 @@ function showFinalResult() {
     const isDraw = s1 === s2;
     const winnerName = s1 > s2 ? safeN1 : safeN2;
     const title = isDraw ? 'تعادل جميل!' : `مبروك ${winnerName}!`;
-    const subtitle = isDraw ? 'منافسة قوية حتى آخر خلية' : 'بطل هذه المواجهة';
+    const subtitle = isDraw ? 'تعادل في عدد الجولات' : 'الفائز بعدد الجولات';
     recordCompletedSession();
     const bestPlayer = getBestConnectedPlayer();
     publishLiveGameState({
@@ -2913,6 +3173,8 @@ function buildLiveGameState(extra = {}) {
         selectedCell: selectedCell ? { row: selectedCell.row, col: selectedCell.col } : null,
         question: getCurrentQuestionState(),
         scores: { ...scores },
+        roundWins: { ...roundWins },
+        roundWinner: currentRoundWinner || null,
         round: teamSetup.currentRound,
         totalRounds: teamSetup.totalRounds,
         competitionName: teamSetup.competitionName,
@@ -2939,17 +3201,33 @@ async function publishLiveGameState(extra = {}) {
     }
 }
 
+async function syncLiveSetupNames() {
+    if (!buzzerRoom || !gameIsActive) return;
+    const db = await ensureFirebase();
+    const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    await update(ref(db, 'superPowerRooms/' + buzzerRoom), {
+        competitionName: teamSetup.competitionName,
+        team1Name: teamSetup.team1.name,
+        team2Name: teamSetup.team2.name,
+        team1Color: teamSetup.team1.color,
+        team2Color: teamSetup.team2.color
+    });
+    await publishLiveGameState();
+}
+
 async function renderPresenterAccess(forceNew = false) {
     if (!buzzerRoom) return;
     const token = getPresenterToken(forceNew);
     const tokenHash = await hashSecureToken(token);
     const db = await ensureFirebase();
     const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    // Vercel cleanUrls serves this page as `/modes/super-powers`. Resolving a
+    // Vercel cleanUrls serves this page as `/super-powers`. Resolving a
     // relative `presenter.html` against that extensionless URL drops the
     // `super-powers` directory and produces the broken `/modes/presenter.html`
     // link. Keep the presenter route absolute so QR codes work on every host.
-    const presenterPath = '/modes/super-powers/presenter.html';
+    const presenterPath = isLocalGameRuntime()
+        ? '/modes/super-powers/presenter.html'
+        : '/super-powers/presenter';
     _presenterAccessUrl = new URL(presenterPath, window.location.origin).href +
         `?room=${encodeURIComponent(buzzerRoom)}&token=${encodeURIComponent(token)}`;
 
@@ -3062,17 +3340,56 @@ function openPresenterDirectly() {
     if (_presenterAccessUrl) window.open(_presenterAccessUrl, '_blank', 'noopener');
 }
 
-async function setSharedTimer(phase, team = '', durationSeconds = 0) {
+function sharedTimerKey(timer) {
+    if (!timer) return '';
+    return `${timer.phase || ''}|${timer.team || ''}|${timer.startedAt || ''}|${timer.questionId || ''}`;
+}
+
+function sharedTimerRemaining(timer) {
+    if (!timer || (timer.phase !== 'first' && timer.phase !== 'second')) return 0;
+    const startedAt = Number(timer.startedAt);
+    // Firebase briefly exposes a serverTimestamp placeholder while a write is
+    // resolving.  Falling back to now keeps the countdown finite for that
+    // short window; the authoritative server value arrives immediately after.
+    const start = Number.isFinite(startedAt) && startedAt > 0 ? startedAt : Date.now();
+    const duration = Math.max(0, Number(timer.durationMs) || 0);
+    return Math.max(0, Math.ceil((duration - (Date.now() + _liveServerOffset - start)) / 1000));
+}
+
+function sharedTimerQuestionId(options = {}) {
+    return String(options.questionId ||
+        `${teamSetup.currentRound}-${window.currentRequestedLetter || ''}-${Date.now()}`);
+}
+
+// Every timer transition also updates the room lock atomically.  In
+// particular, moving from the first chance to the second chance clears the
+// previous buzz so only the other team can press during its ten-second window.
+async function setSharedTimer(phase, team = '', durationSeconds = 0, options = {}) {
     if (!buzzerRoom) return;
     const db = await ensureFirebase();
     const { ref, update, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    await update(ref(db, `superPowerRooms/${buzzerRoom}/timer`), {
-        phase,
-        team,
-        durationMs: Math.max(0, Number(durationSeconds) || 0) * 1000,
+    const normalizedPhase = ['idle', 'first', 'second', 'open'].includes(phase) ? phase : 'idle';
+    const timer = {
+        phase: normalizedPhase,
+        team: normalizedPhase === 'first' || normalizedPhase === 'second' ? team : '',
+        durationMs: normalizedPhase === 'first' || normalizedPhase === 'second'
+            ? Math.max(0, Number(durationSeconds) || 0) * 1000
+            : 0,
         startedAt: serverTimestamp(),
-        questionId: `${teamSetup.currentRound}-${window.currentRequestedLetter || ''}-${Date.now()}`
-    });
+        questionId: sharedTimerQuestionId(options)
+    };
+    if (options.buzzerId) timer.buzzerId = String(options.buzzerId);
+    if (options.buzzerName) timer.buzzerName = String(options.buzzerName);
+    if (options.buzzerTeam) timer.buzzerTeam = String(options.buzzerTeam);
+
+    const roomPatch = { timer };
+    if (normalizedPhase === 'idle' || normalizedPhase === 'open' || normalizedPhase === 'second') {
+        roomPatch.locked = false;
+        roomPatch.buzzer = null;
+    } else if (options.locked !== false) {
+        roomPatch.locked = true;
+    }
+    await update(ref(db, `superPowerRooms/${buzzerRoom}`), roomPatch);
 }
 
 function displaySharedTimer(timer) {
@@ -3094,8 +3411,7 @@ function displaySharedTimer(timer) {
         return;
     }
     const render = () => {
-        const elapsed = Date.now() + _liveServerOffset - Number(timer.startedAt || Date.now());
-        const remaining = Math.max(0, Math.ceil((Number(timer.durationMs || 0) - elapsed) / 1000));
+        const remaining = sharedTimerRemaining(timer);
         teamSpan.textContent = `وقت ${teamSetup[timer.team]?.name || ''}:`;
         secSpan.textContent = remaining;
         display.classList.toggle('danger', remaining <= 3);
@@ -3132,15 +3448,25 @@ function syncBuzzerOverlayWithSharedTimer(timer, remaining) {
 
 async function advanceSharedTimer(timer) {
     if (!buzzerRoom || !timer) return;
-    const timerKey = `${timer.phase}|${timer.team || ''}|${timer.startedAt || ''}|${timer.questionId || ''}`;
+    const timerKey = sharedTimerKey(timer);
     if (_liveTimerAdvanceKey === timerKey) return;
     _liveTimerAdvanceKey = timerKey;
     try {
         const db = await ensureFirebase();
         const { ref, get, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
         const fresh = (await get(ref(db, `superPowerRooms/${buzzerRoom}/timer`))).val();
-        const freshKey = fresh ? `${fresh.phase}|${fresh.team || ''}|${fresh.startedAt || ''}|${fresh.questionId || ''}` : '';
-        if (!fresh || freshKey !== timerKey) return;
+        const freshKey = sharedTimerKey(fresh);
+        if (!fresh || freshKey !== timerKey) {
+            _liveTimerAdvanceKey = '';
+            return;
+        }
+        // A presenter command and the local display can both report expiry.
+        // Only transition after the shared, server-synchronised countdown has
+        // really reached zero.
+        if (sharedTimerRemaining(fresh) > 0) {
+            _liveTimerAdvanceKey = '';
+            return;
+        }
         if (fresh.phase === 'first') {
             const otherTeam = fresh.team === 'team1' ? 'team2' : 'team1';
             await setSharedTimer('second', otherTeam, teamSetup.otherTime);
@@ -3148,8 +3474,8 @@ async function advanceSharedTimer(timer) {
         }
         if (fresh.phase === 'second') {
             isBuzzerLocked = false;
+            buzzerFirstTeam = null;
             document.getElementById('buzzerLockOverlay')?.remove();
-            await update(ref(db, `superPowerRooms/${buzzerRoom}`), { locked: false, buzzer: null });
             await setSharedTimer('open', '', 0);
         }
     } catch (error) {
@@ -3185,58 +3511,68 @@ async function executePresenterCommand(command) {
             onHexClick(row, col, cell);
         }
     } else if (command.type === 'nextRound') {
-        if (teamSetup.currentRound < teamSetup.totalRounds) nextRound();
+        if (currentRoundWinner !== 'team1' && currentRoundWinner !== 'team2') {
+            showGameToast('لا يمكن بدء جولة جديدة قبل إعلان فائز بالجولة الحالية.', true);
+        } else if (teamSetup.currentRound < teamSetup.totalRounds) nextRound();
         else showFinalFromRound();
     } else if (command.type === 'newQuestion') {
         showRandomQuestion(payload.letter || window.currentRequestedLetter);
-        await clearBuzzerLock(false);
-        await setSharedTimer('idle');
+        await clearBuzzerLock(false, { timerPhase: 'idle' });
     } else if (command.type === 'revealAnswer') {
         revealAnswer();
     } else if (command.type === 'awardPoint') {
-        if (selectedCell && (payload.team === 'team1' || payload.team === 'team2')) {
-            assignTeam(payload.team);
-            if (payload.playerId) {
+        if ((payload.team === 'team1' || payload.team === 'team2') && ensurePresenterSelection(payload)) {
+            const assigned = assignTeam(payload.team);
+            if (assigned && payload.playerId) {
                 const db = await ensureFirebase();
                 const { ref, runTransaction } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
                 await runTransaction(ref(db, `superPowerRooms/${buzzerRoom}/players/${payload.playerId}/correctAnswers`),
                     current => Number(current || 0) + 1);
             }
-            await setSharedTimer('idle');
+            if (assigned) await setSharedTimer('idle');
+        } else if (payload.team === 'team1' || payload.team === 'team2') {
+            showGameToast('اختر خلية مفتوحة من شاشة المقدم أولًا.', true);
         }
+    } else if (command.type === 'awardTeam1' || command.type === 'awardTeam2') {
+        const team = command.type === 'awardTeam1' ? 'team1' : 'team2';
+        const assigned = ensurePresenterSelection(payload) && assignTeam(team);
+        if (assigned) await setSharedTimer('idle');
+        else showGameToast('اختر خلية مفتوحة من شاشة المقدم أولًا.', true);
+    } else if (command.type === 'resetCells') {
+        resetCells();
     } else if (command.type === 'wrongAnswer') {
         const db = await ensureFirebase();
         const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
         const timer = (await get(ref(db, `superPowerRooms/${buzzerRoom}/timer`))).val();
         if (timer?.phase === 'open') {
             await clearBuzzerLock(false);
-            await setSharedTimer('open');
         } else {
             await advanceSharedTimer(timer || { phase: 'first', team: payload.team || 'team1' });
         }
     } else if (command.type === 'skipQuestion') {
         cancelSelect();
         closeQuestionPanel();
-        await clearBuzzerLock(false);
-        await setSharedTimer('idle');
+        await clearBuzzerLock(false, { timerPhase: 'idle' });
     } else if (command.type === 'reopenBuzzer') {
         await clearBuzzerLock(false);
-        await setSharedTimer('open');
     } else if (command.type === 'shuffleBoard') {
         shuffleBoard();
-        await clearBuzzerLock(false);
-        await setSharedTimer('idle');
+        await clearBuzzerLock(false, { timerPhase: 'idle' });
     } else if (command.type === 'activatePowerRequest') {
         await window.activateSuperPowerRequest?.(payload.requestId);
     } else if (command.type === 'cancelPowerRequest') {
         await window.cancelSuperPowerRequest?.(payload.requestId);
     } else if (command.type === 'usePowerDirectly') {
-        await window.presenterUseSuperPower?.({ teamId: payload.teamId, instanceId: payload.instanceId });
+        const result = await window.presenterUseSuperPower?.({ teamId: payload.teamId, instanceId: payload.instanceId, target: payload.target || null });
+        if (result && !result.ok) showGameToast(result.reason || 'تعذر إرسال طلب القوة.', true);
     } else if (command.type === 'timerExpired') {
         const db = await ensureFirebase();
         const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
         const timer = (await get(ref(db, `superPowerRooms/${buzzerRoom}/timer`))).val();
-        if (timer?.phase === 'first' || timer?.phase === 'second') await advanceSharedTimer(timer);
+        if ((timer?.phase === 'first' || timer?.phase === 'second') &&
+            (!payload.timerKey || payload.timerKey === sharedTimerKey(timer))) {
+            await advanceSharedTimer(timer);
+        }
     } else if (command.type === 'updateSettings') {
         teamSetup.ansTime = Math.max(2, Math.min(30, Number(payload.answerSeconds) || 3));
         teamSetup.otherTime = Math.max(5, Math.min(60, Number(payload.otherTeamSeconds) || 10));
@@ -3254,8 +3590,11 @@ async function setupLiveGameSession() {
     const { ref, update, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
     await update(ref(db, `superPowerRooms/${buzzerRoom}`), {
         openedAt: Date.now(),
+        competitionName: teamSetup.competitionName,
         team1Name: teamSetup.team1.name,
         team2Name: teamSetup.team2.name,
+        team1Color: teamSetup.team1.color,
+        team2Color: teamSetup.team2.color,
         locked: false,
         game: buildLiveGameState()
     });
@@ -3297,9 +3636,11 @@ function openBuzzerModal() {
         const t1 = encodeURIComponent(teamSetup.team1.name);
         const t2 = encodeURIComponent(teamSetup.team2.name);
         // Runtime safety: Force local origin if Railway or Github is still present
-        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
+        if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') ||
+            teamSetup.buzzerServerUrl.includes('rakaga66.github.io') ||
+            (!isLocalGameRuntime() && teamSetup.buzzerServerUrl.includes('/modes/super-powers/buzzer'))) {
             console.warn('⚠️ Correcting buzzer URL at runtime to local origin:', teamSetup.buzzerServerUrl);
-            teamSetup.buzzerServerUrl = window.location.origin + '/modes/super-powers/buzzer';
+            teamSetup.buzzerServerUrl = getSuperBuzzerUrl();
         }
         
         const url = `${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`;
@@ -3374,60 +3715,147 @@ function openBuzzerDirectly() {
     const t1 = (teamSetup.team1 && teamSetup.team1.name) ? encodeURIComponent(teamSetup.team1.name) : '';
     const t2 = (teamSetup.team2 && teamSetup.team2.name) ? encodeURIComponent(teamSetup.team2.name) : '';
     // Runtime safety
-    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') || teamSetup.buzzerServerUrl.includes('rakaga66.github.io')) {
-        teamSetup.buzzerServerUrl = window.location.origin + '/modes/super-powers/buzzer';
+    if (!teamSetup.buzzerServerUrl || teamSetup.buzzerServerUrl.includes('railway.app') ||
+        teamSetup.buzzerServerUrl.includes('rakaga66.github.io') ||
+        (!isLocalGameRuntime() && teamSetup.buzzerServerUrl.includes('/modes/super-powers/buzzer'))) {
+        teamSetup.buzzerServerUrl = getSuperBuzzerUrl();
     }
     window.open(`${teamSetup.buzzerServerUrl}/?room=${buzzerRoom}&team1=${t1}&team2=${t2}`, '_blank');
+}
+
+async function removeCurrentLiveBuzz(db, data, updateRoom = true) {
+    if (!data) return;
+    const { ref, runTransaction, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const buzzerRef = ref(db, `superPowerRooms/${buzzerRoom}/buzzer`);
+    const expectedKey = `${data.questionId || ''}|${data.id || ''}|${data.time || ''}`;
+    const result = await runTransaction(buzzerRef, current => {
+        if (!current) return current;
+        const currentKey = `${current.questionId || ''}|${current.id || ''}|${current.time || ''}`;
+        return currentKey === expectedKey ? null : current;
+    });
+    if (updateRoom && result.committed) {
+        await update(ref(db, `superPowerRooms/${buzzerRoom}`), { locked: false });
+    }
 }
 
 async function handleLiveBuzzer(data) {
     if (!data) {
         _lastDisplayedBuzzKey = '';
+        // The timer listener owns the overlay.  Do not remove it here: on a
+        // first→second transition Firebase may deliver the timer and buzzer
+        // updates in either order.
+        isBuzzerLocked = false;
+        buzzerFirstTeam = null;
         return;
     }
+
     const buzzKey = `${data.questionId || ''}|${data.id || ''}|${data.time || ''}`;
     if (_lastDisplayedBuzzKey === buzzKey) return;
+    if (data.team !== 'team1' && data.team !== 'team2') return;
+
+    const db = await ensureFirebase();
+    const { ref, get, runTransaction, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const timerRef = ref(db, `superPowerRooms/${buzzerRoom}/timer`);
+    const timer = (await get(timerRef)).val();
+    const phase = timer?.phase || 'idle';
+
+    // Ignore a delayed press from a previous cell/question.
+    if (timer?.questionId && data.questionId && String(timer.questionId) !== String(data.questionId)) {
+        await removeCurrentLiveBuzz(db, data);
+        return;
+    }
+
+    // A press that arrives on the same event-loop tick as expiry must not win
+    // after the deadline.  Advance the shared phase first, then discard it.
+    if ((phase === 'first' || phase === 'second') && sharedTimerRemaining(timer) <= 0) {
+        await advanceSharedTimer(timer);
+        await removeCurrentLiveBuzz(db, data);
+        return;
+    }
+
+    if (phase === 'first') {
+        // The first team already owns this answer window.  Never let a second
+        // buzzer replace the original winner.
+        if (timer.team !== data.team || (timer.buzzerId && timer.buzzerId !== data.id)) {
+            await removeCurrentLiveBuzz(db, data);
+            return;
+        }
+        _lastDisplayedBuzzKey = buzzKey;
+        isBuzzerLocked = true;
+        buzzerFirstTeam = data.team;
+        window.setSuperPowerActivationWindow?.('AFTER_BELL');
+        showBuzzerOverlay(data.name, data.team, 'first', sharedTimerRemaining(timer));
+        return;
+    }
+
+    if (phase === 'second') {
+        // During the ten-second second chance only the other team may press.
+        if (timer.team !== data.team || (timer.buzzerId && timer.buzzerId !== data.id)) {
+            await removeCurrentLiveBuzz(db, data);
+            return;
+        }
+
+        // Claim the existing second-chance timer without restarting it.  The
+        // countdown keeps its original start and duration; only the winner id
+        // is added so later presses cannot replace it.
+        if (!timer.buzzerId) {
+            const claimed = await runTransaction(timerRef, current => {
+                if (!current || sharedTimerKey(current) !== sharedTimerKey(timer) ||
+                    current.phase !== 'second' || current.team !== data.team || current.buzzerId) return;
+                return { ...current, buzzerId: String(data.id), buzzerName: String(data.name || ''), buzzerTeam: String(data.team) };
+            });
+            if (!claimed.committed) {
+                await removeCurrentLiveBuzz(db, data);
+                return;
+            }
+        }
+        await update(ref(db, `superPowerRooms/${buzzerRoom}`), { locked: true });
+        _lastDisplayedBuzzKey = buzzKey;
+        isBuzzerLocked = true;
+        buzzerFirstTeam = data.team;
+        window.setSuperPowerActivationWindow?.('AFTER_BELL');
+        playBuzzerSound();
+        showGameToast(`⚡ ${data.name} ضغط أولاً!`);
+        showBuzzerOverlay(data.name, data.team, 'second', sharedTimerRemaining(timer));
+        return;
+    }
+
+    // A new press is accepted only while the shared buzzer is idle/open.  A
+    // transaction makes the first timer reservation atomic, so a duplicate
+    // event cannot start another timer or another ten-second chance.
+    if (phase !== 'idle' && phase !== 'open') {
+        await removeCurrentLiveBuzz(db, data);
+        return;
+    }
+    const firstSeconds = Math.max(1, Number(teamSetup.ansTime) || 3);
+    const firstTimer = await runTransaction(timerRef, current => {
+        const currentPhase = current?.phase || 'idle';
+        if (currentPhase === 'first' || currentPhase === 'second') return;
+        if (current?.questionId && data.questionId && String(current.questionId) !== String(data.questionId)) return;
+        return {
+            phase: 'first',
+            team: data.team,
+            durationMs: firstSeconds * 1000,
+            startedAt: Date.now() + Number(_liveServerOffset || 0),
+            questionId: String(current?.questionId || data.questionId || `${teamSetup.currentRound}-${Date.now()}`),
+            buzzerId: String(data.id),
+            buzzerName: String(data.name || ''),
+            buzzerTeam: String(data.team)
+        };
+    });
+    if (!firstTimer.committed) {
+        await removeCurrentLiveBuzz(db, data);
+        return;
+    }
+
+    await update(ref(db, `superPowerRooms/${buzzerRoom}`), { locked: true });
     _lastDisplayedBuzzKey = buzzKey;
     isBuzzerLocked = true;
+    buzzerFirstTeam = data.team;
     window.setSuperPowerActivationWindow?.('AFTER_BELL');
     playBuzzerSound();
     showGameToast(`⚡ ${data.name} ضغط أولاً!`);
-    showBuzzerOverlay(data.name, data.team, 'first', teamSetup.ansTime);
-    const db = await ensureFirebase();
-    const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    const timer = (await get(ref(db, `superPowerRooms/${buzzerRoom}/timer`))).val();
-    if (!timer || timer.phase === 'idle' || timer.phase === 'open') {
-        await setSharedTimer('first', data.team, teamSetup.ansTime);
-    }
-}
-
-// The question portal was removed; questions are controlled from the presenter page.
-// عداد تنازلي مرئي مرتبط بفريق معين
-function startBuzzerCountdown(team, seconds, isSecondChance = false) {
-    clearInterval(buzzerTimerInterval);
-    buzzerTimeLeft = seconds;
-
-    const teamObj = team === 'team1' ? teamSetup.team1 : teamSetup.team2;
-    updateBuzzerOverlayTimer(teamObj ? teamObj.name : '', buzzerTimeLeft);
-
-    buzzerTimerInterval = setInterval(async () => {
-        buzzerTimeLeft--;
-        if (teamObj) updateBuzzerOverlayTimer(teamObj.name, buzzerTimeLeft);
-
-        if (buzzerTimeLeft <= 0) {
-            clearInterval(buzzerTimerInterval);
-            if (isSecondChance) {
-                // Final → فتح الجرس
-                clearBuzzerLock();
-            } else {
-                // فرصة الفريق الثاني
-                const nextTeam = team === 'team1' ? 'team2' : 'team1';
-                const nextTeamObj = nextTeam === 'team1' ? teamSetup.team1 : teamSetup.team2;
-                showBuzzerOverlay(nextTeamObj ? nextTeamObj.name : '', nextTeam);
-                startBuzzerCountdown(nextTeam, teamSetup.otherTime, true);
-            }
-        }
-    }, 1000);
+    showBuzzerOverlay(data.name, data.team, 'first', firstSeconds);
 }
 
 function updateBuzzerOverlayTimer(teamName, timeLeft, phase = 'first') {
@@ -3515,26 +3943,40 @@ function showBuzzerOverlay(name, teamId, phase = 'first', initialSeconds = 0) {
     updateBuzzerOverlayTimer(teamObj ? teamObj.name : '', initialSeconds, phase);
 }
 
-function clearBuzzerLock(showToast = true) {
+function clearBuzzerLock(showToast = true, options = {}) {
     isBuzzerLocked = false;
     buzzerFirstTeam = null;
     clearInterval(buzzerTimerInterval);
     const old = document.getElementById('buzzerLockOverlay');
     if (old) old.remove();
 
-    // Reset Firebase room (فتح الجرس لجميع اللاعبين)
+    // Reset Firebase room in one atomic write.  Callers can request an idle
+    // reset for a newly selected cell; the default opens the buzzer to both
+    // teams.  Keeping this optional makes it possible to avoid an async
+    // open→idle race while moving to the next question.
+    const timerPhase = Object.prototype.hasOwnProperty.call(options, 'timerPhase')
+        ? options.timerPhase
+        : 'open';
+    let operation = Promise.resolve();
     if (buzzerRoom) {
-        ensureFirebase().then(async (db) => {
-            const { ref, update, remove } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-            update(ref(db, `superPowerRooms/${buzzerRoom}`), {
-                locked: false,
-                buzzer: null,
-                timer: { phase: 'open', team: '', durationMs: 0, startedAt: Date.now() }
-            });
-            remove(ref(db, `superPowerRooms/${buzzerRoom}/buzzQueue`));
-        });
+        operation = (async () => {
+            const db = await ensureFirebase();
+            const { ref, update, remove, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            const roomPatch = { locked: false, buzzer: null };
+            if (timerPhase) {
+                roomPatch.timer = {
+                    phase: ['idle', 'open'].includes(timerPhase) ? timerPhase : 'open',
+                    team: '', durationMs: 0, startedAt: serverTimestamp(),
+                    questionId: sharedTimerQuestionId()
+                };
+            }
+            await update(ref(db, `superPowerRooms/${buzzerRoom}`), roomPatch);
+            await remove(ref(db, `superPowerRooms/${buzzerRoom}/buzzQueue`));
+        })();
+        operation.catch(error => console.warn('تعذر إعادة ضبط الجرس', error));
     }
     if (showToast) showGameToast('الجرس متاح للجميع! 🔔', true);
+    return operation;
 }
 
 // ==========================================
@@ -3587,9 +4029,9 @@ function syncGameViewUI() {
     const s2 = document.getElementById('gvTeam2Score');
     
     if (n1) n1.textContent = teamSetup.team1.name;
-    if (s1) s1.textContent = scores.team1;
+    if (s1) s1.textContent = roundWins.team1;
     if (n2) n2.textContent = teamSetup.team2.name;
-    if (s2) s2.textContent = scores.team2;
+    if (s2) s2.textContent = roundWins.team2;
 }
 
 // Add Keyboard Shortcut (Escape to exit)
@@ -3604,8 +4046,8 @@ function updateScoreBoard() {
     // Original sideboard scores
     const s1 = document.getElementById('score1');
     const s2 = document.getElementById('score2');
-    if (s1) s1.textContent = scores.team1;
-    if (s2) s2.textContent = scores.team2;
+    if (s1) s1.textContent = roundWins.team1;
+    if (s2) s2.textContent = roundWins.team2;
     
     // Sync to Presentation Mode UI
     syncGameViewUI();

@@ -6,7 +6,7 @@
     <title>مقدم طور القوى الخارقة</title>
     <link rel="stylesheet" href="/modes/super-powers/css/power-announcement.css?v=1">
     <style>
-        @font-face{font-family:HrofFont;src:url("/assets/hroof.ttf") format("truetype");font-display:swap}
+        @font-face{font-family:HrofFont;src:url("/public/assets/حروف.ttf") format("truetype"),url("/public/assets/hroof.ttf") format("truetype"),url("/assets/hroof.ttf") format("truetype");font-display:swap}
         *{box-sizing:border-box;font-family:HrofFont,sans-serif}
         :root{
             --bg:#24103f;--card:#4d2b70;--card-dark:#2a1248;--line:rgba(255,255,255,.14);
@@ -34,12 +34,12 @@
         .game-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.round{background:#291244;border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--yellow)}.score{display:flex;gap:6px;flex-wrap:wrap}.score span{padding:7px 10px;border-radius:9px;background:#291244;border:1px solid var(--line)}
         .board{position:relative;margin:4px auto 10px;direction:ltr;touch-action:manipulation}.p-hex{position:absolute;border:0;padding:0;background:transparent;cursor:pointer;transition:transform .14s ease;filter:drop-shadow(0 3px 0 rgba(22,5,43,.42))}.p-hex:hover{transform:scale(1.05);z-index:4}.p-hex:active{transform:scale(.92)}.p-hex-border,.p-hex-shape{position:absolute;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}.p-hex-border{inset:-3px;background:var(--hex-border)}.p-hex-shape{inset:0;background:var(--hex-white);display:grid;place-items:center;transition:background .16s ease}.p-hex-letter{position:relative;z-index:2;color:var(--hex-text);font-size:calc(var(--cell-size) * .43);line-height:1;pointer-events:none}.p-hex.selected .p-hex-shape{background:var(--yellow)}.p-hex.t1 .p-hex-shape{background:var(--t1)}.p-hex.t1 .p-hex-border{background:var(--t1-border)}.p-hex.t2 .p-hex-shape{background:var(--t2)}.p-hex.t2 .p-hex-border{background:var(--t2-border)}.p-hex.t1 .p-hex-letter,.p-hex.t2 .p-hex-letter{opacity:0}
         .question{margin-top:10px;padding:13px;border-radius:13px;background:#291244;border:1px solid var(--line)}.question[hidden]{display:none}.question-head{display:flex;justify-content:space-between;gap:8px;color:var(--yellow);font-size:.86rem}.question p{font-weight:700;line-height:1.55;margin:10px 0;font-size:.96rem}.answer{color:#8df0bd;border-top:1px solid var(--line);padding-top:9px;font-size:.9rem}.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.action{color:#fff;background:#653893;box-shadow:0 4px #32164d}.action.good{background:#14784e;box-shadow:0 4px #083f29}.action.bad{background:#a72d45;box-shadow:0 4px #5d1526}.action.warn{background:#a96600;box-shadow:0 4px #684000}.action.team-two-action{background:#653893;box-shadow:0 4px #32164d}.action:disabled{opacity:.35;cursor:not-allowed}
-        .action.shuffle{grid-column:1/-1;background:#895200;box-shadow:0 4px #4f2f00}.cell-awards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.cell-award{border:0;border-radius:10px;padding:10px 8px;color:#fff;font-weight:900;cursor:pointer;box-shadow:0 4px rgba(0,0,0,.32);transition:transform .13s ease,filter .13s ease}.cell-award.t1{background:#ff9800;color:#24102f}.cell-award.t2{background:#8b5fbf}.cell-award:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-2px)}.cell-award:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px rgba(0,0,0,.35)}.cell-award:disabled{opacity:.35;cursor:not-allowed}.first-buzz{display:none;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#ffd600,#ff9800);color:#24102f;box-shadow:0 4px #754600}.first-buzz.show{display:flex}.first-buzz-icon{font-size:1.55rem}.first-buzz b{display:block;font-size:1rem}.first-buzz small{display:block;font-size:.7rem;color:#4c2d00}
+        .action.shuffle{grid-column:1/-1;background:#895200;box-shadow:0 4px #4f2f00}.cell-awards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.cell-award{border:0;border-radius:10px;padding:10px 8px;color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 4px color-mix(in srgb,var(--award-color,#653893),#000 38%);background:var(--award-color,#653893);transition:transform .13s ease,filter .13s ease,box-shadow .13s ease}.cell-award.t1{--award-color:#ff9800;color:#24102f}.cell-award.t2{--award-color:#8b5fbf}.cell-award:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-2px)}.cell-award:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px color-mix(in srgb,var(--award-color,#653893),#000 38%)}.cell-award:disabled{opacity:.35;cursor:not-allowed}.first-buzz{display:none;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#ffd600,#ff9800);color:#24102f;box-shadow:0 4px #754600}.first-buzz.show{display:flex}.first-buzz-icon{font-size:1.55rem}.first-buzz b{display:block;font-size:1rem}.first-buzz small{display:block;font-size:.7rem;color:#4c2d00}
         .timer-card{text-align:center}.timer-phase{color:#e1d5ec;font-size:.82rem}.timer-value{font-size:2.8rem;line-height:1;color:var(--yellow);margin:8px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:8px}.settings input{text-align:center}
         .queue,.players{display:grid;gap:7px;max-height:225px;overflow:auto}.queue-row,.player-row{display:grid;grid-template-columns:27px 1fr auto;align-items:center;gap:8px;background:#291244;border:1px solid var(--line);border-radius:10px;padding:8px}.rank{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#653893;color:var(--yellow)}.person small{display:block;color:#c7b5d7;font-size:.72rem}.award{border-radius:8px;background:var(--green);color:#082319;padding:7px 9px;box-shadow:0 3px #117348}.dot{width:8px;height:8px;border-radius:50%;background:#777}.dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
         .empty{color:#bba8cc;text-align:center;padding:16px;font-size:.8rem}.leader{padding:10px;border-radius:11px;background:rgba(49,217,130,.12);color:#8df0bd;text-align:center;margin-top:8px}
-        .power-requests{display:grid;gap:8px}.power-request{padding:10px;border:1px solid rgba(255,214,0,.25);border-radius:11px;background:#291244}.power-request-head{display:flex;justify-content:space-between;gap:8px}.power-request small{display:block;color:#c9b8d8;margin-top:3px}.power-request-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.power-request-actions button{border:0;border-radius:8px;padding:8px;color:#fff;cursor:pointer}.power-approve{background:#14784e}.power-cancel{background:#a72d45}.power-status{padding:9px;border-radius:9px;background:rgba(255,214,0,.1);color:#ffe86a;text-align:center;font-size:.75rem;margin-bottom:8px}
-        .power-distribution{display:grid;gap:8px;margin-top:10px}.power-team{padding:9px;border:1px solid var(--line);border-radius:11px;background:#291244}.power-team__head{display:flex;justify-content:space-between;align-items:center;color:#ffe86a;font-size:.82rem;margin-bottom:7px}.power-team__head small{color:#c9b8d8;font-size:.68rem}.power-list{display:grid;gap:5px}.power-item{display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.055);font-size:.72rem}.power-item__icon{font-size:1.05rem}.power-item__name{flex:1}.power-item__status{color:#c9b8d8;font-size:.64rem}.power-direct{border:0;border-radius:6px;padding:4px 7px;background:var(--yellow);color:#24102f;font-size:.64rem;font-weight:900;cursor:pointer}.power-direct:disabled{opacity:.3;cursor:not-allowed}
+        .power-requests{display:grid;gap:8px}.power-request{padding:10px;border:1px solid rgba(255,214,0,.25);border-radius:11px;background:#291244}.power-request-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.power-request-head b{color:#fff}.power-request-head span{padding:3px 7px;border-radius:999px;background:rgba(255,214,0,.12);color:#ffe86a;font-size:.68rem}.power-request small{display:block;color:#c9b8d8;margin-top:3px}.power-request__power{color:#ffe86a!important;font-size:.82rem;font-weight:900}.power-request__description{display:block;margin:5px 0 0;color:#fff!important;font-size:.78rem;line-height:1.55}.power-request__target{color:#d8c7e5!important;font-size:.7rem}.power-request-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.power-request-actions button{border:0;border-radius:8px;padding:8px;color:#fff;cursor:pointer}.power-approve{background:#14784e}.power-cancel{background:#a72d45}.power-status{padding:9px;border-radius:9px;background:rgba(255,214,0,.1);color:#ffe86a;text-align:center;font-size:.75rem;margin-bottom:8px}.power-request-alert{display:none;align-items:flex-start;gap:8px;margin:0 0 9px;padding:10px;border-radius:11px;background:linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,152,0,.14));border:1px solid rgba(255,214,0,.55);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.18)}.power-request-alert.show{display:flex;animation:popIn .2s ease}.power-request-alert__icon{font-size:1.2rem;line-height:1}.power-request-alert strong{display:block;color:#ffe86a;font-size:.82rem}.power-request-alert small{display:block;color:#f3e7fb;font-size:.7rem;line-height:1.4;margin-top:2px}.power-request-count{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-inline-start:5px;padding:0 5px;border-radius:999px;background:#ff5e69;color:#fff;font-size:.7rem;vertical-align:middle}
+        .power-distribution{display:grid;gap:8px;margin-top:10px}.power-team{padding:9px;border:1px solid var(--line);border-radius:11px;background:#291244}.power-team__head{display:flex;justify-content:space-between;align-items:center;color:#ffe86a;font-size:.82rem;margin-bottom:7px}.power-team__head small{color:#c9b8d8;font-size:.68rem}.power-list{display:grid;gap:5px}.power-item{display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.055);font-size:.72rem}.power-item__icon{font-size:1.05rem}.power-item__copy{flex:1;min-width:0}.power-item__name{display:block}.power-item__description{display:block;margin-top:2px;color:#c9b8d8;font-size:.6rem;line-height:1.35}.power-item__status{color:#c9b8d8;font-size:.64rem;white-space:nowrap}.power-direct{border:0;border-radius:6px;padding:4px 7px;background:var(--yellow);color:#24102f;font-size:.64rem;font-weight:900;cursor:pointer;white-space:nowrap}.power-direct:disabled{opacity:.3;cursor:not-allowed}
         .presenter-toast{position:fixed;left:50%;bottom:20px;z-index:100;max-width:min(360px,calc(100% - 28px));transform:translate(-50%,25px);opacity:0;pointer-events:none;background:#291244;border:1px solid rgba(255,214,0,.55);border-bottom:4px solid var(--yellow);border-radius:12px;padding:11px 16px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:.22s}.presenter-toast.show{opacity:1;transform:translate(-50%,0)}.presenter-toast.error{border-bottom-color:var(--red)}
         .presenter-settings-modal{position:fixed;inset:0;z-index:85;display:none;place-items:center;padding:14px;background:rgba(15,3,29,.76);backdrop-filter:blur(12px)}.presenter-settings-modal.show{display:grid}.presenter-settings-card{position:relative;width:min(760px,100%);max-height:90vh;overflow:auto;padding:22px;background:linear-gradient(145deg,#5d3784,#2d164d);border:1px solid var(--line);border-bottom:5px solid var(--yellow);border-radius:18px;box-shadow:0 14px 0 rgba(0,0,0,.25),0 35px 80px rgba(0,0,0,.55)}.settings-close{position:absolute;top:11px;left:11px;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#351b55;color:#fff;font-size:1.2rem;cursor:pointer}.presenter-settings-card>h2{margin:0 0 4px;color:var(--yellow);font-size:1.5rem}.presenter-settings-card>p{margin:0 0 14px;color:#d8cae5;font-size:.76rem}.settings-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.settings-sections>.card{margin:0!important}.usage-modal{position:fixed;inset:0;z-index:90;display:none;place-items:center;padding:14px;background:rgba(15,3,29,.76);backdrop-filter:blur(12px)}.usage-modal.show{display:grid}.usage-card{position:relative;width:min(560px,100%);max-height:90vh;overflow:auto;padding:22px;background:linear-gradient(145deg,#5d3784,#2d164d);border:1px solid var(--line);border-bottom:5px solid var(--yellow);border-radius:18px;box-shadow:0 14px 0 rgba(0,0,0,.25),0 35px 80px rgba(0,0,0,.55)}.usage-close{position:absolute;top:11px;left:11px;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#351b55;color:#fff;font-size:1.2rem;cursor:pointer}.usage-card h2{margin:0 0 4px;color:var(--yellow);font-size:1.5rem}.usage-card>p{margin:0 0 14px;color:#d8cae5;font-size:.76rem}.usage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.usage-item{display:grid;grid-template-columns:42px 1fr;gap:9px;align-items:center;padding:9px;background:#291244;border:1px solid var(--line);border-radius:11px}.usage-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));font-size:1.35rem;box-shadow:0 3px #754600}.usage-item strong{display:block;color:#fff;font-size:.82rem}.usage-item small{display:block;margin-top:2px;color:#c9b8d8;font-size:.65rem;line-height:1.35}.confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.confirm-actions .action{min-height:42px}
         @media(max-width:780px){
@@ -47,6 +47,7 @@
             header{position:sticky;padding:7px 8px;font-size:.76rem}.session{gap:4px}.help-button,.logout{padding:7px 8px}.board{margin-top:7px}.question{padding:10px}.question p{font-size:.86rem}.question-head{font-size:.75rem}.controls{gap:6px}.action{padding:10px 6px;font-size:.78rem}.cell-award{font-size:.72rem;padding:9px 5px}.timer-value{font-size:2.3rem}.settings label{font-size:.7rem}.settings .field{padding:9px}.card h2{font-size:.9rem}.settings-sections{grid-template-columns:1fr}.presenter-settings-card{padding:18px 10px}
         }
         @media(max-width:390px){.shell{padding:5px}.card{padding:8px}.p-hex-border{inset:-2px}.controls{grid-template-columns:1fr 1fr}.brand{font-size:2rem}header strong{display:none}.help-button{font-size:.68rem}.usage-card{padding:18px 12px}.usage-grid{grid-template-columns:1fr}.usage-item{padding:7px}.usage-icon{width:38px;height:38px}}
+        .presenter-power-target-modal{position:fixed;inset:0;z-index:95;display:none;place-items:center;padding:14px;background:rgba(15,3,29,.78);backdrop-filter:blur(10px)}.presenter-power-target-modal.show{display:grid}.presenter-power-target-card{position:relative;width:min(430px,100%);padding:22px;background:linear-gradient(145deg,#5d3784,#2d164d);border:1px solid var(--line);border-bottom:5px solid var(--yellow);border-radius:18px;box-shadow:0 14px 0 rgba(0,0,0,.25),0 35px 80px rgba(0,0,0,.55)}.presenter-power-target-card h2{margin:0 0 5px;color:var(--yellow);font-size:1.25rem}.presenter-power-target-card p{margin:0 0 14px;color:#d8cae5;font-size:.76rem;line-height:1.5}.presenter-power-target-select{display:none;width:100%;margin-top:8px;color:#fff;background:#291244}.presenter-power-target-select.show{display:block}
     </style>
 </head>
 <body>
@@ -104,7 +105,11 @@
             </section>
             <aside>
                 <div class="card" style="margin-top:12px">
-                    <h2>⚡ طلبات القوى الخارقة</h2>
+                    <h2>⚡ طلبات القوى الخارقة <span class="power-request-count" id="powerRequestCount" hidden>0</span></h2>
+                    <div class="power-request-alert" id="powerRequestAlert" role="status" aria-live="assertive">
+                        <span class="power-request-alert__icon" aria-hidden="true">🔔</span>
+                        <div><strong id="powerRequestAlertTitle">طلب قوة جديد</strong><small id="powerRequestAlertText"></small></div>
+                    </div>
                     <div class="power-status" id="powerStatus">القوى تُفتح بعد امتلاك خليتين</div>
                     <div class="power-distribution" id="powerDistribution"></div>
                     <div class="power-requests" id="powerRequests"></div>
@@ -176,6 +181,20 @@
 
 <div class="presenter-toast" id="presenterToast" role="status" aria-live="polite"></div>
 
+<div class="presenter-power-target-modal" id="presenterPowerTargetModal" role="dialog" aria-modal="true" aria-labelledby="presenterPowerTargetTitle" aria-hidden="true">
+    <section class="presenter-power-target-card">
+        <button class="settings-close" id="presenterPowerTargetClose" type="button" aria-label="إغلاق">×</button>
+        <h2 id="presenterPowerTargetTitle">تحديد هدف القوة</h2>
+        <p id="presenterPowerTargetDescription">اختر الهدف من اللاعبين الموجودين في الجلسة.</p>
+        <select class="field presenter-power-target-select" id="presenterPowerTargetSelect"></select>
+        <select class="field presenter-power-target-select" id="presenterPowerTargetSelect2"></select>
+        <div class="confirm-actions">
+            <button class="action" id="presenterPowerTargetCancel" type="button">إلغاء</button>
+            <button class="action warn" id="presenterPowerTargetConfirm" type="button">إرسال الطلب</button>
+        </div>
+    </section>
+</div>
+
 <script src="/modes/super-powers/js/power-announcement.js?v=1"></script>
 <script type="module">
 import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -183,7 +202,7 @@ import {getDatabase,ref,get,set,update,onValue,runTransaction,onDisconnect,serve
 const config={apiKey:"AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",authDomain:"buzzer-game-f2983.firebaseapp.com",databaseURL:"https://buzzer-game-f2983-default-rtdb.firebaseio.com",projectId:"buzzer-game-f2983",storageBucket:"buzzer-game-f2983.firebasestorage.app",messagingSenderId:"125573747954",appId:"1:125573747954:web:8dac68183e6e326b8b2c6b"};
 const db=getDatabase(getApps().length?getApps()[0]:initializeApp(config));
 const params=new URLSearchParams(location.search),room=(params.get("room")||"").toUpperCase(),token=params.get("token")||"";
-const $=id=>document.getElementById(id);let claimId="",game={},roomData={},presenterQuestion={},serverOffset=0,timerLoop=null,heartbeat=null,toastTimer=null,expiredTimerKey="";
+const $=id=>document.getElementById(id);let claimId="",game={},roomData={},presenterQuestion={},serverOffset=0,timerLoop=null,heartbeat=null,toastTimer=null,expiredTimerKey="",firstBuzzHoldTimer=null,firstBuzzKey="",firstBuzzSnapshot=null,firstBuzzVisibleUntil=0,firstBuzzExpiredKey="",previousPendingPowerRequests=new Set(),powerRequestStateHydrated=false,powerRequestAlertTimer=null,localSelectedCell=null,localSelectionPending=false,localSelectionRound=null,presenterPowerTargetContext=null;
 const COLOR_MAP={
     purple:{light:"#8b5fbf",border:"#4a2570"},orange:{light:"#ff9800",border:"#c26700"},
     red:{light:"#ef4a42",border:"#9f221d"},blue:{light:"#3489e8",border:"#17539b"},
@@ -194,7 +213,7 @@ const COLOR_MAP={
 const ACTION_MESSAGES={
     newQuestion:"تم تغيير السؤال",nextRound:"تم بدء الجولة التالية",revealAnswer:"تم إظهار الإجابة للجمهور",
     awardTeam1:"تم منح الخلية للفريق الأول",awardTeam2:"تم منح الخلية للفريق الثاني",resetCells:"تم تصفير الخلايا مع الحفاظ على نتيجة الجولات",
-    reopenBuzzer:"تم فتح الجرس للجميع",shuffleBoard:"تم خلط الخلايا غير المحجوزة",updateSettings:"تم حفظ مدد المؤقت"
+    reopenBuzzer:"تم فتح الجرس للجميع",shuffleBoard:"تم خلط الخلايا غير المحجوزة",updateSettings:"تم حفظ مدد المؤقت",usePowerDirectly:"تم إرسال طلب التأكيد للقوة"
 };
 $("roomInput").value=room;$("roomCode").textContent=room;
 function fallbackDigest(value){let a=2166136261,b=2654435761,c=2246822519,d=3266489917;const text=String(value??"");for(let i=0;i<text.length;i++){const code=text.charCodeAt(i);a=Math.imul(a^code,16777619);b=Math.imul(b^(code+i),2246822519);c=Math.imul(c^(code<<((i%4)*8)),3266489917);d=Math.imul(d^(code*31+i),668265263)}return [a,b,c,d].map(x=>(x>>>0).toString(16).padStart(8,"0")).join("")}
@@ -230,8 +249,12 @@ $("resetCellsButton").onclick=()=>{resetCellsModal.classList.add("show");resetCe
 $("resetCellsClose").onclick=closeResetCells;$("resetCellsCancel").onclick=closeResetCells;
 resetCellsModal.onclick=e=>{if(e.target===resetCellsModal)closeResetCells()};
 $("resetCellsConfirm").onclick=e=>{closeResetCells();runAction(e.currentTarget,"resetCells",{},ACTION_MESSAGES.resetCells)};
-$("settingsButton").onclick=()=>$("settingsModal").classList.add("show");
-$("settingsClose").onclick=()=>$("settingsModal").classList.remove("show");
+ $("settingsButton").onclick=()=>$("settingsModal").classList.add("show");
+ $("settingsClose").onclick=()=>$("settingsModal").classList.remove("show");
+ $("presenterPowerTargetClose").onclick=closePresenterPowerTarget;
+ $("presenterPowerTargetCancel").onclick=closePresenterPowerTarget;
+ $("presenterPowerTargetConfirm").onclick=confirmPresenterPowerTarget;
+ $("presenterPowerTargetModal").onclick=e=>{if(e.target===$("presenterPowerTargetModal"))closePresenterPowerTarget()};
 $("settingsModal").onclick=e=>{if(e.target===$("settingsModal"))$("settingsModal").classList.remove("show")};
 $("leaveButton").onclick=async()=>{
     clearInterval(heartbeat);heartbeat=null;
@@ -250,7 +273,15 @@ async function runAction(button,type,payload={},message=ACTION_MESSAGES[type]){
     finally{button?.classList.remove("is-loading");button?.removeAttribute("aria-busy")}
 }
 document.querySelectorAll("[data-command]").forEach(b=>b.onclick=()=>runAction(b,b.dataset.command,{letter:game.question?.letter||"",team:roomData.buzzer?.team||""}));
-document.querySelectorAll("[data-team-award]").forEach(b=>b.onclick=()=>{const type=b.dataset.teamAward==="team2"?"awardTeam2":"awardTeam1";runAction(b,type,{},ACTION_MESSAGES[type])});
+function getPresenterSelectedCell(){
+    const candidate=game.selectedCell||(localSelectionPending?localSelectedCell:null);
+    if(!candidate)return null;
+    const row=Number(candidate.row),col=Number(candidate.col);
+    if(!Number.isInteger(row)||!Number.isInteger(col)||row<0||row>=5||col<0||col>=5)return null;
+    if(game.board?.[row]?.[col]){localSelectedCell=null;localSelectionPending=false;return null}
+    return {row,col};
+}
+document.querySelectorAll("[data-team-award]").forEach(b=>b.onclick=()=>{const selected=getPresenterSelectedCell();if(!selected){toast("اختر خلية مفتوحة أولًا","error");return}const type=b.dataset.teamAward==="team2"?"awardTeam2":"awardTeam1";runAction(b,type,selected,ACTION_MESSAGES[type])});
 $("saveSettings").onclick=e=>runAction(e.currentTarget,"updateSettings",{answerSeconds:Number($("answerSeconds").value),otherTeamSeconds:Number($("otherSeconds").value)});
 function subscribe(){
     onValue(ref(db,".info/connected"),s=>$("connection").textContent=s.val()?"● متصل":"○ منقطع");
@@ -264,7 +295,13 @@ function renderGame(){
     const c1=COLOR_MAP[game.team1?.color]||COLOR_MAP.orange,c2=COLOR_MAP[game.team2?.color]||COLOR_MAP.purple;
     document.documentElement.style.setProperty("--t1",c1.light);document.documentElement.style.setProperty("--t1-border",c1.border);
     document.documentElement.style.setProperty("--t2",c2.light);document.documentElement.style.setProperty("--t2-border",c2.border);
-    const displayedScores=game.roundWins||game.scores||{};
+    const currentRound=Number(game.round||1);
+    if(game.selectedCell){localSelectedCell={row:Number(game.selectedCell.row),col:Number(game.selectedCell.col)};localSelectionPending=false;localSelectionRound=currentRound}
+    else if(localSelectionRound!==null&&localSelectionRound!==currentRound){localSelectedCell=null;localSelectionPending=false;localSelectionRound=null}
+    const selected=getPresenterSelectedCell();
+    // نتيجة الجولات منفصلة عن عدد الخلايا/الإجابات الصحيحة. لا نستخدم
+    // game.scores كبديل حتى لا يظهر عدد الإجابات على أنه جولات فائزة.
+    const displayedScores=game.roundWins&&typeof game.roundWins==="object"?game.roundWins:{};
     $("roundLabel").textContent=`الجولة ${game.round||1} / ${game.totalRounds||3}`;$("score1").textContent=`${t1}: ${Number(displayedScores.team1||0)} جولات`;$("score2").textContent=`${t2}: ${Number(displayedScores.team2||0)} جولات`;
     $("answerSeconds").value=game.settings?.answerSeconds||3;$("otherSeconds").value=game.settings?.otherTeamSeconds||10;
     const host=$("board"),letters=game.cellLetters||[],board=game.board||[];host.innerHTML="";
@@ -273,16 +310,39 @@ function renderGame(){
     host.style.setProperty("--cell-size",`${cellSize}px`);host.style.width=`${cellSize*5.5}px`;host.style.height=`${cellHeight+(letters.length-1)*yStep}px`;
     letters.forEach((row,r)=>row.forEach((letter,c)=>{const b=document.createElement("button");b.className="p-hex";b.type="button";b.setAttribute("aria-label",`اختيار حرف ${letter}`);b.style.width=`${cellSize}px`;b.style.height=`${cellHeight}px`;b.style.left=`${c*xStep+(r%2?cellSize/2:0)}px`;b.style.top=`${r*yStep}px`;
         const border=document.createElement("span"),shape=document.createElement("span"),letterEl=document.createElement("span");border.className="p-hex-border";shape.className="p-hex-shape";letterEl.className="p-hex-letter";letterEl.textContent=letter;shape.appendChild(letterEl);b.append(border,shape);
-        if(board[r]?.[c]==="team1")b.classList.add("t1");if(board[r]?.[c]==="team2")b.classList.add("t2");if(game.selectedCell?.row===r&&game.selectedCell?.col===c)b.classList.add("selected");
-        b.onclick=()=>runAction(b,"selectCell",{row:r,col:c},`تم اختيار حرف ${letter}`);host.appendChild(b)}));
+        if(board[r]?.[c]==="team1")b.classList.add("t1");if(board[r]?.[c]==="team2")b.classList.add("t2");if(selected?.row===r&&selected?.col===c)b.classList.add("selected");
+        b.onclick=()=>{if(!board[r]?.[c]){localSelectedCell={row:r,col:c};localSelectionPending=true;localSelectionRound=currentRound;b.classList.add("selected");document.querySelectorAll("[data-team-award]").forEach(award=>award.disabled=false)}runAction(b,"selectCell",{row:r,col:c},`تم اختيار حرف ${letter}`)};host.appendChild(b)}));
     const q=Object.keys(presenterQuestion).length?presenterQuestion:(game.question||{});
     const questionBox=document.querySelector(".question");const hasQuestion=Boolean(q.letter||q.text||q.answer);if(questionBox)questionBox.hidden=!hasQuestion;
     $("questionLetter").textContent=q.letter?`حرف ${q.letter}`:"اختر خلية";$("questionText").textContent=q.text||"";
     $("answerText").textContent=q.answer?`الإجابة: ${q.answer}`:"";$("questionStatus").textContent=q.revealed?"الإجابة ظاهرة":"الإجابة مخفية";
-    const selected=game.selectedCell;const selectedOpen=Boolean(selected&&!game.board?.[selected.row]?.[selected.col]);document.querySelectorAll("[data-team-award]").forEach(b=>{b.disabled=!selectedOpen;b.textContent=`منح الخلية لـ ${b.dataset.teamAward==="team2"?t2:t1}`;});
+    const selectedOpen=Boolean(selected);document.querySelectorAll("[data-team-award]").forEach(b=>{b.disabled=!selectedOpen;b.textContent=`منح الخلية لـ ${b.dataset.teamAward==="team2"?t2:t1}`;});
+    document.querySelectorAll("[data-team-award]").forEach(b=>{const team=b.dataset.teamAward||"team1";const color=team==="team2"?c2.light:c1.light;b.style.setProperty("--award-color",color);});
     const nextButton=document.querySelector("[data-command='nextRound']");if(nextButton)nextButton.disabled=!(game.roundWinner==="team1"||game.roundWinner==="team2");
+    const hasClaimedCells=Boolean(game.roundWinner)||game.board?.some(row=>Array.isArray(row)&&row.some(cell=>cell==="team1"||cell==="team2"));const shuffleButton=document.querySelector("[data-command='shuffleBoard']");if(shuffleButton)shuffleButton.disabled=Boolean(hasClaimedCells);
 }
-function renderFirstBuzz(buzz){const box=$("firstBuzz");if(!buzz){box.classList.remove("show");$("firstBuzzName").textContent="";$("firstBuzzTeam").textContent="";return}const teamName=buzz.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول");$("firstBuzzName").textContent=`${buzz.name||"لاعب"} ضغط أولًا`;$("firstBuzzTeam").textContent=teamName;box.classList.add("show")}
+function firstBuzzHoldMs(){const seconds=Number(game.settings?.answerSeconds||3);return Math.max(1,Number.isFinite(seconds)?seconds:3)*1000}
+function firstBuzzTimestamp(buzz){for(const value of [buzz?.time,buzz?.pressedAt,buzz?.clientAt]){const stamp=Number(value);if(Number.isFinite(stamp)&&stamp>0)return stamp}return 0}
+function paintFirstBuzz(buzz){const box=$("firstBuzz");if(!buzz){box.classList.remove("show");$("firstBuzzName").textContent="";$("firstBuzzTeam").textContent="";return}const teamName=buzz.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول");$("firstBuzzName").textContent=`${buzz.name||"لاعب"} ضغط أولًا`;$("firstBuzzTeam").textContent=teamName;box.classList.add("show")}
+function renderFirstBuzz(buzz){
+    clearTimeout(firstBuzzHoldTimer);
+    const now=Date.now();
+    if(buzz){
+        const key=`${buzz.questionId||""}|${buzz.id||buzz.playerId||""}|${buzz.time||buzz.pressedAt||buzz.clientAt||""}`;
+        if(key===firstBuzzExpiredKey){paintFirstBuzz(null);return}
+        if(key!==firstBuzzKey){
+            firstBuzzKey=key;firstBuzzSnapshot=buzz;firstBuzzExpiredKey="";
+            const stamp=firstBuzzTimestamp(buzz),age=stamp?Math.max(0,now+serverOffset-stamp):0;
+            firstBuzzVisibleUntil=now+Math.max(0,firstBuzzHoldMs()-age);
+        }
+        if(!firstBuzzSnapshot||now>=firstBuzzVisibleUntil){firstBuzzExpiredKey=key;paintFirstBuzz(null);return}
+        paintFirstBuzz(firstBuzzSnapshot);
+        firstBuzzHoldTimer=setTimeout(()=>renderFirstBuzz(null),Math.max(0,firstBuzzVisibleUntil-Date.now()));
+        return;
+    }
+    if(firstBuzzSnapshot&&now<firstBuzzVisibleUntil){paintFirstBuzz(firstBuzzSnapshot);firstBuzzHoldTimer=setTimeout(()=>renderFirstBuzz(null),firstBuzzVisibleUntil-now);return}
+    firstBuzzExpiredKey=firstBuzzKey;firstBuzzSnapshot=null;firstBuzzVisibleUntil=0;paintFirstBuzz(null);
+}
 function renderQueue(raw){const q=Object.entries(raw).map(([id,v])=>({id,...v})).sort((a,b)=>Number(a.pressedAt||a.clientAt)-Number(b.pressedAt||b.clientAt));$("queue").innerHTML=q.length?q.map((p,i)=>`<div class="queue-row"><span class="rank">${i+1}</span><div class="person"><b>${safe(p.name)}</b><small>${p.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول")}</small></div><button class="award" data-player="${safeAttr(p.playerId)}" data-team="${p.team}" data-name="${safeAttr(p.name)}">منح نقطة</button></div>`).join(""):'<div class="empty">لم يضغط أحد بعد</div>';
     document.querySelectorAll(".award").forEach(b=>b.onclick=()=>runAction(b,"awardPoint",{playerId:b.dataset.player,team:b.dataset.team},`تم منح النقطة للاعب ${b.closest(".queue-row").querySelector(".person b").textContent}`));
 }
@@ -293,27 +353,83 @@ function powerTargetSummary(target){
     if(!target)return "بدون هدف إضافي";
     if(target.cell?.letter)return `الخلية: ${safe(target.cell.letter)}`;
     if(target.player?.name)return `اللاعب: ${safe(target.player.name)}`;
+    if(Array.isArray(target.players))return `اللاعبون: ${target.players.map(player=>safe(player?.name||'لاعب')).join(' و ')}`;
     if(target.power?.name)return `القوة: ${safe(target.power.name)}`;
     if(target.playersText)return `اللاعبون: ${safe(target.playersText)}`;
     if(target.note)return safe(target.note);
     return "هدف محدد";
 }
+function powerDefinitionForRequest(state,request){
+    const team=state?.teams?.[request?.teamId];
+    return (team?.inventory||[]).find(item=>item.instanceId===request?.instanceId)||null;
+}
+function presenterPlayers(teamId){
+    return Object.entries(roomData.players||{}).map(([id,player])=>({id,...(player||{})})).filter(player=>player.name&&player.connected!==false&&(!Number(player.lastSeen||0)||Date.now()-Number(player.lastSeen)<45000)&&(!teamId||player.team===teamId)).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+}
+function presenterCells(kind){
+    const letters=Array.isArray(game.cellLetters)?game.cellLetters:[],board=Array.isArray(game.board)?game.board:[];
+    const cells=[];const teamId=presenterPowerTargetContext?.teamId,opponent=teamId==='team1'?'team2':'team1';
+    letters.forEach((row,rowIndex)=>Array.isArray(row)&&row.forEach((letter,colIndex)=>{const owner=board[rowIndex]?.[colIndex]||'';if(!letter||(['OWN_CELL'].includes(kind)&&owner!==teamId)||(['OPPONENT_CELL'].includes(kind)&&owner!==opponent))return;cells.push({row:rowIndex,col:colIndex,letter,owner})}));
+    return cells;
+}
+function closePresenterPowerTarget(){const modal=$('presenterPowerTargetModal');if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}presenterPowerTargetContext=null}
+function openPresenterPowerTarget(button){
+    const kind=String(button.dataset.powerDirectType||'TEAM').toUpperCase();
+    const teamId=button.dataset.powerDirectTeam,modal=$('presenterPowerTargetModal'),select=$('presenterPowerTargetSelect'),select2=$('presenterPowerTargetSelect2');
+    const needsPlayer=['OPPONENT_PLAYER','PLAYER'].includes(kind),needsPair=kind==='PLAYER_PAIR',needsCell=['OPPONENT_CELL','OWN_CELL','CELL'].includes(kind);
+    if(!needsPlayer&&!needsPair&&!needsCell)return runAction(button,'usePowerDirectly',{teamId,instanceId:button.dataset.powerDirectInstance},ACTION_MESSAGES.usePowerDirectly);
+    presenterPowerTargetContext={button,teamId,instanceId:button.dataset.powerDirectInstance,kind};
+    select.innerHTML='';select2.innerHTML='';select.classList.remove('show');select2.classList.remove('show');
+    if(needsPlayer){presenterPlayers(teamId==='team1'?'team2':'team1').forEach(player=>{const option=document.createElement('option');option.value=JSON.stringify({player:{id:player.id,name:player.name,team:player.team}});option.textContent=player.name;select.appendChild(option)});select.classList.add('show');$('presenterPowerTargetDescription').textContent='اختر لاعبًا متصلًا من الفريق المنافس.'}
+    else if(needsPair){presenterPlayers(teamId).forEach(player=>{const option=document.createElement('option');option.value=JSON.stringify({player:{id:player.id,name:player.name,team:player.team}});option.textContent=`${player.name} (فريقه)`;select.appendChild(option)});presenterPlayers(teamId==='team1'?'team2':'team1').forEach(player=>{const option=document.createElement('option');option.value=JSON.stringify({player:{id:player.id,name:player.name,team:player.team}});option.textContent=`${player.name} (الفريق المنافس)`;select2.appendChild(option)});select.classList.add('show');select2.classList.add('show');$('presenterPowerTargetDescription').textContent='اختر لاعبًا من كل فريق للمبارزة.'}
+    else {presenterCells(kind).forEach(cell=>{const option=document.createElement('option');option.value=JSON.stringify({cell});option.textContent=`الخلية ${cell.letter} (${cell.row+1}، ${cell.col+1})`;select.appendChild(option)});select.classList.add('show');$('presenterPowerTargetDescription').textContent='اختر خلية موجودة من اللوحة.'}
+    if(!select.options.length||((needsPair)&&!select2.options.length)){toast('لا يوجد هدف متصل أو متاح لهذه القوة','error');return closePresenterPowerTarget()}
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');select.focus();
+}
+function confirmPresenterPowerTarget(){
+    const context=presenterPowerTargetContext,select=$('presenterPowerTargetSelect'),select2=$('presenterPowerTargetSelect2');if(!context)return;
+    let target=null;try{if(context.kind==='PLAYER_PAIR')target={players:[JSON.parse(select.value).player,JSON.parse(select2.value).player]};else target=JSON.parse(select.value)}catch(_){target=null}
+    if(!target)return toast('اختر هدفًا صحيحًا','error');closePresenterPowerTarget();runAction(context.button,'usePowerDirectly',{teamId:context.teamId,instanceId:context.instanceId,target},ACTION_MESSAGES.usePowerDirectly);
+}
+function showPowerRequestAlert(request,power,teamName){
+    const alert=$("powerRequestAlert"),title=$("powerRequestAlertTitle"),text=$("powerRequestAlertText");
+    if(!alert)return;
+    const player=request?.requestedBy?.name||"لاعب";
+    const powerName=request?.powerName||power?.name||request?.powerId||"قوة خارقة";
+    if(title)title.textContent=isPresenterPowerRequest(request)?"تأكيد استخدام قوة من المقدم":"طلب قوة جديد من الجوال";
+    if(text)text.textContent=`${player} — ${teamName} — ${powerName}`;
+    alert.classList.add("show");
+    clearTimeout(powerRequestAlertTimer);
+    powerRequestAlertTimer=setTimeout(()=>alert.classList.remove("show"),9000);
+}
+function isPresenterPowerRequest(request){return request?.source==="presenter"||request?.requestedBy?.id==="presenter"}
 function renderPowerRequests(state){
     const host=$("powerRequests"),status=$("powerStatus"),distribution=$("powerDistribution");
     if(!host)return;
     if(!state){status.textContent="بانتظار حالة الطور";if(distribution)distribution.innerHTML="";host.innerHTML='<div class="empty">لا توجد بيانات قوى بعد</div>';return}
     status.textContent=state.awaitingCatalog?"بانتظار قائمة القوى":"تم توزيع القوى تلقائيًا — راجع الطلبات عند الحاجة";
+    const pending=Object.values(state.requests||{}).filter(r=>r.status==="PENDING");
+    const count=$("powerRequestCount");
+    if(count){count.textContent=String(pending.length);count.hidden=!pending.length;}
+    const pendingIds=new Set(pending.map(request=>request.id));
+    const newRequest=pending.find(request=>!previousPendingPowerRequests.has(request.id));
+    if(newRequest&&powerRequestStateHydrated){
+        const power=powerDefinitionForRequest(state,newRequest);
+        const teamName=newRequest.teamId==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول");
+        showPowerRequestAlert(newRequest,power,teamName);
+    }
+    previousPendingPowerRequests=pendingIds;
+    powerRequestStateHydrated=true;
     if(distribution){
         distribution.innerHTML=["team1","team2"].map(teamId=>{
             const team=state.teams?.[teamId]||{},teamName=teamId==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول"),items=Array.isArray(team.inventory)?team.inventory:[];
-            const rows=items.length?items.map(item=>{const ready=item.status==="ready"&&team.unlocked,statusText=item.status==="used"?"مستخدمة":item.status==="pending"?"بانتظار الاعتماد":ready?"جاهزة":"مقفلة";return `<div class="power-item"><span class="power-item__icon">${safe(item.icon||"⚡")}</span><span class="power-item__name">${safe(item.name||item.powerId)}</span><span class="power-item__status">${statusText}</span><button class="power-direct" ${ready?'':'disabled="disabled"'} data-power-direct-team="${safeAttr(teamId)}" data-power-direct-instance="${safeAttr(item.instanceId)}">تفعيل</button></div>`}).join(""):"<div class=\"empty\">لا توجد قوى موزعة</div>";
+            const rows=items.length?items.map(item=>{const ready=item.status==="ready"&&team.unlocked,statusText=item.status==="used"?"مستخدمة":item.status==="pending"?"بانتظار الاعتماد":ready?"جاهزة":"مقفلة",simple=item.simpleDescription||item.metadata?.simpleDescription||item.shortDescription||"";return `<div class="power-item" title="${safe(simple)}"><span class="power-item__icon">${safe(item.icon||"⚡")}</span><div class="power-item__copy"><span class="power-item__name">${safe(item.name||item.powerId)}</span><small class="power-item__description">ببساطة: ${safe(simple)}</small></div><span class="power-item__status">${statusText}</span><button class="power-direct" ${ready?'':'disabled="disabled"'} data-power-direct-team="${safeAttr(teamId)}" data-power-direct-instance="${safeAttr(item.instanceId)}" data-power-direct-type="${safeAttr(item.targetType||"TEAM")}">تفعيل</button></div>`}).join(""):"<div class=\"empty\">لا توجد قوى موزعة</div>";
             return `<div class="power-team"><div class="power-team__head"><b>${safe(teamName)}</b><small>${team.unlocked?"مفتوحة":"مقفلة حتى امتلاك خليتين"}</small></div><div class="power-list">${rows}</div></div>`;
         }).join("");
-        distribution.querySelectorAll("[data-power-direct-instance]").forEach(b=>b.onclick=()=>runAction(b,"usePowerDirectly",{teamId:b.dataset.powerDirectTeam,instanceId:b.dataset.powerDirectInstance},"تم إرسال تفعيل القوة للمباراة"));
+        distribution.querySelectorAll("[data-power-direct-instance]").forEach(b=>b.onclick=()=>openPresenterPowerTarget(b));
     }
-    const pending=Object.values(state.requests||{}).filter(r=>r.status==="PENDING");
-    host.innerHTML=pending.length?pending.map(r=>`<div class="power-request"><div class="power-request-head"><b>${safe(r.requestedBy?.name||"لاعب")}</b><span>${r.teamId==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول")}</span></div><small>طلب قوة من اللاعب — ${powerTargetSummary(r.target)}</small><div class="power-request-actions"><button class="power-approve" data-power-approve="${safeAttr(r.id)}">تأكيد التنفيذ</button><button class="power-cancel" data-power-cancel="${safeAttr(r.id)}">رفض الطلب</button></div></div>`).join(""):'<div class="empty">لا توجد طلبات معلقة</div>';
-    host.querySelectorAll("[data-power-approve]").forEach(b=>b.onclick=()=>runAction(b,"activatePowerRequest",{requestId:b.dataset.powerApprove},"تم إرسال تأكيد القوة"));
+    host.innerHTML=pending.length?pending.map(r=>{const power=powerDefinitionForRequest(state,r),teamName=r.teamId==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول"),powerName=r.powerName||power?.name||r.powerId||"قوة خارقة",simple=r.simpleDescription||power?.simpleDescription||power?.shortDescription||"شرح القوة يظهر هنا للمقدم.",fromPresenter=isPresenterPowerRequest(r);return `<div class="power-request"><div class="power-request-head"><b>${fromPresenter?"تأكيد استخدام من المقدم":`طلب من الجوال: ${safe(r.requestedBy?.name||"لاعب")}`}</b><span>${safe(teamName)}</span></div><small class="power-request__power">⚡ ${safe(powerName)}</small><small class="power-request__description">ببساطة: ${safe(simple)}</small><small class="power-request__target">الهدف: ${powerTargetSummary(r.target)}</small><div class="power-request-actions"><button class="power-approve" data-power-approve="${safeAttr(r.id)}">${fromPresenter?"تأكيد وتفعيل":"قبول وتفعيل"}</button><button class="power-cancel" data-power-cancel="${safeAttr(r.id)}">${fromPresenter?"إلغاء":"رفض الطلب"}</button></div></div>`}).join(""):'<div class="empty">لا توجد طلبات معلقة</div>';
+    host.querySelectorAll("[data-power-approve]").forEach(b=>b.onclick=()=>runAction(b,"activatePowerRequest",{requestId:b.dataset.powerApprove},"تم إرسال قرار قبول القوة"));
     host.querySelectorAll("[data-power-cancel]").forEach(b=>b.onclick=()=>runAction(b,"cancelPowerRequest",{requestId:b.dataset.powerCancel},"تم رفض طلب القوة"));
 }
 function renderTimer(timer){clearInterval(timerLoop);if(!timer||timer.phase==="idle"){expiredTimerKey="";$("timerPhase").textContent="متوقف";$("timerValue").textContent="—";return}if(timer.phase==="open"){expiredTimerKey="";$("timerPhase").textContent="مفتوح للجميع بالجرس";$("timerValue").textContent="🔔";return}

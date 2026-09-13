@@ -9,7 +9,10 @@
     <style>
         @font-face {
             font-family: 'HrofFont';
-            src: url('/assets/hroof.ttf') format('truetype');
+            src: url('../../../public/assets/حروف.ttf') format('truetype'),
+                 url('../../../public/assets/hroof.ttf') format('truetype'),
+                 url('/assets/hroof.ttf') format('truetype'),
+                 url('/public/assets/hroof.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
@@ -285,7 +288,60 @@
             border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .powers-card{width:100%;margin-top:14px;padding:14px;border:1px solid rgba(255,214,0,.35);border-bottom:4px solid #a87900;border-radius:16px;background:rgba(43,18,72,.92)}.powers-head{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--yellow)}.powers-head small{color:#d4c4e2}.powers-list{display:grid;gap:8px;margin-top:10px}.power-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);text-align:right}.power-item small{display:block;margin-top:3px;color:#cbb8da;font-size:.68rem}.power-item .power-item__rules{color:#ffe27a;font-size:.62rem;line-height:1.5}.power-item button{border:0;border-radius:8px;padding:8px 10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:#28123f;font:inherit;cursor:pointer}.power-item button:disabled{opacity:.38;cursor:not-allowed}.power-empty{text-align:center;color:#c9b8d7;font-size:.78rem;padding:12px}.opponent-power{margin-top:8px;text-align:center;font-size:.72rem;color:#d5c7e1}
+
+        /* Match the presenter dashboard while keeping the power inventory
+           below the buzzer readable on phones. */
+        html { background:#1d0938; }
+        body { background:
+            linear-gradient(rgba(255,255,255,.026) 1px,transparent 1px),
+            linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px),
+            radial-gradient(circle at 50% -8%,#7041a2 0,transparent 40%),
+            linear-gradient(145deg,#1b0835,#3d1762);
+            background-size:60px 60px,60px 60px,auto,auto;
+            font-family:'HrofFont',sans-serif; }
+        .container { max-width:560px; padding:clamp(12px,3vw,20px); gap:12px; }
+        #loginScreen { gap:16px; }
+        .logo-hroof,.logo-sub,.pc-label,.pc-name,.team-badge,.instruction,
+        .hex-text,.hex-sub,.join-btn,.btn-secondary,.inp-field,.team-opt,
+        .room-badge,.player-timer,.power-item,.power-target-card { font-family:'HrofFont',sans-serif !important; }
+        .logo-hroof { font-size:clamp(2.8rem,11vw,4rem); }
+        .logo-sub { font-size:clamp(1.25rem,5vw,1.8rem); }
+        .player-competition { display:block; margin:2px 0 0; color:#d5c4e6; font-size:clamp(.9rem,3.7vw,1.25rem); -webkit-text-stroke:0; text-shadow:none; }
+        .login-card,.top-card,.player-card { background:linear-gradient(145deg,rgba(93,55,132,.94),rgba(48,23,82,.97)); border:1px solid rgba(255,255,255,.14); border-bottom:4px solid rgba(255,214,0,.34); border-radius:17px; box-shadow:0 8px 0 rgba(0,0,0,.2),0 22px 50px rgba(13,3,28,.34); backdrop-filter:blur(12px); }
+        .login-card { padding:22px; gap:15px; }
+        .input-grp { gap:6px; }
+        .input-grp label { color:#eee5f7; font-size:.85rem; }
+        .inp-field { background:#25113f; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.35); border-radius:11px; padding:12px 14px; font-size:1rem; }
+        .team-select { gap:8px; }
+        .team-opt { background:#291244; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.24); border-radius:11px; padding:10px 7px; font-size:.92rem; }
+        .team-opt[data-team="team1"].active { background:rgba(255,152,0,.2); border-color:#ff9800; border-bottom-color:#c26700; color:#ffd09a; }
+        .team-opt[data-team="team2"].active { background:rgba(139,95,191,.2); border-color:#a978ff; border-bottom-color:#4a2570; color:#e1ccff; }
+        .join-btn,.btn-secondary { border:1px solid rgba(255,255,255,.14); border-bottom:4px solid #875100; border-radius:11px; padding:12px 14px; font-size:1.05rem; font-weight:900; box-shadow:0 5px 0 rgba(0,0,0,.28),0 10px 22px rgba(0,0,0,.18); }
+        .join-btn { background:linear-gradient(135deg,#ffd600,#ff9800); color:#24102f; }
+        .btn-secondary { background:#653893; border-bottom-color:#32164d; }
+        .top-card { padding:14px 16px; }
+        .top-card .logo-hroof { font-size:clamp(2rem,8vw,2.8rem) !important; }
+        .room-badge { background:#291244; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.28); padding:7px 13px; font-size:.85rem; }
+        .player-card { padding:18px; gap:5px; flex:none; }
+        .pc-label { color:#d5c4e6; font-size:.86rem; }
+        .pc-name { font-size:clamp(1.8rem,8vw,2.45rem); margin-bottom:8px; }
+        .team-badge { background:#291244; border:1px solid rgba(255,255,255,.14); padding:7px 13px; font-size:.88rem; }
+        .instruction { color:#d8cae5; font-size:.82rem; margin-top:14px; }
+        .player-timer { background:#291244; border:1px solid rgba(255,214,0,.34); border-bottom:3px solid rgba(255,214,0,.38); border-radius:11px; padding:9px 12px; font-size:.9rem; }
+        .hex-buzzer-wrap { width:100%; max-width:430px; height:150px; margin:15px auto 12px; filter:none; perspective:none; }
+        .hex-buzzer-wrap:hover { transform:none; }
+        .hex-buzzer-wrap:active { transform:translateY(3px) scale(.99); filter:none; }
+        .hex-bg,.hex-bg.team2 { clip-path:none; border-radius:17px; border:1px solid rgba(255,255,255,.14); background:linear-gradient(135deg,var(--player-team1,#ff9800),var(--player-team1-dark,#c26700)); box-shadow:0 7px 0 var(--player-team1-shadow,#875100),0 14px 30px rgba(0,0,0,.26); }
+        .hex-bg.team2 { background:linear-gradient(135deg,var(--player-team2,#8b5fbf),var(--player-team2-dark,#4a2570)); box-shadow:0 7px 0 var(--player-team2-shadow,#32164d),0 14px 30px rgba(0,0,0,.26); }
+        .hex-bg::after { inset:0; clip-path:none; border-radius:inherit; background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 62%); }
+        .hex-icon { font-size:2.25rem; margin-bottom:1px; }
+        .hex-text { font-size:clamp(2rem,8vw,3rem); }
+        .hex-sub { font-size:.8rem; margin-top:4px; }
+        .locked .hex-bg { background:#555 !important; box-shadow:0 7px 0 #333 !important; }
+        #toast { background:#291244; color:#fff; border:1px solid rgba(255,214,0,.55); border-bottom:4px solid #ffd600; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,.35); font-family:'HrofFont',sans-serif; white-space:normal; width:min(92vw,430px); text-align:center; }
+        .powers-card { background:linear-gradient(145deg,rgba(93,55,132,.94),rgba(48,23,82,.97)); border:1px solid rgba(255,255,255,.14); border-bottom:4px solid rgba(255,214,0,.34); box-shadow:0 8px 0 rgba(0,0,0,.2); }
+        @media(max-width:420px){ .container{padding:10px}.login-card,.player-card{padding:15px}.hex-buzzer-wrap{height:132px}.hex-icon{font-size:1.9rem}.hex-text{font-size:2.35rem}.team-opt{font-size:.8rem;padding-inline:4px} }
+        .powers-card{width:100%;margin-top:14px;padding:14px;border:1px solid rgba(255,214,0,.35);border-bottom:4px solid #a87900;border-radius:16px;background:rgba(43,18,72,.92)}.powers-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;color:var(--yellow)}.powers-head strong{display:block}.powers-head small{color:#d4c4e2}.powers-head__hint{display:block!important;margin-top:3px;color:#cbb8da!important;font-size:.65rem!important;line-height:1.35}.powers-list{display:grid;gap:8px;margin-top:10px}.power-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);text-align:right}.power-item__title{display:block;color:#fff;font-size:.82rem}.power-item small{display:block;margin-top:3px;color:#cbb8da;font-size:.68rem;line-height:1.45}.power-item .power-item__simple{color:#fff}.power-item .power-item__rules{color:#ffe27a;font-size:.62rem;line-height:1.5}.power-item .power-item__decision{font-size:.64rem;font-weight:700}.power-item .power-item__decision.is-approved{color:#8df0bd}.power-item .power-item__decision.is-declined{color:#ff9ba4}.power-item .power-item__decision.is-pending{color:#ffe27a}.power-item__actions{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:94px}.power-item button{border:0;border-radius:8px;padding:8px 10px;background:linear-gradient(135deg,var(--yellow),var(--orange));color:#28123f;font:inherit;cursor:pointer;white-space:nowrap}.power-item button:disabled{opacity:.38;cursor:not-allowed}.power-empty{text-align:center;color:#c9b8d7;font-size:.78rem;padding:12px}.opponent-power{margin-top:8px;text-align:center;font-size:.72rem;color:#d5c7e1}.power-decision-notice{display:none;margin-top:9px;padding:9px 10px;border-radius:10px;background:rgba(49,217,130,.13);border:1px solid rgba(49,217,130,.3);color:#b5f7d1;font-size:.72rem;line-height:1.5;text-align:center}.power-decision-notice.show{display:block}.power-decision-notice.is-declined{background:rgba(255,94,105,.12);border-color:rgba(255,94,105,.35);color:#ffc1c6}
 
         /* ===== POWER TARGET DIALOG ===== */
         .power-target-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,3,22,.72);backdrop-filter:blur(8px)}
@@ -294,6 +350,10 @@
         .power-target-close{position:absolute;top:10px;left:10px;width:36px;height:36px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font:normal 1.5rem/1 HrofFont,sans-serif;cursor:pointer}
         .power-target-icon{font-size:2.4rem;text-align:center;margin-bottom:4px}.power-target-title{font:normal 1.55rem HrofFont,sans-serif;color:var(--yellow);text-align:center}.power-target-description{margin:8px 0 18px;color:rgba(255,255,255,.82);font-size:.9rem;line-height:1.7;text-align:center}.power-target-prompt{display:block;margin:0 4px 8px;color:#fff;font-size:.95rem}.power-target-modal .inp-field{padding:12px 14px;font-size:1rem}.power-target-select{display:none}.power-target-input{display:none}.power-target-input.show,.power-target-select.show{display:block}.power-target-hint{display:none;margin-top:8px;color:#cfbddc;font-size:.78rem}.power-target-hint.show{display:block}.power-target-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px;margin-top:18px}.power-target-actions button{padding:12px 14px;border:0;border-radius:10px;font:normal 1rem HrofFont,sans-serif;cursor:pointer}.power-target-cancel{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)!important}.power-target-confirm{background:linear-gradient(135deg,var(--yellow),var(--orange));color:#28123f;box-shadow:0 4px 0 rgba(0,0,0,.25)}.power-target-actions button:active{transform:translateY(2px)}
         @media (max-width:420px){.power-target-modal{padding:10px}.power-target-card{padding:20px 14px 16px}.power-target-title{font-size:1.3rem}.power-target-description{font-size:.82rem}.power-target-actions button{font-size:.9rem}}
+
+        /* Use the same bold display face as the game on both team buzzers. */
+        .team-opt,.join-btn,.hex-text,.hex-sub,.btn-secondary,.pc-name,.team-badge,.player-timer,.room-badge,.instruction { font-family:'HrofFont',sans-serif !important; font-weight:900 !important; }
+        .hex-text { -webkit-text-stroke:1.2px #000; paint-order:stroke fill; text-shadow:2px 2px 0 #000,4px 4px 0 rgba(0,0,0,.35); }
     </style>
 </head>
 
@@ -342,6 +402,7 @@
 
             <div class="top-card">
                 <div class="logo-hroof" style="font-size:2.5rem;">حروف</div>
+                <div class="logo-sub player-competition" id="displayCompetitionName">هوجاس</div>
                 <div class="room-badge" id="displayRoomCode">جلسة ----</div>
             </div>
 
@@ -370,9 +431,16 @@
                 <button class="btn-secondary" onclick="leaveRoom()">
                     <span>✏️</span> تغيير الاسم أو الفريق
                 </button>
-                <section class="powers-card">
-                    <div class="powers-head"><strong>⚡ قواك الخارقة</strong><small id="powerUsage">0 / 2 هذه الجولة</small></div>
+                <section class="powers-card" aria-labelledby="powersTitle">
+                    <div class="powers-head">
+                        <div>
+                            <strong id="powersTitle">⚡ قواك الخارقة</strong>
+                            <small class="powers-head__hint">اقرأ الشرح ثم اطلب القوة من المقدم</small>
+                        </div>
+                        <small id="powerUsage">0 / 2 هذه الجولة</small>
+                    </div>
                     <div class="powers-list" id="powersList"><div class="power-empty">بانتظار بيانات القوى</div></div>
+                    <div class="power-decision-notice" id="powerDecisionNotice" role="status" aria-live="polite"></div>
                     <div class="opponent-power" id="opponentPowerCount"></div>
                 </section>
             </div>
@@ -389,6 +457,7 @@
             <p class="power-target-description" id="powerTargetDescription"></p>
             <label class="power-target-prompt" id="powerTargetPrompt" for="powerTargetSelect">ما الهدف المطلوب؟</label>
             <select class="inp-field power-target-select" id="powerTargetSelect"></select>
+            <select class="inp-field power-target-select" id="powerTargetSelect2"></select>
             <input class="inp-field power-target-input" id="powerTargetInput" type="text" maxlength="80" autocomplete="off" placeholder="اكتب الهدف هنا">
             <div class="power-target-hint" id="powerTargetHint">سيصل الهدف للمقدم مع طلب القوة.</div>
             <div class="power-target-actions">
@@ -402,7 +471,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getDatabase, ref, set, update, onValue, runTransaction, push, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+        import { getDatabase, ref, get, set, update, onValue, runTransaction, push, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
         // ── Firebase Config ──────────────────────────────────────────────────
         const firebaseConfig = {
@@ -426,6 +495,9 @@
         let buzzerLocked = false;
         let team1Name   = 'الفريق الأول';
         let team2Name   = 'الفريق الثاني';
+        let competitionName = 'هوجاس';
+        let team1ColorKey = 'orange';
+        let team2ColorKey = 'purple';
         let currentQuestionId = 'lobby';
         let lastPressedQuestionId = '';
         let serverOffset = 0;
@@ -433,10 +505,35 @@
         let currentPowerView = null;
         let currentLiveGame = null;
         let currentPlayers = {};
+        // Mirrored room state used by the buzzer guard.  The previous
+        // implementation only looked at `buzzer`, which kept the second team
+        // locked after the first timer expired.
+        let liveTimerState = null;
+        let liveBuzzState = null;
         let pendingPowerTarget = null;
         const announcedPowerIntents = new Set();
+        let powerViewHydrated = false;
+        let lastPowerRequests = new Map();
+
+        const PLAYER_COLORS = {
+            orange: { main:'#ff9800', dark:'#c26700', shadow:'#875100' },
+            purple: { main:'#8b5fbf', dark:'#4a2570', shadow:'#32164d' },
+            red: { main:'#ef4444', dark:'#b91c1c', shadow:'#7f1d1d' },
+            blue: { main:'#3b82f6', dark:'#1d4ed8', shadow:'#172554' },
+            darkblue: { main:'#1e3a8a', dark:'#172554', shadow:'#0f172a' },
+            green: { main:'#22c55e', dark:'#15803d', shadow:'#14532d' },
+            lightgreen: { main:'#a3e635', dark:'#4d7c0f', shadow:'#365314' },
+            yellow: { main:'#eab308', dark:'#a16207', shadow:'#713f12' },
+            pink: { main:'#f472b6', dark:'#be185d', shadow:'#831843' },
+            cyan: { main:'#2dd4bf', dark:'#0f766e', shadow:'#134e4a' },
+            charcoal: { main:'#334155', dark:'#0f172a', shadow:'#020617' },
+            lightblue: { main:'#7dd3fc', dark:'#0284c7', shadow:'#075985' }
+        };
 
         function genId() { return Math.random().toString(36).substr(2, 9) + Date.now().toString(36); }
+        function makeRequestId() {
+            return window.crypto?.randomUUID?.() || `power-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+        }
 
         // ── Read URL Params ──────────────────────────────────────────────────
         window.addEventListener('DOMContentLoaded', () => {
@@ -462,15 +559,34 @@
         });
 
         // ── Join Room ────────────────────────────────────────────────────────
-        window.joinRoom = function () {
+        window.joinRoom = async function () {
             const rc = document.getElementById('roomInput').value.trim().toUpperCase();
             const nm = document.getElementById('nameInput').value.trim();
 
             if (!rc) return showToast('⚠️ أدخل كود الجلسة أولاً', true);
             if (!nm) return showToast('⚠️ يرجى إدخال اسمك', true);
 
+            // لا ننشئ جلسة جديدة بالخطأ عند كتابة كود غير موجود؛ اللاعب يدخل
+            // فقط إلى جلسة قوى خارقة نشطة أنشأها صاحب اللعبة.
+            let roomSnapshot;
+            try {
+                roomSnapshot = await get(ref(db, `superPowerRooms/${rc}`));
+            } catch (error) {
+                return showToast('❌ تعذر التحقق من الجلسة، حاول مرة أخرى', true);
+            }
+            const roomData = roomSnapshot.val() || {};
+            if (!roomSnapshot.exists() || roomData.game?.status !== 'playing') {
+                return showToast('⚠️ الجلسة غير موجودة أو انتهت', true);
+            }
+
             currentRoom = rc;
             myName      = nm;
+            const initialGame = roomData.game || {};
+            competitionName = initialGame.competitionName || roomData.competitionName || competitionName;
+            team1Name   = initialGame.team1?.name || roomData.team1Name || team1Name;
+            team2Name   = initialGame.team2?.name || roomData.team2Name || team2Name;
+            team1ColorKey = initialGame.team1?.color || roomData.team1Color || team1ColorKey;
+            team2ColorKey = initialGame.team2?.color || roomData.team2Color || team2ColorKey;
             myId        = localStorage.getItem(`hojas_superpowers_player_${rc}`) || genId();
             localStorage.setItem(`hojas_superpowers_player_${rc}`, myId);
 
@@ -480,6 +596,8 @@
                 lastSeen: serverTimestamp(), connected: true
             })
                 .then(() => {
+                    powerViewHydrated = false;
+                    lastPowerRequests = new Map();
                     onDisconnect(playerRef).update({ connected: false, lastSeen: serverTimestamp() });
                     setInterval(() => update(playerRef, { connected: true, lastSeen: serverTimestamp() }), 15000);
                     showMainScreen();
@@ -494,18 +612,42 @@
             document.getElementById('displayRoomCode').textContent = 'جلسة ' + currentRoom;
             document.getElementById('displayMyName').textContent   = myName;
 
-            const isT1 = myTeam === 'team1';
-            document.getElementById('displayMyTeamName').textContent = isT1 ? team1Name : team2Name;
-            document.getElementById('displayMyTeamDot').style.background = isT1 ? 'var(--orange)' : '#ba8fed';
-            const bBg = document.getElementById('buzzerBg');
-            if (isT1) bBg.classList.remove('team2'); else bBg.classList.add('team2');
+            updatePlayerIdentityUI();
 
             if ('vibrate' in navigator) navigator.vibrate(50);
+        }
+
+        function updatePlayerIdentityUI() {
+            const isT1 = myTeam === 'team1';
+            const teamName = isT1 ? team1Name : team2Name;
+            const teamColor = PLAYER_COLORS[isT1 ? team1ColorKey : team2ColorKey] || PLAYER_COLORS[isT1 ? 'orange' : 'purple'];
+            const teamOption1 = document.querySelector('.team-opt[data-team="team1"]');
+            const teamOption2 = document.querySelector('.team-opt[data-team="team2"]');
+            if (teamOption1) teamOption1.textContent = team1Name + ' 🟠';
+            if (teamOption2) teamOption2.textContent = team2Name + ' 🟣';
+            const teamNameEl = document.getElementById('displayMyTeamName');
+            if (teamNameEl) teamNameEl.textContent = teamName;
+            const teamDot = document.getElementById('displayMyTeamDot');
+            if (teamDot) teamDot.style.background = teamColor.main;
+            const competitionEl = document.getElementById('displayCompetitionName');
+            if (competitionEl) competitionEl.textContent = competitionName || 'هوجاس';
+            const bBg = document.getElementById('buzzerBg');
+            if (bBg) bBg.classList.toggle('team2', !isT1);
+            const c1 = PLAYER_COLORS[team1ColorKey] || PLAYER_COLORS.orange;
+            const c2 = PLAYER_COLORS[team2ColorKey] || PLAYER_COLORS.purple;
+            document.documentElement.style.setProperty('--player-team1', c1.main);
+            document.documentElement.style.setProperty('--player-team1-dark', c1.dark);
+            document.documentElement.style.setProperty('--player-team1-shadow', c1.shadow);
+            document.documentElement.style.setProperty('--player-team2', c2.main);
+            document.documentElement.style.setProperty('--player-team2-dark', c2.dark);
+            document.documentElement.style.setProperty('--player-team2-shadow', c2.shadow);
         }
 
         // ── Listen to Room State (Real-Time) ─────────────────────────────────
         function listenToRoom(roomCode) {
             onValue(ref(db, '.info/serverTimeOffset'), snap => { serverOffset = Number(snap.val() || 0); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/team1Name`), snap => { if (snap.val()) { team1Name = snap.val(); updatePlayerIdentityUI(); } });
+            onValue(ref(db, `superPowerRooms/${roomCode}/team2Name`), snap => { if (snap.val()) { team2Name = snap.val(); updatePlayerIdentityUI(); } });
             onValue(ref(db, `superPowerRooms/${roomCode}/powerViews/${myTeam}`), snap => {
                 currentPowerView = snap.val() || null;
                 renderPowers(currentPowerView);
@@ -520,7 +662,14 @@
 
             let liveTimer = null, liveGame = null, liveBuzz = null;
             const refresh = () => {
-                const locked = Boolean(liveBuzz);
+                liveTimerState = liveTimer;
+                liveBuzzState = liveBuzz;
+                const phase = liveTimer?.phase || 'idle';
+                const phaseTeam = (phase === 'first' || phase === 'second') ? liveTimer.team : '';
+                // First phase is already owned by the first team.  In second
+                // phase only the opposite team (the timer's team) may press.
+                const locked = Boolean(liveBuzz) || phase === 'first' ||
+                    Boolean(phase === 'second' && phaseTeam && phaseTeam !== myTeam);
                 const nextQuestionId = liveTimer?.questionId || liveGame?.updatedAt || 'lobby';
                 if (nextQuestionId !== currentQuestionId) {
                     currentQuestionId = String(nextQuestionId);
@@ -537,6 +686,10 @@
                     const isMe = (liveBuzz.id === myId);
                     document.getElementById('buzzerSub').textContent = isMe ? 'انت الأسرع! ✅' : 'سبقك ' + liveBuzz.name;
                     if (!isMe && 'vibrate' in navigator) navigator.vibrate(200);
+                } else if (phase === 'first') {
+                    document.getElementById('buzzerSub').textContent = 'وقت إجابة الفريق الآخر';
+                } else if (phase === 'second' && phaseTeam && phaseTeam !== myTeam) {
+                    document.getElementById('buzzerSub').textContent = 'الجرس للفريق الآخر';
                 } else if (!locked) {
                     // Reset happened
                     document.getElementById('buzzerSub').textContent = 'جاهز';
@@ -544,13 +697,41 @@
                 }
             };
             onValue(ref(db, `superPowerRooms/${roomCode}/timer`), snap => { liveTimer = snap.val() || null; refresh(); });
-            onValue(ref(db, `superPowerRooms/${roomCode}/game`), snap => { liveGame = snap.val() || null; currentLiveGame = liveGame; window.syncPowerAnnouncement?.(liveGame?.powerAnnouncement); refresh(); });
+            onValue(ref(db, `superPowerRooms/${roomCode}/game`), snap => {
+                liveGame = snap.val() || null;
+                currentLiveGame = liveGame;
+                if (liveGame) {
+                    if (liveGame.competitionName) competitionName = String(liveGame.competitionName);
+                    if (liveGame.team1?.name) team1Name = String(liveGame.team1.name);
+                    if (liveGame.team2?.name) team2Name = String(liveGame.team2.name);
+                    if (liveGame.team1?.color && PLAYER_COLORS[liveGame.team1.color]) team1ColorKey = liveGame.team1.color;
+                    if (liveGame.team2?.color && PLAYER_COLORS[liveGame.team2.color]) team2ColorKey = liveGame.team2.color;
+                    updatePlayerIdentityUI();
+                }
+                window.syncPowerAnnouncement?.(liveGame?.powerAnnouncement);
+                refresh();
+            });
             onValue(ref(db, `superPowerRooms/${roomCode}/buzzer`), snap => { liveBuzz = snap.val() || null; refresh(); });
             onValue(ref(db, `superPowerRooms/${roomCode}/players`), snap => { currentPlayers = snap.val() || {}; });
         }
 
         // ── Press Buzzer (First Press Wins via Transaction) ───────────────────
         window.pressBuzzer = function () {
+            const timer = liveTimerState;
+            const buzz = liveBuzzState;
+            const phase = timer?.phase || 'idle';
+            if (buzz) {
+                return showToast('تم تسجيل ضغطة — انتظر قرار المقدم', true);
+            }
+            if (phase === 'first') {
+                return showToast('الفريق الذي ضغط أولًا يجيب الآن', true);
+            }
+            if (phase === 'second' && timer.team && timer.team !== myTeam) {
+                return showToast('الجرس مفتوح للفريق الآخر فقط', true);
+            }
+            if (phase !== 'idle' && phase !== 'open' && phase !== 'second') {
+                return showToast('الجرس غير متاح الآن', true);
+            }
             if (lastPressedQuestionId === currentQuestionId) {
                 return showToast('تم تسجيل ضغطتك في الترتيب');
             }
@@ -592,10 +773,52 @@
                 const elapsed = Date.now() + serverOffset - Number(timer.startedAt || Date.now());
                 const left = Math.max(0, Math.ceil((Number(timer.durationMs || 0) - elapsed) / 1000));
                 const teamName = timer.team === 'team2' ? team2Name : team1Name;
-                el.innerHTML = `وقت ${teamName} <strong>${left}</strong>`;
+                const label = timer.phase === 'second' ? `فرصة ${teamName}` : `وقت ${teamName}`;
+                el.innerHTML = `${label} <strong>${left}</strong>`;
             };
             draw();
             playerTimerInterval = setInterval(draw, 250);
+        }
+
+        function requestDecisionLabel(request) {
+            if (!request) return '';
+            if (request.status === 'PENDING') return 'طلبك قيد المراجعة لدى المقدم.';
+            if (request.decision === 'APPROVED' || request.status === 'ACTIVATED') return '✅ وافق المقدم وتم تفعيل القوة.';
+            if (request.decision === 'CANCELLED') return 'أُلغي هذا الطلب؛ يمكنك إرساله مرة أخرى.';
+            if (request.decision === 'DECLINED' || request.status === 'CANCELLED') return '❌ رفض المقدم الطلب؛ يمكنك المحاولة مرة أخرى.';
+            return '';
+        }
+
+        function announcePowerDecision(state) {
+            const requests = Object.values(state?.requests || {}).filter(request =>
+                request?.teamId === myTeam && request?.requestedBy?.id === myId
+            );
+            const current = new Map(requests.map(request => [request.id, request]));
+            if (!powerViewHydrated) {
+                lastPowerRequests = current;
+                powerViewHydrated = true;
+                return;
+            }
+            requests.forEach(request => {
+                const previous = lastPowerRequests.get(request.id);
+                if (!previous || previous.status === request.status || request.status === 'PENDING') return;
+                const powerName = request.powerName || request.powerId || 'القوة';
+                const approved = request.decision === 'APPROVED' || request.status === 'ACTIVATED';
+                const cancelled = request.decision === 'CANCELLED';
+                const message = approved
+                    ? `✅ وافق المقدم على «${powerName}» وتم تفعيلها.`
+                    : cancelled
+                        ? `تم إلغاء طلب «${powerName}»، ويمكنك طلبها مجددًا.`
+                        : `❌ رفض المقدم طلب «${powerName}».`;
+                const notice = document.getElementById('powerDecisionNotice');
+                if (notice) {
+                    notice.textContent = message;
+                    notice.classList.toggle('is-declined', !approved);
+                    notice.classList.add('show');
+                }
+                showToast(message, !approved);
+            });
+            lastPowerRequests = current;
         }
 
         function renderPowers(state) {
@@ -603,15 +826,24 @@
             const usage = document.getElementById('powerUsage');
             const opponent = document.getElementById('opponentPowerCount');
             if (!state?.teams?.[myTeam]) { host.innerHTML = '<div class="power-empty">بانتظار بدء طور القوى</div>'; return; }
+            announcePowerDecision(state);
             const own = state.teams[myTeam], otherId = myTeam === 'team1' ? 'team2' : 'team1', other = state.teams[otherId];
             usage.textContent = `${Number(own.roundPowerUsage || 0)} / ${Number(state.settings?.maxPowersPerTeamPerRound || 2)} هذه الجولة`;
             const inventory = own.inventory || [];
+            const requestByInstance = Object.values(state.requests || {}).reduce((map, request) => {
+                if (request?.instanceId) map[request.instanceId] = request;
+                return map;
+            }, {});
             if (state.awaitingCatalog || !inventory.length) host.innerHTML = '<div class="power-empty">قائمة القوى ستظهر هنا بعد إضافتها للعبة</div>';
             else host.innerHTML = inventory.map(item => {
                 const ready = own.unlocked && item.status === 'ready', pending = item.status === 'pending';
-                const label = item.status === 'used' ? 'مستخدمة' : pending ? 'إلغاء الطلب' : ready ? 'طلب الاستخدام' : 'مقفلة';
-                const rules = [item.metadata?.usage ? `طريقة الاستخدام: ${item.metadata.usage}` : '', item.metadata?.limit ? `القيد: ${item.metadata.limit}` : ''].filter(Boolean).join(' ');
-                return `<div class="power-item"><div><strong>${safe(item.icon || '⚡')} ${safe(item.name || item.powerId)}</strong><small>${safe(item.shortDescription || '')}</small>${rules ? `<small class="power-item__rules">${safe(rules)}</small>` : ''}</div><button data-power-id="${safeAttr(item.instanceId)}" data-request-id="${safeAttr(item.requestId || '')}" ${ready || pending ? '' : 'disabled'}>${label}</button></div>`;
+                const request = requestByInstance[item.instanceId];
+                const approved = request?.decision === 'APPROVED' || request?.status === 'ACTIVATED';
+                const decision = requestDecisionLabel(request);
+                const label = pending ? 'إلغاء الطلب' : approved ? 'تمت الموافقة' : item.status === 'used' ? 'مستخدمة' : ready ? 'طلب الاستخدام' : 'مقفلة';
+                const simple = item.simpleDescription || item.metadata?.simpleDescription || item.shortDescription || 'قوة تساعد فريقك في مجريات الجولة.';
+                const rules = [item.metadata?.usage ? `كيف تعمل: ${item.metadata.usage}` : '', item.metadata?.limit ? `تنبيه: ${item.metadata.limit}` : ''].filter(Boolean).join(' ');
+                return `<div class="power-item"><div><strong class="power-item__title">${safe(item.icon || '⚡')} ${safe(item.name || item.powerId)}</strong><small class="power-item__simple"><b>ببساطة:</b> ${safe(simple)}</small>${rules ? `<small class="power-item__rules">${safe(rules)}</small>` : ''}${decision ? `<small class="power-item__decision ${approved ? 'is-approved' : pending ? 'is-pending' : 'is-declined'}">${safe(decision)}</small>` : ''}</div><div class="power-item__actions"><button data-power-id="${safeAttr(item.instanceId)}" data-request-id="${safeAttr(item.requestId || '')}" ${ready || pending ? '' : 'disabled'}>${label}</button></div></div>`;
             }).join('');
             host.querySelectorAll('[data-power-id]').forEach(button => button.onclick = () => {
                 if (button.dataset.requestId) return cancelPower(button.dataset.requestId);
@@ -660,7 +892,14 @@
             const opponent = myTeam === 'team1' ? 'team2' : 'team1';
             return Object.entries(currentPlayers || {})
                 .map(([id, player]) => ({ id, ...(player || {}) }))
-                .filter(player => player.team === opponent && player.name)
+                .filter(player => player.team === opponent && player.name && player.connected !== false && (!Number(player.lastSeen || 0) || Date.now() - Number(player.lastSeen) < 45000))
+                .sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar'));
+        }
+
+        function roomPlayers(team = '') {
+            return Object.entries(currentPlayers || {})
+                .map(([id, player]) => ({ id, ...(player || {}) }))
+                .filter(player => player.name && player.connected !== false && (!Number(player.lastSeen || 0) || Date.now() - Number(player.lastSeen) < 45000) && (!team || player.team === team))
                 .sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar'));
         }
 
@@ -668,8 +907,10 @@
             pendingPowerTarget = null;
             document.getElementById('powerTargetModal')?.classList.remove('show');
             const select = document.getElementById('powerTargetSelect');
+            const select2 = document.getElementById('powerTargetSelect2');
             const input = document.getElementById('powerTargetInput');
             if (select) { select.classList.remove('show'); select.innerHTML = ''; }
+            if (select2) { select2.classList.remove('show'); select2.innerHTML = ''; }
             if (input) { input.classList.remove('show'); input.value = ''; }
             document.getElementById('powerTargetHint')?.classList.remove('show');
         }
@@ -677,6 +918,7 @@
         function openPowerTargetModal(item, activationWindow) {
             const modal = document.getElementById('powerTargetModal');
             const select = document.getElementById('powerTargetSelect');
+            const select2 = document.getElementById('powerTargetSelect2');
             const input = document.getElementById('powerTargetInput');
             const hint = document.getElementById('powerTargetHint');
             const kind = targetKind(item);
@@ -687,9 +929,11 @@
             document.getElementById('powerTargetDescription').textContent = rules;
             document.getElementById('powerTargetPrompt').textContent = ['TEAM', 'QUESTION', 'BOARD'].includes(kind) ? 'هل تريد إرسال الطلب بهذه القوة؟' : 'اختر الهدف المطلوب:';
             select.classList.remove('show');
+            select2.classList.remove('show');
             input.classList.remove('show');
             hint.classList.remove('show');
             select.innerHTML = '';
+            select2.innerHTML = '';
 
             const cells = ['OWN_CELL', 'OPPONENT_CELL', 'CELL'].includes(kind) ? boardCells(kind) : [];
             const players = ['OPPONENT_PLAYER', 'PLAYER'].includes(kind) ? opponentPlayers() : [];
@@ -719,40 +963,59 @@
                 hint.textContent = 'اكتب اسم القوة إن كان معروفًا، أو اتركه فارغًا ليحدده المقدم.';
                 hint.classList.add('show');
             } else if (kind === 'PLAYER_PAIR') {
-                input.placeholder = 'اكتب اسمي اللاعبين أو اتركها للمقدم';
-                input.classList.add('show');
-                hint.textContent = 'سيحدد المقدم اللاعبين إذا لم تكتب أسماءهما.';
+                const ownTeam = roomPlayers(myTeam), opponentTeam = roomPlayers(myTeam === 'team1' ? 'team2' : 'team1');
+                ownTeam.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ player: { id: player.id, name: player.name, team: player.team } });
+                    option.textContent = `${player.name} (فريقك)`;
+                    select.appendChild(option);
+                });
+                opponentTeam.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ player: { id: player.id, name: player.name, team: player.team } });
+                    option.textContent = `${player.name} (الفريق المنافس)`;
+                    select2.appendChild(option);
+                });
+                select.classList.add('show');
+                select2.classList.add('show');
+                document.getElementById('powerTargetPrompt').textContent = 'اختر لاعب فريقك ثم لاعب الفريق المنافس:';
+                hint.textContent = 'لا يظهر إلا اللاعبون الموجودون في الجلسة.';
                 hint.classList.add('show');
             } else if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) {
-                input.placeholder = 'اكتب اسم اللاعب المستهدف';
-                input.classList.add('show');
-                hint.textContent = 'لا يظهر لاعب من الفريق المنافس حاليًا؛ اكتب الاسم ليحدده المقدم.';
+                select.classList.add('show');
+                select.innerHTML = '<option value="">لا يوجد لاعب منافس متصل</option>';
+                hint.textContent = 'يجب أن يدخل لاعب من الفريق المنافس أولًا حتى يظهر اسمه هنا.';
                 hint.classList.add('show');
             } else if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) {
-                input.placeholder = 'اكتب حرف الخلية';
-                input.classList.add('show');
-                hint.textContent = 'لا توجد خلايا متاحة من هذا النوع حاليًا؛ اكتب الحرف ليحدده المقدم.';
+                select.classList.add('show');
+                select.innerHTML = '<option value="">لا توجد خلية متاحة من هذا النوع</option>';
+                hint.textContent = 'اختر خلية متاحة من اللوحة؛ لا يمكن كتابة هدف غير موجود.';
                 hint.classList.add('show');
             }
             modal.classList.add('show');
-            (select.classList.contains('show') ? select : input.classList.contains('show') ? input : document.getElementById('powerTargetConfirm')).focus();
+            (select.classList.contains('show') ? select : select2.classList.contains('show') ? select2 : input.classList.contains('show') ? input : document.getElementById('powerTargetConfirm')).focus();
         }
 
         function confirmPowerTarget() {
             if (!pendingPowerTarget) return;
             const { kind } = pendingPowerTarget;
             const select = document.getElementById('powerTargetSelect');
+            const select2 = document.getElementById('powerTargetSelect2');
             const input = document.getElementById('powerTargetInput');
             let target = null;
-            if (select.classList.contains('show') && select.value) {
+            if (kind === 'PLAYER_PAIR' && select.classList.contains('show') && select2.classList.contains('show') && select.value && select2.value) {
+                try { target = { players: [JSON.parse(select.value).player, JSON.parse(select2.value).player] }; } catch { target = null; }
+            } else if (select.classList.contains('show') && select.value) {
                 try { target = JSON.parse(select.value); } catch { target = null; }
             } else if (input.classList.contains('show') && input.value.trim()) {
                 const value = input.value.trim();
                 if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) target = { cell: { letter: value } };
                 else if (kind === 'POWER') target = { power: { name: value } };
-                else if (kind === 'PLAYER_PAIR') target = { playersText: value };
                 else if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) target = { player: { name: value } };
                 else target = { note: value };
+            }
+            if (['OPPONENT_PLAYER', 'PLAYER', 'PLAYER_PAIR', 'OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind) && !target) {
+                return showToast('اختر هدفًا متاحًا من القائمة أولًا', true);
             }
             const request = { ...pendingPowerTarget };
             resetPowerTargetModal();
@@ -760,13 +1023,13 @@
         }
 
         async function requestPower(instanceId, activationWindow, target = null) {
-            const intentId = crypto.randomUUID();
+            const intentId = makeRequestId();
             const intentRef = ref(db, `superPowerRooms/${currentRoom}/powerIntents/${myTeam}/${intentId}`);
-            await set(intentRef, { id:intentId, type:'REQUEST', teamId:myTeam, instanceId, activationWindow, target, playerId:myId, playerName:myName, createdAt:serverTimestamp() });
+            await set(intentRef, { id:intentId, type:'REQUEST', source:'player', teamId:myTeam, instanceId, activationWindow, target, playerId:myId, playerName:myName, createdAt:serverTimestamp() });
             showToast('⚡ أُرسل الطلب للمقدم');
         }
         async function cancelPower(requestId) {
-            const intentId = crypto.randomUUID();
+            const intentId = makeRequestId();
             await set(ref(db, `superPowerRooms/${currentRoom}/powerIntents/${myTeam}/${intentId}`), { id:intentId, type:'CANCEL', teamId:myTeam, requestId, playerId:myId, playerName:myName, createdAt:serverTimestamp() });
             showToast('تم إرسال إلغاء الطلب');
         }

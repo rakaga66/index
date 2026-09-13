@@ -249,11 +249,6 @@ h1, h2, h3, .game-title {
     align-items: center;
     justify-content: center;
 }
-.hex-btn.tiktok:hover {
-    background: #010101;
-    border-color: #ff0050;
-}
-
 /* Sidebar External Links - Removed from Sidebar as per request, but keeping styles if needed elsewhere */
 .sidebar-links {
     display: none;
@@ -1151,6 +1146,13 @@ body {
 .game-home-btn:focus-visible {
     outline: 3px solid #ffd600;
     outline-offset: 3px;
+}
+
+/* The buzzer now advances automatically; only the two active durations are
+   configurable, so keep the timer controls balanced after removing the
+   obsolete manual timer. */
+@media (min-width: 601px) {
+    .settings-screen .timers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Player-side help: keep the guide one tap away without covering the board. */
@@ -5926,6 +5928,112 @@ body.dark-mode #darkModeToggleBtn {
     }
 }
 
+/* Compact QAAF shortcut and narrower home controls. */
+.home-screen .qaf-corner-link {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 100001;
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1px;
+    padding: 5px;
+    border: 1px solid rgba(255, 214, 0, .7);
+    border-bottom: 3px solid #9b6900;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #5f318d, #2a1249);
+    color: #ffd600;
+    text-decoration: none;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, .28), 0 7px 16px rgba(0, 0, 0, .2);
+    transition: transform .15s ease, filter .15s ease;
+}
+
+.home-screen .qaf-corner-link:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.home-screen .qaf-corner-link:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .28);
+}
+
+.qaf-corner-link__ar {
+    font-family: 'HrofFont', 'Cairo', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.qaf-corner-link__en {
+    font-family: 'Cairo', sans-serif;
+    font-size: .46rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    line-height: 1;
+}
+
+.home-screen .home-layout-shell > .home-buttons {
+    width: min(100%, 360px) !important;
+    max-width: 360px !important;
+    align-self: center !important;
+}
+
+.home-screen .home-layout-shell > .home-extra-links {
+    width: min(100%, 280px) !important;
+    max-width: 280px !important;
+    align-self: center !important;
+}
+
+@media (max-width: 900px) {
+    .home-screen .qaf-corner-link {
+        top: 8px;
+        left: 8px;
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+    }
+
+    .qaf-corner-link__ar { font-size: .82rem; }
+    .qaf-corner-link__en { font-size: .4rem; }
+
+    .home-screen .home-layout-shell > .home-buttons {
+        width: min(100%, 280px) !important;
+        max-width: 280px !important;
+    }
+
+    .home-screen .home-layout-shell > .home-extra-links {
+        width: min(100%, 260px) !important;
+        max-width: 260px !important;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    .home-screen .qaf-corner-link {
+        top: 6px;
+        left: 6px;
+        width: 40px;
+        height: 40px;
+        padding: 3px;
+    }
+
+    .qaf-corner-link__ar { font-size: .7rem; }
+    .qaf-corner-link__en { font-size: .33rem; }
+
+    .home-screen .home-layout-shell > .home-buttons {
+        width: min(100%, 230px) !important;
+        max-width: 230px !important;
+    }
+
+    .home-screen .home-layout-shell > .home-extra-links {
+        width: min(100%, 220px) !important;
+        max-width: 220px !important;
+    }
+}
+
 /* Keep the homepage advert in the visible flow on desktop.  The version
    badges used to be fixed over the advert, which hid its lower copy on
    shorter browser windows.  A compact three-column shortcuts row and a
@@ -6850,6 +6958,10 @@ body:has(.home-screen) {
     display: none !important;
 }
 
+@media (min-width: 601px) {
+    .settings-screen .timers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
 /* Keep the update cards on the desktop sides.  The flow layout is used on
    phones, while desktop has enough horizontal space to show both cards
    without letting the footer advertisement cover them. */
@@ -6873,5 +6985,134 @@ body:has(.home-screen) {
     .home-screen .home-layout-shell > .home-info-panels .home-info-card {
         width: clamp(190px, 17vw, 275px) !important;
         pointer-events: auto;
+    }
+}
+
+/* Final homepage sizing: keep the primary menu intentionally compact. */
+.home-screen .home-layout-shell > .home-buttons {
+    width: min(100%, 360px) !important;
+    max-width: 360px !important;
+    margin-inline: auto !important;
+}
+.home-screen .home-layout-shell > .home-extra-links {
+    width: min(100%, 280px) !important;
+    max-width: 280px !important;
+    margin-inline: auto !important;
+}
+
+@media (max-width: 900px) {
+    .home-screen .home-layout-shell > .home-buttons {
+        width: min(100%, 280px) !important;
+        max-width: 280px !important;
+    }
+    .home-screen .home-layout-shell > .home-extra-links {
+        width: min(100%, 260px) !important;
+        max-width: 260px !important;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    .home-screen .home-layout-shell > .home-buttons {
+        width: min(100%, 230px) !important;
+        max-width: 230px !important;
+    }
+    .home-screen .home-layout-shell > .home-extra-links {
+        width: min(100%, 220px) !important;
+        max-width: 220px !important;
+    }
+}
+/* شرح المقدم يظهر أثناء شاشة اللعب فقط، ويختفي فوق الإعدادات والانتقال. */
+body.normal-game-active:has(#settingsScreen[style*="display: flex"]) .player-help-btn,
+body.normal-game-active:has(#transitionScreen[style*="display: flex"]) .player-help-btn {
+    display: none !important;
+}
+
+/* Mobile play rail: keep the board at the top of the play area and reserve
+   the bottom strip for the two tappable team cards.  The question panel sits
+   just above those cards so it can never intercept the team assignment tap. */
+@media (max-width: 900px) and (orientation: portrait) {
+    body.normal-game-active .main-area {
+        height: clamp(390px, 52dvh, 450px) !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding-bottom: 18px !important;
+    }
+
+    body.normal-game-active .board-wrap {
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 5px 6px 10px !important;
+    }
+
+    body.normal-game-active .sidebar > .scores {
+        position: fixed !important;
+        right: 14px !important;
+        bottom: max(52px, calc(env(safe-area-inset-bottom) + 50px)) !important;
+        left: 14px !important;
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        z-index: 10002 !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main {
+        top: auto !important;
+        bottom: max(126px, calc(env(safe-area-inset-bottom) + 120px)) !important;
+        width: min(94vw, 350px) !important;
+        max-height: 126px !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding: 6px 8px !important;
+        gap: 4px !important;
+        border-width: 1px !important;
+        border-radius: 10px !important;
+        z-index: 10000 !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-header {
+        min-height: 22px !important;
+        padding: 0 0 3px !important;
+        margin: 0 !important;
+        border-right: 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,.1) !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-num {
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-content {
+        min-height: 0 !important;
+        gap: 3px !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-text {
+        max-height: 38px !important;
+        overflow-y: auto !important;
+        padding: 4px 6px !important;
+        border-radius: 7px !important;
+        font-size: clamp(.72rem, 3.2vw, .88rem) !important;
+        line-height: 1.2 !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        width: 100% !important;
+        gap: 3px !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-btn {
+        min-width: 0 !important;
+        padding: 4px 6px !important;
+        border-radius: 6px !important;
+        font-size: .64rem !important;
+        line-height: 1.1 !important;
+    }
+
+    body.normal-game-active .sidebar-question.in-main .sq-btn-reveal {
+        grid-column: 1 / -1 !important;
+        flex-basis: auto !important;
     }
 }

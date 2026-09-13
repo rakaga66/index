@@ -9,7 +9,11 @@
     const afterQuestion = ['QUESTION_ACTIVE', 'AFTER_BELL', 'BEFORE_ANSWER'];
     const betweenRounds = ['ROUND_END', 'BEFORE_QUESTION'];
     const make = (id, name, description, icon, category, rarity, targetType, effect, activationWindow = ALL_WINDOWS, metadata = {}) => ({
-        id, name, description, icon, category, rarity, activationWindow, targetType, strength: metadata.strength || 50,
+        id, name, description,
+        // نص مستقل للاعبين: يشرح النتيجة بلغة قصيرة بدل عرض اسم التأثير
+        // الداخلي أو تفاصيل التنفيذ التقنية.
+        simpleDescription: metadata.simpleDescription || description,
+        icon, category, rarity, activationWindow, targetType, strength: metadata.strength || 50,
         metadata: { effect, ...metadata }
     });
 
@@ -41,6 +45,36 @@
         make('shuffle_cells', 'خلط الخلايا', 'يخلط الحروف غير المحجوزة قبل السؤال التالي.', '🔀', 'offensive', 'نادرة', 'BOARD', 'shuffle', ALL_WINDOWS, { strength: 58, legacy: true })
     ];
     powers.slice(-3).forEach(power => { power.legacy = true; });
+
+    // شرح مبسط يظهر للاعب وصاحب الجوال والمقدم داخل بطاقة الطلب.
+    const SIMPLE_DESCRIPTIONS = {
+        steal_cell: 'تنقل خلية يملكها الخصم إلى فريقك.',
+        shield_cell: 'تحمي خلية من خلايا فريقك من أن يأخذها الخصم.',
+        double_strike: 'إذا فاز فريقك بالسؤال يحصل على خلية إضافية.',
+        freeze_opponent: 'تؤخر جرس الفريق المنافس ثلاث ثوانٍ.',
+        cancel_opponent_choice: 'تلغي اختيار الفريق المنافس للخلية المحددة.',
+        power_block: 'تمنع الفريق المنافس من استخدام قواه حتى نهاية الجولة.',
+        reveal_secrets: 'تعرض للمقدم قوتين من القوى التي بقيت لدى الخصم.',
+        swap_power: 'تستبدل قوة غير مستخدمة بقوة عشوائية جديدة.',
+        double_challenge: 'الفوز يمنح فريقك خليتين، والخسارة تمنح الخليتين للخصم.',
+        mute_player: 'تمنع لاعبًا من الفريق المنافس من المشاركة في الجولة.',
+        savior: 'تنقذ فريقك من خلية كانت ستمنح الخصم فوز الجولة.',
+        big_bet: 'تراهن بخلية: الفوز يمنحك خليتين والخسارة تنقل الخلية للخصم.',
+        recover_cell: 'تعيد آخر خلية خسرها فريقك.',
+        copy_power: 'تنسخ آخر قوة استخدمها الخصم، باستثناء القوى الأسطورية.',
+        choose_responder: 'تختار لاعبًا واحدًا من الخصم ليكون المجيب.',
+        duel: 'تحول الجولة إلى منافسة بين لاعب واحد من كل فريق.',
+        revive_power: 'تعيد قوة استخدمتها لتصبح جاهزة من جديد.',
+        turn_table: 'تبدل ملكية خليتين بين الفريقين بطريقة عشوائية.',
+        double_point: 'تجعل نقطة الإجابة الصحيحة القادمة بنقطتين.',
+        extra_time: 'تضيف خمس ثوانٍ إلى وقت إجابة فريقك.',
+        shuffle_cells: 'تخلط الحروف غير المحجوزة قبل السؤال التالي.'
+    };
+    powers.forEach(power => {
+        const simpleDescription = SIMPLE_DESCRIPTIONS[power.id] || power.simpleDescription || power.description;
+        power.simpleDescription = simpleDescription;
+        power.metadata = { ...power.metadata, simpleDescription };
+    });
 
     function ensureTeamEffects(state, teamId) {
         state.teamEffects = state.teamEffects || {};

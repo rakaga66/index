@@ -282,6 +282,73 @@
             border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Presenter-style player surface: the buzzer remains the primary
+           action but uses the same cards, typeface, borders and depth as the
+           presenter dashboard. */
+        html { background:#1d0938; }
+        body { background:
+            linear-gradient(rgba(255,255,255,.026) 1px,transparent 1px),
+            linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px),
+            radial-gradient(circle at 50% -8%,#7041a2 0,transparent 40%),
+            linear-gradient(145deg,#1b0835,#3d1762);
+            background-size:60px 60px,60px 60px,auto,auto;
+            font-family:'HrofFont',sans-serif; }
+        .container { max-width:560px; padding:clamp(12px,3vw,20px); gap:12px; }
+        #loginScreen { gap:16px; }
+        .logo-hroof,.logo-sub,.pc-label,.pc-name,.team-badge,.instruction,
+        .hex-text,.hex-sub,.join-btn,.btn-secondary,.inp-field,.team-opt,
+        .room-badge,.player-timer { font-family:'HrofFont',sans-serif !important; }
+        .logo-hroof { font-size:clamp(2.8rem,11vw,4rem); }
+        .logo-sub { font-size:clamp(1.25rem,5vw,1.8rem); }
+        .player-competition { display:block; margin:2px 0 0; color:#d5c4e6; font-size:clamp(.9rem,3.7vw,1.25rem); -webkit-text-stroke:0; text-shadow:none; }
+        .login-card,.top-card,.player-card {
+            background:linear-gradient(145deg,rgba(93,55,132,.94),rgba(48,23,82,.97));
+            border:1px solid rgba(255,255,255,.14);
+            border-bottom:4px solid rgba(255,214,0,.34);
+            border-radius:17px;
+            box-shadow:0 8px 0 rgba(0,0,0,.2),0 22px 50px rgba(13,3,28,.34);
+            backdrop-filter:blur(12px);
+        }
+        .login-card { padding:22px; gap:15px; }
+        .input-grp { gap:6px; }
+        .input-grp label { color:#eee5f7; font-size:.85rem; }
+        .inp-field { background:#25113f; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.35); border-radius:11px; padding:12px 14px; font-size:1rem; }
+        .team-select { gap:8px; }
+        .team-opt { background:#291244; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.24); border-radius:11px; padding:10px 7px; font-size:.92rem; }
+        .team-opt[data-team="team1"].active { background:rgba(255,152,0,.2); border-color:#ff9800; border-bottom-color:#c26700; color:#ffd09a; }
+        .team-opt[data-team="team2"].active { background:rgba(139,95,191,.2); border-color:#a978ff; border-bottom-color:#4a2570; color:#e1ccff; }
+        .join-btn,.btn-secondary { border:1px solid rgba(255,255,255,.14); border-bottom:4px solid #875100; border-radius:11px; padding:12px 14px; font-size:1.05rem; font-weight:900; box-shadow:0 5px 0 rgba(0,0,0,.28),0 10px 22px rgba(0,0,0,.18); }
+        .join-btn { background:linear-gradient(135deg,#ffd600,#ff9800); color:#24102f; }
+        .btn-secondary { background:#653893; border-bottom-color:#32164d; }
+        .top-card { padding:14px 16px; }
+        .top-card .logo-hroof { font-size:clamp(2rem,8vw,2.8rem) !important; }
+        .room-badge { background:#291244; border:1px solid rgba(255,255,255,.14); border-bottom:3px solid rgba(255,214,0,.28); padding:7px 13px; font-size:.85rem; }
+        .player-card { padding:18px; gap:5px; flex:none; }
+        .pc-label { color:#d5c4e6; font-size:.86rem; }
+        .pc-name { font-size:clamp(1.8rem,8vw,2.45rem); margin-bottom:8px; }
+        .team-badge { background:#291244; border:1px solid rgba(255,255,255,.14); padding:7px 13px; font-size:.88rem; }
+        .instruction { color:#d8cae5; font-size:.82rem; margin-top:14px; }
+        .player-timer { background:#291244; border:1px solid rgba(255,214,0,.34); border-bottom:3px solid rgba(255,214,0,.38); border-radius:11px; padding:9px 12px; font-size:.9rem; }
+        .hex-buzzer-wrap { width:100%; max-width:430px; height:150px; margin:15px auto 12px; filter:none; perspective:none; }
+        .hex-buzzer-wrap:hover { transform:none; }
+        .hex-buzzer-wrap:active { transform:translateY(3px) scale(.99); filter:none; }
+        .hex-bg,.hex-bg.team2 { clip-path:none; border-radius:17px; border:1px solid rgba(255,255,255,.14); background:linear-gradient(135deg,var(--player-team1,#ff9800),var(--player-team1-dark,#c26700)); box-shadow:0 7px 0 var(--player-team1-shadow,#875100),0 14px 30px rgba(0,0,0,.26); }
+        .hex-bg.team2 { background:linear-gradient(135deg,var(--player-team2,#8b5fbf),var(--player-team2-dark,#4a2570)); box-shadow:0 7px 0 var(--player-team2-shadow,#32164d),0 14px 30px rgba(0,0,0,.26); }
+        .hex-bg::after { inset:0; clip-path:none; border-radius:inherit; background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 62%); }
+        .hex-icon { font-size:2.25rem; margin-bottom:1px; }
+        .hex-text { font-size:clamp(2rem,8vw,3rem); }
+        .hex-sub { font-size:.8rem; margin-top:4px; }
+        .locked .hex-bg { background:#555 !important; box-shadow:0 7px 0 #333 !important; }
+        #toast { background:#291244; color:#fff; border:1px solid rgba(255,214,0,.55); border-bottom:4px solid #ffd600; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,.35); font-family:'HrofFont',sans-serif; white-space:normal; width:min(92vw,430px); text-align:center; }
+        @media(max-width:420px){ .container{padding:10px}.login-card,.player-card{padding:15px}.hex-buzzer-wrap{height:132px}.hex-icon{font-size:1.9rem}.hex-text{font-size:2.35rem}.team-opt{font-size:.8rem;padding-inline:4px} }
+
+        /* Use the same bold display face as the game on both team buzzers. */
+        .team-opt,.join-btn,.hex-text,.hex-sub,.btn-secondary,.pc-name,.team-badge,.player-timer,.room-badge,.instruction {
+            font-family:'HrofFont',sans-serif !important;
+            font-weight:900 !important;
+        }
+        .hex-text { -webkit-text-stroke:1.2px #000; paint-order:stroke fill; text-shadow:2px 2px 0 #000,4px 4px 0 rgba(0,0,0,.35); }
     </style>
 </head>
 
@@ -330,6 +397,7 @@
 
             <div class="top-card">
                 <div class="logo-hroof" style="font-size:2.5rem;">حروف</div>
+                <div class="logo-sub player-competition" id="displayCompetitionName">هوجاس</div>
                 <div class="room-badge" id="displayRoomCode">جلسة ----</div>
             </div>
 
@@ -390,10 +458,28 @@
         let buzzerLocked = false;
         let team1Name   = 'الفريق الأول';
         let team2Name   = 'الفريق الثاني';
+        let competitionName = 'هوجاس';
+        let team1ColorKey = 'orange';
+        let team2ColorKey = 'purple';
         let currentQuestionId = 'lobby';
         let lastPressedQuestionId = '';
         let serverOffset = 0;
         let playerTimerInterval = null;
+
+        const PLAYER_COLORS = {
+            orange: { main:'#ff9800', dark:'#c26700', shadow:'#875100' },
+            purple: { main:'#8b5fbf', dark:'#4a2570', shadow:'#32164d' },
+            red: { main:'#ef4444', dark:'#b91c1c', shadow:'#7f1d1d' },
+            blue: { main:'#3b82f6', dark:'#1d4ed8', shadow:'#172554' },
+            darkblue: { main:'#1e3a8a', dark:'#172554', shadow:'#0f172a' },
+            green: { main:'#22c55e', dark:'#15803d', shadow:'#14532d' },
+            lightgreen: { main:'#a3e635', dark:'#4d7c0f', shadow:'#365314' },
+            yellow: { main:'#eab308', dark:'#a16207', shadow:'#713f12' },
+            pink: { main:'#f472b6', dark:'#be185d', shadow:'#831843' },
+            cyan: { main:'#2dd4bf', dark:'#0f766e', shadow:'#134e4a' },
+            charcoal: { main:'#334155', dark:'#0f172a', shadow:'#020617' },
+            lightblue: { main:'#7dd3fc', dark:'#0284c7', shadow:'#075985' }
+        };
 
         function genId() { return Math.random().toString(36).substr(2, 9) + Date.now().toString(36); }
 
@@ -453,13 +539,37 @@
             document.getElementById('displayRoomCode').textContent = 'جلسة ' + currentRoom;
             document.getElementById('displayMyName').textContent   = myName;
 
-            const isT1 = myTeam === 'team1';
-            document.getElementById('displayMyTeamName').textContent = isT1 ? team1Name : team2Name;
-            document.getElementById('displayMyTeamDot').style.background = isT1 ? 'var(--orange)' : '#ba8fed';
-            const bBg = document.getElementById('buzzerBg');
-            if (isT1) bBg.classList.remove('team2'); else bBg.classList.add('team2');
+            updatePlayerIdentityUI();
 
             if ('vibrate' in navigator) navigator.vibrate(50);
+        }
+
+        function updatePlayerIdentityUI() {
+            const isT1 = myTeam === 'team1';
+            const teamName = isT1 ? team1Name : team2Name;
+            const teamColor = PLAYER_COLORS[isT1 ? team1ColorKey : team2ColorKey] || PLAYER_COLORS[isT1 ? 'orange' : 'purple'];
+            const teamOption1 = document.querySelector('.team-opt[data-team="team1"]');
+            const teamOption2 = document.querySelector('.team-opt[data-team="team2"]');
+            if (teamOption1) teamOption1.textContent = team1Name + ' 🟠';
+            if (teamOption2) teamOption2.textContent = team2Name + ' 🟣';
+            const teamNameEl = document.getElementById('displayMyTeamName');
+            if (teamNameEl) teamNameEl.textContent = teamName;
+            const teamDot = document.getElementById('displayMyTeamDot');
+            if (teamDot) teamDot.style.background = teamColor.main;
+            const competitionEl = document.getElementById('displayCompetitionName');
+            if (competitionEl) competitionEl.textContent = competitionName || 'هوجاس';
+            const bBg = document.getElementById('buzzerBg');
+            if (bBg) {
+                bBg.classList.toggle('team2', !isT1);
+                const c1 = PLAYER_COLORS[team1ColorKey] || PLAYER_COLORS.orange;
+                const c2 = PLAYER_COLORS[team2ColorKey] || PLAYER_COLORS.purple;
+                document.documentElement.style.setProperty('--player-team1', c1.main);
+                document.documentElement.style.setProperty('--player-team1-dark', c1.dark);
+                document.documentElement.style.setProperty('--player-team1-shadow', c1.shadow);
+                document.documentElement.style.setProperty('--player-team2', c2.main);
+                document.documentElement.style.setProperty('--player-team2-dark', c2.dark);
+                document.documentElement.style.setProperty('--player-team2-shadow', c2.shadow);
+            }
         }
 
         // ── Listen to Room State (Real-Time) ─────────────────────────────────
@@ -469,6 +579,20 @@
 
             onValue(roomRef, (snapshot) => {
                 const data = snapshot.val() || {};
+                const liveGame = data.game || {};
+                const nextCompetition = liveGame.competitionName || data.competitionName;
+                const nextTeam1 = liveGame.team1?.name || data.team1Name;
+                const nextTeam2 = liveGame.team2?.name || data.team2Name;
+                const nextColor1 = liveGame.team1?.color;
+                const nextColor2 = liveGame.team2?.color;
+                if (nextCompetition || nextTeam1 || nextTeam2 || nextColor1 || nextColor2) {
+                    if (nextCompetition) competitionName = String(nextCompetition);
+                    if (nextTeam1) team1Name = String(nextTeam1);
+                    if (nextTeam2) team2Name = String(nextTeam2);
+                    if (nextColor1 && PLAYER_COLORS[nextColor1]) team1ColorKey = nextColor1;
+                    if (nextColor2 && PLAYER_COLORS[nextColor2]) team2ColorKey = nextColor2;
+                    updatePlayerIdentityUI();
+                }
                 const locked = data.locked || false;
                 const nextQuestionId = data.timer?.questionId || data.game?.updatedAt || 'lobby';
                 if (nextQuestionId !== currentQuestionId) {

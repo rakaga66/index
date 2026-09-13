@@ -180,14 +180,14 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 40px;
+            gap: 14px;
+            margin-bottom: 28px;
         }
 
         .analytics-heading {
-            font-size: 2rem;
+            font-size: 1.55rem;
             font-weight: 900;
-            margin: 5px 0 22px;
+            margin: 5px 0 16px;
         }
 
         .analytics-live {
@@ -198,13 +198,13 @@
             background: var(--white);
             border: 3px solid var(--dark);
             border-radius: 12px;
-            padding: 25px;
+            padding: 16px 12px;
             text-align: center;
-            box-shadow: var(--shadow-solid);
+            box-shadow: var(--shadow-solid-sm);
         }
 
         .stat-num {
-            font-size: 3rem;
+            font-size: 2.2rem;
             font-weight: 900;
             color: var(--dark);
             line-height: 1;
@@ -212,10 +212,10 @@
         }
 
         .stat-lbl {
-            font-size: 1.1rem;
+            font-size: .88rem;
             font-weight: 800;
             color: var(--dark);
-            margin-top: 10px;
+            margin-top: 7px;
             display: block;
         }
 
@@ -452,6 +452,8 @@
             background: #fffef9;
         }
 
+        .question-editor[hidden] { display: none !important; }
+
         .question-editor label { display: grid; gap: 6px; font-weight: 900; font-size: .83rem; }
         .question-editor label.wide { grid-column: 1 / -1; }
         .question-editor textarea { width: 100%; min-height: 84px; resize: vertical; }
@@ -482,6 +484,8 @@
         .inbox-card__actions button { padding: 7px 10px; border: 2px solid #000; border-radius: 7px; background: #fff; box-shadow: 2px 2px 0 #000; }
         .question-library-card__actions button:hover,
         .inbox-card__actions button:hover { transform: translate(-1px, -1px); }
+        .question-library-card__actions button:disabled,
+        .inbox-card__actions button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
         .question-badge { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid #000; border-radius: 99px; font-size: .73rem; font-weight: 900; background: #fff; }
         .question-badge.is-active,
         .question-badge.is-approved { background: #d6f8e4; }
@@ -498,8 +502,138 @@
         .admin-empty { padding: 24px; text-align: center; border: 2px dashed #000; border-radius: 10px; font-weight: 800; }
         .inbox-unread { border-right: 6px solid #ffd600; }
 
+        /* مساعد الأسئلة: صندوق مستقل عن وارد المتابعين، ولا يضيف أي سؤال
+           للمكتبة النشطة قبل ضغط الأدمن على «اعتماد». */
+        .ai-question-section { background: linear-gradient(145deg, #fff, #fffaf0); }
+        .ai-question-kicker { color: #6d28d9; font-size: .76rem; font-weight: 900; }
+        .ai-generator-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .7fr); gap: 12px; align-items: end; }
+        .ai-generator-grid label { display: grid; gap: 6px; font-weight: 900; font-size: .84rem; }
+        .ai-generator-grid textarea,
+        .ai-generator-grid input,
+        .ai-generator-grid select { width: 100%; min-width: 0; padding: 10px 12px; border: 2px solid #000; border-radius: 8px; box-shadow: 2px 2px 0 #000; font: inherit; font-size: .9rem; background: #fff; }
+        .ai-generator-grid textarea { min-height: 86px; resize: vertical; }
+        .ai-generator-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .ai-generator-options label:first-child { grid-column: 1 / -1; }
+        .ai-generator-options .btn-main { grid-column: 1 / -1; width: 100%; padding: 10px 14px; font-size: .95rem; }
+        .ai-generator-options .btn-main[disabled] { opacity: .55; cursor: wait; }
+        .ai-question-list { margin-top: 16px; }
+        .ai-question-card { border-right: 6px solid #7c3aed; background: #fbf8ff; }
+        .ai-question-card.is-approved { border-right-color: #16a34a; }
+        .ai-question-card.is-rejected { border-right-color: #dc2626; opacity: .72; }
+        .ai-question-card.is-archived { border-right-color: #64748b; opacity: .72; }
+        .ai-question-card__request { color: #6b7280; font-size: .76rem; margin-top: 6px; overflow-wrap: anywhere; }
+        .ai-request-history { margin-top: 14px; padding: 10px 12px; border: 1px dashed #7c3aed; border-radius: 9px; background: rgba(124,58,237,.06); color: #4c1d95; font-size: .78rem; line-height: 1.7; }
+        .ai-request-history:empty { display: none; }
+
+        /* لوحة الأدمن تعمل بعرض واحد مع الجوال ولا تنشئ تمريرًا أفقيًا. */
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .page,
+        .section,
+        .question-admin-head,
+        .question-admin-toolbar,
+        .question-editor,
+        .question-library-card,
+        .inbox-card {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .question-admin-subtitle {
+            margin-top: 7px;
+            color: #4b5563;
+            font-size: .86rem;
+            font-weight: 700;
+            line-height: 1.7;
+        }
+
+        .question-library-card__question,
+        .question-library-card__answer,
+        .inbox-card__title,
+        .inbox-card__body,
+        .question-admin-subtitle {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
         @media (max-width: 768px) {
-            .question-admin-stats { grid-template-columns: 1fr; }
+            nav {
+                height: auto;
+                min-height: 64px;
+                padding: 10px 12px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            nav > div {
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            nav > div:last-child {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .page {
+                width: 100%;
+                padding: 18px 10px 28px;
+            }
+
+            .analytics-heading {
+                font-size: 1.08rem;
+                line-height: 1.45;
+                overflow-wrap: anywhere;
+            }
+
+            .stats-grid { gap: 8px; margin-bottom: 18px; }
+            .stat-card { padding: 11px 7px; border-width: 2px; box-shadow: 2px 2px 0 #000; }
+            .stat-num { font-size: 1.7rem; }
+            .stat-lbl { font-size: .72rem; margin-top: 4px; line-height: 1.35; }
+
+            .section {
+                padding: 16px 12px;
+                border-radius: 12px;
+                margin-bottom: 18px;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+                line-height: 1.45;
+                margin-bottom: 14px;
+            }
+
+            .section-title::before {
+                width: 5px;
+                height: 22px;
+                flex: 0 0 5px;
+            }
+
+            .question-admin-head {
+                align-items: stretch;
+            }
+
+            .question-admin-head > * {
+                width: 100%;
+            }
+
+            .question-admin-head .btn-main {
+                width: 100%;
+            }
+
+            .question-admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .question-editor { grid-template-columns: 1fr; }
             .question-editor label.wide,
             .question-editor-actions { grid-column: auto; }
@@ -508,8 +642,28 @@
             .inbox-toolbar input,
             .inbox-toolbar select { width: 100%; flex-basis: 100%; }
             .question-admin-toolbar button,
-            .inbox-toolbar button { width: 100%; }
+            .inbox-toolbar button { width: 100%; min-width: 0; }
+
+            .question-admin-stat {
+                padding: 10px 7px;
+                box-shadow: 2px 2px 0 #000;
+            }
+
+            .question-admin-stat strong { font-size: 1.35rem; }
+            .question-admin-stat span { font-size: .72rem; }
+            .question-library-card,
+            .inbox-card { padding: 12px 10px; }
+            .question-library-card__actions button,
+            .inbox-card__actions button { flex: 1 1 calc(50% - 7px); min-width: 0; }
+            .btn-nav,
+            .btn-logout { padding: 7px 11px; font-size: .82rem; }
+
+            .ai-generator-grid { grid-template-columns: 1fr; }
+            .ai-generator-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .ai-generator-options label:first-child,
+            .ai-generator-options .btn-main { grid-column: 1 / -1; }
         }
+
     </style>
 </head>
 
@@ -536,7 +690,7 @@
             </div>
             <div style="display: flex; gap: 12px;">
                 <span id="adminName" style="font-size:0.8rem; vertical-align:middle; color:#666; align-self:center;"></span>
-                <a href="pages/playground.html" class="btn-nav">المتجر</a>
+                <a href="/" class="btn-nav">المتجر</a>
                 <button class="btn-logout" onclick="logout()">خروج</button>
             </div>
         </nav>
@@ -550,22 +704,7 @@
                 <div class="stat-card"><span class="stat-num" id="a-game-starts">0</span><span class="stat-lbl">مرات بدء اللعب</span></div>
                 <div class="stat-card"><span class="stat-num" id="a-unique-players">0</span><span class="stat-lbl">أجهزة لعبت اللعبة</span></div>
                 <div class="stat-card"><span class="stat-num" id="a-store-visits">0</span><span class="stat-lbl">زيارات المتجر</span></div>
-            </div>
-
-            <h2 class="analytics-heading">بيانات النظام السابقة</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-num" id="s-total">0</span>
-                    <span class="stat-lbl">إجمالي المسجلين</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-num" id="s-activated" style="color:var(--green-ok)">0</span>
-                    <span class="stat-lbl">نشط (متصل أو دخل)</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-num" id="s-pending" style="color:var(--dark)">0</span>
-                    <span class="stat-lbl">مسجل (لم يدخل بعد)</span>
-                </div>
+                <div class="stat-card"><span class="stat-num" id="a-online-sessions">0</span><span class="stat-lbl">جلسات أونلاين أُنشئت</span></div>
             </div>
 
             <div id="rbacWarning" class="result-box error" style="margin-bottom:30px; display:none;">
@@ -575,40 +714,12 @@
             </div>
 
             <div id="adminContent" style="display:none;">
-                <div class="section">
-                    <div class="section-title">إضافة / تفعيل يدوي</div>
-                    <div class="form-grid">
-                        <input type="text" id="newUsername" placeholder="الاسم (مثال: راكان)" />
-                        <input type="text" id="newPhone" placeholder="رقم الجوال (05xxxxxxxx)" />
-                        <button class="btn-main" onclick="addUser()">إضافة الرقم</button>
-                    </div>
-                    <div id="actionResult" class="result-box"></div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">قائمة التراخيص</div>
-                    <div style="overflow-x:auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>الاسم</th>
-                                    <th>رقم الجوال</th>
-                                    <th>الحالة</th>
-                                    <th>تاريخ الانضمام</th>
-                                    <th>آخر دخول</th>
-                                    <th>إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userTable">
-                                <tr><td colspan="6" style="text-align:center">جاري جلب البيانات...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div class="section" id="questionLibrarySection">
                     <div class="question-admin-head">
-                        <div class="section-title" style="margin-bottom:0">إدارة الأسئلة الإضافية</div>
+                        <div>
+                            <div class="section-title" style="margin-bottom:0">إدارة مكتبة الأسئلة</div>
+                            <p class="question-admin-subtitle">جميع أسئلة اللعبة الأصلية والمضافة — عدّل السؤال أو الإجابة واحفظها لتظهر في الأطوار مباشرة.</p>
+                        </div>
                         <button class="btn-main" type="button" onclick="openQuestionEditor()">＋ إضافة سؤال</button>
                     </div>
                     <div class="question-admin-stats" aria-label="إحصائيات مكتبة الأسئلة">
@@ -626,12 +737,13 @@
                         <select id="qlLetterFilter" aria-label="تصفية بالحرف"><option value="">كل الحروف</option></select>
                         <select id="qlDifficultyFilter" aria-label="تصفية بالصعوبة"><option value="">كل الصعوبات</option><option>سهل</option><option>متوسط</option><option>صعب</option></select>
                         <select id="qlStatusFilter" aria-label="تصفية بالحالة"><option value="">كل الحالات</option><option value="active">فعّال</option><option value="disabled">معطّل</option></select>
-                        <select id="qlSourceFilter" aria-label="تصفية بالمصدر"><option value="">كل المصادر</option><option value="follower">متابع</option><option value="admin">أدمن</option></select>
+                        <select id="qlSourceFilter" aria-label="تصفية بالمصدر"><option value="">كل المصادر</option><option value="base">أساسي في اللعبة</option><option value="follower">متابع</option><option value="admin">أدمن</option><option value="ai">ذكاء اصطناعي</option></select>
                         <select id="qlDateFilter" aria-label="تصفية بالتاريخ"><option value="">كل التواريخ</option><option value="7">آخر 7 أيام</option><option value="30">آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option></select>
                     </div>
                     <form class="question-editor" id="questionEditor" hidden onsubmit="saveQuestionFromAdmin(event)">
                         <input type="hidden" id="qlEditingId">
                         <input type="hidden" id="qlPendingSubmissionId">
+                        <input type="hidden" id="qlEditingKind">
                         <label class="wide">السؤال
                             <textarea id="qlQuestion" required maxlength="500" placeholder="اكتب السؤال"></textarea>
                         </label>
@@ -662,6 +774,36 @@
                     <div class="admin-pagination">
                         <button type="button" id="qlPrev">السابق</button><span id="qlPage">1 / 1</span><button type="button" id="qlNext">التالي</button>
                     </div>
+                </div>
+
+                <div class="section ai-question-section" id="aiQuestionSection">
+                    <div class="question-admin-head">
+                        <div>
+                            <div class="section-title" style="margin-bottom:0">مساعد أسئلة الذكاء الاصطناعي <span class="ai-question-kicker">دفعات قابلة للمراجعة</span></div>
+                            <p class="question-admin-subtitle">اكتب طلبك وحدد العدد. ستصل الأسئلة هنا أولًا، ولا تظهر في اللعب إلا بعد اعتمادك لكل سؤال.</p>
+                        </div>
+                        <span id="aiPendingBadge" class="question-badge is-pending">0 معلّقة</span>
+                    </div>
+                    <div class="ai-generator-grid">
+                        <label>ماذا تريد من المساعد؟
+                            <textarea id="aiGeneratePrompt" maxlength="1200" placeholder="مثال: أنشئ أسئلة عن الحيوانات، متنوعة وسهلة للأطفال."></textarea>
+                        </label>
+                        <div class="ai-generator-options">
+                            <label>عدد الأسئلة
+                                <input id="aiGenerateCount" type="number" min="1" max="50" value="10" inputmode="numeric">
+                            </label>
+                            <label>حرف اختياري
+                                <input id="aiGenerateLetter" maxlength="2" placeholder="كل الحروف">
+                            </label>
+                            <label>الصعوبة
+                                <select id="aiGenerateDifficulty"><option value="">متنوعة</option><option>سهل</option><option>متوسط</option><option>صعب</option></select>
+                            </label>
+                            <button class="btn-main" type="button" id="aiGenerateBtn">✨ توليد أسئلة للمراجعة</button>
+                        </div>
+                    </div>
+                    <div id="aiGenerateResult" class="result-box" aria-live="polite"></div>
+                    <div id="aiRequestHistory" class="ai-request-history"></div>
+                    <div class="question-library-list ai-question-list" id="aiQuestionList"><div class="admin-empty">لم تُولّد أسئلة بالذكاء الاصطناعي بعد.</div></div>
                 </div>
 
                 <div class="section" id="followerInboxSection">
@@ -701,12 +843,12 @@
         </div>
     </div>
 
-    <script src="js/question-library.js?v=followers-1"></script>
+    <script src="js/question-library.js?v=question-overrides-1"></script>
     <!-- Script Block -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
         import { observeAnalytics } from "./js/qaf-analytics.js?v=1";
  
         const firebaseConfig = {
@@ -739,11 +881,37 @@
                 result.textContent = 'تعذر قراءة إعدادات التحقق من السيرفر.';
             }
         }
+        async function testOnlineAiConnection() {
+            const result = document.getElementById('onlineAiSettingsResult');
+            try {
+                const token = await auth.currentUser?.getIdToken();
+                if (!token) throw new Error('admin-token-required');
+                const response = await fetch('/api/online/test-connection', {
+                    method: 'POST', headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.ok) throw new Error(data.message || 'ai-unavailable');
+                result.className = 'result-box success';
+                result.textContent = `تم الاتصال بالذكاء الاصطناعي بنجاح ✅ (${data.provider || 'AI'} · ${data.model || 'model'} · ${data.latencyMs || 0}ms)`;
+            } catch (error) {
+                const message = {
+                    'admin-token-required': 'انتهت جلسة الأدمن، سجّل الدخول من جديد.',
+                    'admin-required': 'لا تملك صلاحية الأدمن لهذا الطلب.',
+                    'ai-not-configured': 'مفتاح الذكاء الاصطناعي غير مهيأ في السيرفر.',
+                    'ai-disabled': 'مساعد الأسئلة غير مفعّل من إعدادات السيرفر.',
+                    'ai-invalid-key': 'مفتاح الذكاء الاصطناعي مرفوض أو ملغى. أنشئ مفتاحًا جديدًا ثم حدّث Vercel وأعد النشر.',
+                    'ai-insufficient-balance': 'رصيد حساب الذكاء الاصطناعي غير كافٍ.',
+                    'ai-rate-limit': 'تم تجاوز حد الطلبات مؤقتًا. انتظر دقيقة ثم حاول مرة أخرى.'
+                }[error?.message] || 'فشل الاتصال بمزود الذكاء الاصطناعي.';
+                result.className = 'result-box error';
+                result.textContent = message;
+            }
+        }
         document.getElementById('onlineAiTestBtn')?.addEventListener('click', async () => {
             const result = document.getElementById('onlineAiSettingsResult');
             result.className = 'result-box';
-            result.textContent = 'جارٍ فحص إعدادات السيرفر...';
-            await loadOnlineAiSettings();
+            result.textContent = 'جارٍ اختبار الاتصال الفعلي بمزود الذكاء الاصطناعي...';
+            await testOnlineAiConnection();
         });
         document.getElementById('onlineAiSaveBtn')?.addEventListener('click', async () => {
             const result = document.getElementById('onlineAiSettingsResult');
@@ -766,38 +934,80 @@
         let analyticsStarted = false;
         let dashboardStarted = false;
         let questionRecords = [];
+        let libraryRecords = [];
+        let baseQuestionRecords = [];
+        let questionOverrides = [];
         let questionSubmissions = [];
         let followerSuggestions = [];
+        let aiQuestionSubmissions = [];
+        let aiRequestHistory = [];
         let questionInboxFilter = 'all';
         let questionLibraryPage = 1;
         let questionLibraryUnsub;
+        let questionOverridesUnsub;
         let questionSubmissionUnsub;
         let suggestionUnsub;
+        let aiQuestionUnsub;
+        let aiRequestUnsub;
         let baseQuestionCount = 0;
         const QUESTION_PAGE_SIZE = 12;
 
         const escapeAdminHtml = (value) => String(value == null ? '' : value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
         const adminDate = value => value ? new Date(Number(value)).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
         const statusLabel = value => ({ pending: 'قيد المراجعة', approved: 'مقبول', active: 'فعّال', disabled: 'معطّل', rejected: 'مرفوض', archived: 'مؤرشف', in_review: 'قيد المتابعة' }[value] || value || '—');
+        const sourceLabel = value => ({ base: 'أساسي في اللعبة', static: 'أساسي في اللعبة', follower: 'متابع', admin: 'أدمن', ai: 'ذكاء اصطناعي' }[value] || value || '—');
         const recordKey = (kind, id) => `${kind}:${id}`;
 
         function initQuestionWorkspace() {
             if (!window.QuestionLibrary || document.body.dataset.questionWorkspaceReady) return;
             document.body.dataset.questionWorkspaceReady = 'true';
-            const redrawLibrary = records => { questionRecords = Array.isArray(records) ? records : []; renderQuestionLibrary(); };
+            const redrawLibrary = records => { libraryRecords = Array.isArray(records) ? records : []; rebuildQuestionRecords(); };
+            const redrawOverrides = records => { questionOverrides = Array.isArray(records) ? records : []; rebuildQuestionRecords(); };
             const redrawSubmissions = records => { questionSubmissions = Array.isArray(records) ? records : []; renderQuestionLibrary(); renderFollowerInbox(); };
             const redrawSuggestions = records => { followerSuggestions = Array.isArray(records) ? records : []; renderFollowerInbox(); };
             window.QuestionLibrary.subscribeLibrary(redrawLibrary).then(unsub => { questionLibraryUnsub = unsub; }).catch(error => console.warn('تعذر ربط مكتبة الأسئلة', error));
+            if (window.QuestionLibrary.subscribeOverrides) {
+                window.QuestionLibrary.subscribeOverrides(redrawOverrides).then(unsub => { questionOverridesUnsub = unsub; }).catch(error => console.warn('تعذر ربط تعديلات الأسئلة الأساسية', error));
+            }
             window.QuestionLibrary.subscribeSubmissions(redrawSubmissions).then(unsub => { questionSubmissionUnsub = unsub; }).catch(error => console.warn('تعذر ربط أسئلة المتابعين', error));
             window.QuestionLibrary.subscribeSuggestions(redrawSuggestions).then(unsub => { suggestionUnsub = unsub; }).catch(error => console.warn('تعذر ربط اقتراحات المتابعين', error));
+            if (window.QuestionLibrary.subscribeAiQuestions) {
+                window.QuestionLibrary.subscribeAiQuestions(records => { aiQuestionSubmissions = Array.isArray(records) ? records : []; renderAiQuestionInbox(); renderQuestionLibrary(); }).then(unsub => { aiQuestionUnsub = unsub; }).catch(error => console.warn('تعذر ربط أسئلة الذكاء الاصطناعي', error));
+            }
+            if (window.QuestionLibrary.subscribeAiRequests) {
+                window.QuestionLibrary.subscribeAiRequests(records => { aiRequestHistory = Array.isArray(records) ? records : []; renderAiRequestHistory(); }).then(unsub => { aiRequestUnsub = unsub; }).catch(error => console.warn('تعذر ربط سجل طلبات الذكاء الاصطناعي', error));
+            }
             (async () => {
-                for (const path of ['data/questions (1).json', '../data/questions (1).json']) {
-                    try { const response = await fetch(path); if (response.ok) { const data = await response.json(); baseQuestionCount = Array.isArray(data) ? data.length : 0; break; } } catch (_) { /* جرّب المسار التالي */ }
+                for (const path of ['data/questions.json', 'data/questions (1).json', '../data/questions.json', '../data/questions (1).json']) {
+                    try {
+                        const response = await fetch(path);
+                        if (response.ok) {
+                            const data = await response.json();
+                            baseQuestionRecords = Array.isArray(data) ? data.map((item, index) => ({
+                                id: String(item.id || `static-${index}`),
+                                type: 'question',
+                                source: 'base',
+                                status: 'active',
+                                question: item.question || item.q || '',
+                                answer: item.answer || item.a || '',
+                                letter: item.letter || '',
+                                category: item.category || 'عام',
+                                difficulty: item.difficulty || 'متوسط',
+                                notes: item.notes || '',
+                                createdAt: 0,
+                                updatedAt: 0
+                            })).filter(item => item.question && item.answer) : [];
+                            baseQuestionCount = baseQuestionRecords.length;
+                            rebuildQuestionRecords();
+                            break;
+                        }
+                    } catch (_) { /* جرّب المسار التالي */ }
                 }
                 const basic = document.getElementById('qlBasicCount'); if (basic) basic.textContent = baseQuestionCount.toLocaleString('ar-SA');
             })();
             ['qlSearch', 'qlLetterFilter', 'qlDifficultyFilter', 'qlStatusFilter', 'qlSourceFilter', 'qlDateFilter'].forEach(id => document.getElementById(id)?.addEventListener('input', () => { questionLibraryPage = 1; renderQuestionLibrary(); }));
             document.getElementById('inboxSearch')?.addEventListener('input', renderFollowerInbox);
+            document.getElementById('aiGenerateBtn')?.addEventListener('click', generateAiQuestions);
             document.querySelectorAll('[data-inbox-filter]').forEach(button => button.addEventListener('click', () => {
                 questionInboxFilter = button.dataset.inboxFilter || 'all';
                 document.querySelectorAll('[data-inbox-filter]').forEach(item => item.classList.toggle('is-selected', item === button));
@@ -807,6 +1017,134 @@
             document.getElementById('qlNext')?.addEventListener('click', () => { questionLibraryPage += 1; renderQuestionLibrary(); });
             renderQuestionLibrary();
             renderFollowerInbox();
+            renderAiQuestionInbox();
+            renderAiRequestHistory();
+        }
+
+        function findAiQuestion(id) {
+            return aiQuestionSubmissions.find(item => item.id === decodeURIComponent(id));
+        }
+
+        function renderAiRequestHistory() {
+            const node = document.getElementById('aiRequestHistory');
+            if (!node) return;
+            const recent = aiRequestHistory.slice(0, 4);
+            node.innerHTML = recent.length
+                ? '<strong>آخر الطلبات:</strong> ' + recent.map(item => `${adminDate(item.createdAt)} — ${Number(item.generatedCount || 0)}/${Number(item.count || 0)} سؤالًا`).join(' · ')
+                : '';
+        }
+
+        function renderAiQuestionInbox() {
+            const list = document.getElementById('aiQuestionList');
+            if (!list) return;
+            const pending = aiQuestionSubmissions.filter(item => item.status === 'pending' && !item.readAt).length;
+            const badge = document.getElementById('aiPendingBadge');
+            if (badge) badge.textContent = `${pending} معلّقة`;
+            const records = [...aiQuestionSubmissions].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+            list.innerHTML = records.length ? records.map(item => {
+                const id = encodeURIComponent(item.id);
+                const status = item.status || 'pending';
+                const isPending = status === 'pending';
+                const actionButtons = [
+                    isPending ? `<button type="button" onclick="approveAiQuestionFromAdmin('${id}')">اعتماد للمكتبة</button>` : '',
+                    `<button type="button" onclick="editAiQuestionFromAdmin('${id}')">تعديل</button>`,
+                    isPending ? `<button type="button" onclick="setAiQuestionStatus('${id}','rejected')">رفض</button>` : '',
+                    `<button type="button" onclick="setAiQuestionRead('${id}')">${item.readAt ? 'مقروء' : 'تحديد كمقروء'}</button>`,
+                    status !== 'archived' ? `<button type="button" onclick="setAiQuestionStatus('${id}','archived')">أرشفة</button>` : `<button type="button" onclick="setAiQuestionStatus('${id}','pending')">إعادة للمراجعة</button>`,
+                    `<button type="button" onclick="deleteAiQuestionFromAdmin('${id}')">حذف</button>`
+                ].join('');
+                return `<article class="question-library-card ai-question-card is-${escapeAdminHtml(status)} ${!item.readAt && isPending ? 'inbox-unread' : ''}">
+                    <div class="question-library-card__meta"><span class="question-badge">${escapeAdminHtml(item.letter || '—')}</span><span class="question-badge is-${escapeAdminHtml(status)}">${statusLabel(status)}</span><span class="question-badge">${escapeAdminHtml(item.category || 'عام')}</span><span class="question-badge">${escapeAdminHtml(item.difficulty || 'متوسط')}</span><small>${escapeAdminHtml(item.name || 'مساعد الذكاء الاصطناعي')} · ${adminDate(item.createdAt)}</small></div>
+                    <div class="question-library-card__question">${escapeAdminHtml(item.question)}</div>
+                    <div class="question-library-card__answer">الإجابة: ${escapeAdminHtml(item.answer)}</div>
+                    ${item.requestId ? `<div class="ai-question-card__request">طلب التوليد: ${escapeAdminHtml(item.requestId)}</div>` : ''}
+                    <div class="question-library-card__actions">${actionButtons}</div>
+                </article>`;
+            }).join('') : '<div class="admin-empty">لم تُولّد أسئلة بالذكاء الاصطناعي بعد.</div>';
+        }
+
+        async function generateAiQuestions() {
+            const button = document.getElementById('aiGenerateBtn');
+            const result = document.getElementById('aiGenerateResult');
+            if (!button || !result || button.disabled) return;
+            const count = Math.max(1, Math.min(50, Number(document.getElementById('aiGenerateCount')?.value || 10)));
+            const prompt = document.getElementById('aiGeneratePrompt')?.value.trim() || 'أنشئ أسئلة متنوعة مناسبة للعائلة.';
+            const letter = document.getElementById('aiGenerateLetter')?.value.trim().slice(0, 2) || '';
+            const difficulty = document.getElementById('aiGenerateDifficulty')?.value || '';
+            button.disabled = true;
+            result.className = 'result-box';
+            result.textContent = 'جارٍ إرسال الطلب للمساعد وتدقيق الإجابات…';
+            try {
+                const token = await auth.currentUser?.getIdToken();
+                if (!token) throw new Error('admin-token-required');
+                const response = await fetch('/api/admin/generate-questions', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ count, prompt, letter, difficulty })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.ok) throw new Error(data.message || 'generation-failed');
+                let saved = 0;
+                for (const question of (data.questions || [])) {
+                    await window.QuestionLibrary.addAiQuestion({ ...question, requestId: data.requestId });
+                    saved += 1;
+                }
+                await window.QuestionLibrary.recordAiRequest({ requestId: data.requestId, prompt, count, generatedCount: saved, provider: data.provider, model: data.model });
+                result.className = 'result-box success';
+                result.textContent = `تم توليد ${saved} أسئلة ووضعها في صندوق المراجعة. لن تظهر في اللعب قبل اعتمادها ✅`;
+                document.getElementById('aiGeneratePrompt').value = '';
+            } catch (error) {
+                console.error(error);
+                result.className = 'result-box error';
+                const message = {
+                    'admin-token-required': 'انتهت جلسة الأدمن، سجّل الدخول من جديد.',
+                    'ai-not-configured': 'مفتاح الذكاء الاصطناعي غير مهيأ في السيرفر.',
+                    'ai-disabled': 'مساعد الأسئلة غير مفعّل من إعدادات السيرفر.',
+                    'admin-required': 'لا تملك صلاحية الأدمن لهذا الطلب.',
+                    'ai-invalid-key': 'مفتاح الذكاء الاصطناعي مرفوض أو ملغى. أنشئ مفتاحًا جديدًا وضعه في Vercel ثم أعد النشر.',
+                    'ai-insufficient-balance': 'رصيد حساب الذكاء الاصطناعي غير كافٍ.',
+                    'ai-rate-limit': 'تم تجاوز حد الطلبات مؤقتًا. انتظر دقيقة ثم حاول مرة أخرى.'
+                }[error?.message] || 'تعذر توليد الأسئلة. تحقق من إعدادات الذكاء الاصطناعي واتصال الشبكة.';
+                result.textContent = message;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        window.approveAiQuestionFromAdmin = async id => {
+            const item = findAiQuestion(id); if (!item || item.status !== 'pending') return;
+            try { await window.QuestionLibrary.approveAiQuestion(item); alert('تم اعتماد السؤال وإضافته للمكتبة ✅'); }
+            catch (error) { console.error(error); alert('تعذر اعتماد سؤال الذكاء الاصطناعي.'); }
+        };
+        window.editAiQuestionFromAdmin = id => {
+            const item = findAiQuestion(id); if (!item) return;
+            openQuestionEditor(item, item.id, 'ai');
+        };
+        window.setAiQuestionStatus = async (id, status) => {
+            const item = findAiQuestion(id); if (!item) return;
+            try { await window.QuestionLibrary.updateAiQuestion(item.id, { status, readAt: Date.now(), reviewedAt: status === 'pending' ? null : Date.now() }); }
+            catch (error) { console.error(error); alert('تعذر تحديث حالة سؤال الذكاء الاصطناعي.'); }
+        };
+        window.setAiQuestionRead = async id => {
+            const item = findAiQuestion(id); if (!item) return;
+            try { await window.QuestionLibrary.updateAiQuestion(item.id, { readAt: Date.now() }); }
+            catch (error) { console.error(error); alert('تعذر تحديد السؤال كمقروء.'); }
+        };
+        window.deleteAiQuestionFromAdmin = async id => {
+            const item = findAiQuestion(id); if (!item || !confirm('حذف سؤال الذكاء الاصطناعي نهائيًا؟')) return;
+            try { await window.QuestionLibrary.removeAiQuestion(item.id); }
+            catch (error) { console.error(error); alert('تعذر حذف السؤال.'); }
+        };
+
+        function rebuildQuestionRecords() {
+            const overridesById = new Map(questionOverrides.map(item => [String(item.baseId || item.id), item]));
+            const base = baseQuestionRecords.map(item => {
+                const override = overridesById.get(String(item.id));
+                return override
+                    ? { ...item, ...override, id: item.id, baseId: item.id, source: 'base' }
+                    : item;
+            });
+            questionRecords = [...base, ...libraryRecords];
+            renderQuestionLibrary();
         }
 
         function updateQuestionFilterLetters() {
@@ -851,11 +1189,16 @@
             const list = document.getElementById('questionLibraryList');
             if (list) list.innerHTML = visible.length ? visible.map(item => {
                 const id = encodeURIComponent(item.id);
+                const isBase = item.source === 'base';
+                const changed = isBase && questionOverrides.some(override => String(override.baseId || override.id) === String(item.id));
+                const resetAction = isBase
+                    ? `<button type="button" ${changed ? `onclick="resetLibraryQuestion('${id}')"` : 'disabled'}>${changed ? 'إرجاع الأصل' : 'أصلي'}</button>`
+                    : `<button type="button" onclick="deleteLibraryQuestion('${id}')">حذف</button>`;
                 return `<article class="question-library-card ${item.status === 'disabled' ? 'is-disabled' : ''}">
-                    <div class="question-library-card__meta"><span class="question-badge">${escapeAdminHtml(item.letter || '—')}</span><span class="question-badge ${item.status === 'active' ? 'is-active' : 'is-disabled'}">${statusLabel(item.status)}</span><span class="question-badge">${escapeAdminHtml(item.category || 'عام')}</span><span class="question-badge">${escapeAdminHtml(item.difficulty || 'متوسط')}</span><small>${escapeAdminHtml(item.source === 'follower' ? 'متابع' : 'أدمن')} · ${adminDate(item.createdAt)}</small></div>
+                    <div class="question-library-card__meta"><span class="question-badge">${escapeAdminHtml(item.letter || '—')}</span><span class="question-badge ${item.status === 'active' ? 'is-active' : 'is-disabled'}">${statusLabel(item.status)}</span><span class="question-badge">${escapeAdminHtml(item.category || 'عام')}</span><span class="question-badge">${escapeAdminHtml(item.difficulty || 'متوسط')}</span><small>${escapeAdminHtml(sourceLabel(item.source))}${changed ? ' · معدّل' : ''}${item.createdAt ? ` · ${adminDate(item.createdAt)}` : ''}</small></div>
                     <div class="question-library-card__question">${escapeAdminHtml(item.question)}</div>
                     <div class="question-library-card__answer">الإجابة: ${escapeAdminHtml(item.answer)}</div>
-                    <div class="question-library-card__actions"><button type="button" onclick="editLibraryQuestion('${id}')">تعديل</button><button type="button" onclick="toggleLibraryQuestion('${id}')">${item.status === 'active' ? 'تعطيل' : 'تفعيل'}</button><button type="button" onclick="deleteLibraryQuestion('${id}')">حذف</button></div>
+                    <div class="question-library-card__actions"><button type="button" onclick="editLibraryQuestion('${id}')">تعديل</button><button type="button" onclick="toggleLibraryQuestion('${id}')">${item.status === 'active' ? 'تعطيل' : 'تفعيل'}</button>${resetAction}</div>
                 </article>`;
             }).join('') : '<div class="admin-empty">لا توجد أسئلة مطابقة.</div>';
             const pageLabel = document.getElementById('qlPage');
@@ -865,12 +1208,13 @@
             if (next) next.disabled = questionLibraryPage >= pages;
         }
 
-        function openQuestionEditor(record = null, pendingId = '') {
+        function openQuestionEditor(record = null, pendingId = '', pendingKind = '') {
             const editor = document.getElementById('questionEditor');
             if (!editor) return;
             editor.hidden = false;
             document.getElementById('qlEditingId').value = record?.id || '';
             document.getElementById('qlPendingSubmissionId').value = pendingId || '';
+            document.getElementById('qlEditingKind').value = pendingKind || '';
             document.getElementById('qlQuestion').value = record?.question || '';
             document.getElementById('qlAnswer').value = record?.answer || '';
             document.getElementById('qlLetter').value = record?.letter || '';
@@ -890,19 +1234,24 @@
             event.preventDefault();
             const id = document.getElementById('qlEditingId').value;
             const pendingId = document.getElementById('qlPendingSubmissionId').value;
+            const editingKind = document.getElementById('qlEditingKind').value;
             const data = {
                 question: document.getElementById('qlQuestion').value.trim(), answer: document.getElementById('qlAnswer').value.trim(), letter: document.getElementById('qlLetter').value.trim().slice(0, 2),
                 category: document.getElementById('qlCategory').value.trim(), difficulty: document.getElementById('qlDifficulty').value, status: document.getElementById('qlStatus').value, notes: document.getElementById('qlNotes').value.trim()
             };
-            if (!id) data.source = pendingId ? 'follower' : 'admin';
+            if (!id) data.source = pendingId ? (editingKind === 'ai' ? 'ai' : 'follower') : 'admin';
             if (!data.question || !window.QuestionLibrary.answerMatchesLetter(data.answer, data.letter)) { alert('تأكد من السؤال وأن الإجابة تبدأ بالحرف المحدد.'); return; }
             const duplicate = questionRecords.find(item => item.id !== id && window.QuestionLibrary.similarityScore(item.question, data.question) >= .78);
             if (duplicate && !confirm('هذا السؤال موجود مسبقًا أو يوجد سؤال مشابه جدًا. هل تريد الحفظ على أي حال؟')) return;
             try {
                 let libraryId = id;
-                if (id) await window.QuestionLibrary.updateQuestion(id, data);
+                const existing = id ? findLibraryQuestion(id) : null;
+                if (editingKind === 'ai' && pendingId) {
+                    await window.QuestionLibrary.updateAiQuestion(pendingId, { ...data, source: 'ai', status: 'pending', readAt: Date.now() });
+                } else if (id && existing?.source === 'base') await window.QuestionLibrary.updateQuestionOverride(id, data);
+                else if (id) await window.QuestionLibrary.updateQuestion(id, data);
                 else libraryId = await window.QuestionLibrary.addQuestion(data);
-                if (pendingId) await window.QuestionLibrary.updateSubmission(pendingId, { status: 'approved', libraryId, reviewedAt: Date.now(), readAt: Date.now() });
+                if (pendingId && editingKind !== 'ai') await window.QuestionLibrary.updateSubmission(pendingId, { status: 'approved', libraryId, reviewedAt: Date.now(), readAt: Date.now() });
                 closeQuestionEditor();
                 alert('تم حفظ السؤال ✅');
             } catch (error) { console.error(error); alert('تعذر حفظ السؤال. تحقق من اتصال Firebase.'); }
@@ -913,7 +1262,21 @@
         window.closeQuestionEditor = closeQuestionEditor;
         window.saveQuestionFromAdmin = saveQuestionFromAdmin;
         window.editLibraryQuestion = id => openQuestionEditor(findLibraryQuestion(id));
-        window.toggleLibraryQuestion = async id => { const item = findLibraryQuestion(id); if (item) await window.QuestionLibrary.updateQuestion(item.id, { status: item.status === 'active' ? 'disabled' : 'active' }); };
+        window.toggleLibraryQuestion = async id => {
+            const item = findLibraryQuestion(id);
+            if (!item) return;
+            try {
+                if (item.source === 'base') await window.QuestionLibrary.updateQuestionOverride(item.id, { question: item.question, answer: item.answer, letter: item.letter, category: item.category, difficulty: item.difficulty, notes: item.notes, status: item.status === 'active' ? 'disabled' : 'active' });
+                else await window.QuestionLibrary.updateQuestion(item.id, { status: item.status === 'active' ? 'disabled' : 'active' });
+            } catch (error) { console.error(error); alert('تعذر تغيير حالة السؤال.'); }
+        };
+        window.resetLibraryQuestion = async id => {
+            const item = findLibraryQuestion(id);
+            if (!item || item.source !== 'base' || !questionOverrides.some(override => String(override.baseId || override.id) === String(item.id))) return;
+            if (!confirm('إرجاع السؤال إلى النسخة الأصلية؟')) return;
+            try { await window.QuestionLibrary.removeQuestionOverride(item.id); }
+            catch (error) { console.error(error); alert('تعذر إرجاع السؤال الأصلي.'); }
+        };
         window.deleteLibraryQuestion = async id => { const item = findLibraryQuestion(id); if (item && confirm('حذف السؤال نهائيًا؟')) await window.QuestionLibrary.removeQuestion(item.id); };
 
         function inboxRecords() {
@@ -1028,63 +1391,11 @@
                     document.getElementById('a-game-starts').textContent = stats.gameStarts.toLocaleString('ar-SA');
                     document.getElementById('a-unique-players').textContent = stats.uniqueGamePlayers.toLocaleString('ar-SA');
                     document.getElementById('a-store-visits').textContent = stats.storeVisits.toLocaleString('ar-SA');
+                    document.getElementById('a-online-sessions').textContent = stats.onlineSessions.toLocaleString('ar-SA');
                 });
             }
-            const usersRef = ref(db, 'users');
-            onValue(usersRef, (snapshot) => {
-                document.getElementById('adminContent').style.display = 'block';
-                document.getElementById('rbacWarning').style.display = 'none';
-                const usersData = snapshot.val() || {};
-                const usersList = Object.keys(usersData).map(phone => ({ phone, ...usersData[phone] }));
-                updateStats(usersList);
-                renderUsersTable(usersList);
-            }, () => {
-                document.getElementById('adminContent').style.display = 'none';
-                document.getElementById('rbacWarning').style.display = 'block';
-                document.getElementById('myUid').textContent = auth.currentUser?.uid || '—';
-            });
-        }
-
-        function updateStats(users) {
-            const total = users.length;
-            const activated = users.filter(u => u.lastLogin).length;
-            document.getElementById('s-total').textContent = total;
-            document.getElementById('s-activated').textContent = activated;
-            document.getElementById('s-pending').textContent = total - activated;
-        }
-
-        function renderUsersTable(users) {
-            const tbody = document.getElementById('userTable');
-            users.sort((a, b) => b.createdAt - a.createdAt);
-            tbody.innerHTML = users.map(u => {
-                const isOnline = u.lastHeartbeat && (Date.now() - u.lastHeartbeat < 60000);
-                return `
-                <tr>
-                    <td><b>${u.username || 'بدون اسم'}</b></td>
-                    <td><span style="font-weight:900;">${u.phone}</span></td>
-                    <td>
-                        <div style="display:flex; flex-direction:column; gap:4px;">
-                            <span class="badge ${u.isActivated ? 'status-on' : 'status-off'}">${u.isActivated ? 'نشط' : 'معلق'}</span>
-                            ${isOnline ? '<span style="color:#2ecc71; font-size:0.75rem; font-weight:bold;">● متصل الآن</span>' : ''}
-                        </div>
-                    </td>
-                    <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-SA') : '-'}</td>
-                    <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : 'لم يدخل'}</td>
-                    <td><button class="btn-del" onclick="deleteUser('${u.phone}')">حذف</button></td>
-                </tr>
-            `}).join('');
-        }
-
-        window.addUser = async () => {
-             const username = document.getElementById('newUsername').value.trim();
-             const phone = document.getElementById('newPhone').value.trim();
-             if (!phone) return alert('أدخل الرقم');
-             await set(ref(db, `users/${phone}`), { username, phone, isActivated: true, createdAt: Date.now() });
-             alert('تمت الإضافة ✅');
-        };
-
-        window.deleteUser = async (phone) => {
-            if (confirm('حذف؟')) await remove(ref(db, `users/${phone}`));
+            document.getElementById('adminContent').style.display = 'block';
+            document.getElementById('rbacWarning').style.display = 'none';
         };
 
         window.logout = async () => {
@@ -1095,5 +1406,4 @@
         };
     </script>
 </body>
-
 </html>

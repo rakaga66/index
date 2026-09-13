@@ -1,48 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://7roof-main.vercel.app/pages/playground</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/7roof</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://8aaaf.com/assets/portal/hroof_game.png</image:loc>
+      <image:title>لعبة حروف</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://8aaaf.com/7roof/online</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/pages/thirty-seconds</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/7roof/online/board</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://8aaaf.com/super-powers</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://8aaaf.com/mafia</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://8aaaf.com/assets/portal/mafia.png</image:loc>
+      <image:title>لعبة المافيا</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://8aaaf.com/thirty-seconds</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://7roof-main.vercel.app/assets/portal/thirty-seconds-game.png</image:loc>
+      <image:loc>https://8aaaf.com/assets/portal/thirty-seconds-game.png</image:loc>
       <image:title>تحدي الـ30 ثانية</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/assets/games/photo-challenge.pdf</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/photo-challenge</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/assets/games/bold-card.pdf</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/bold-card</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/assets/games/maben-alqlub-1.pdf</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/maben-alqlub-1</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://7roof-main.vercel.app/assets/games/maben-alqlub-2.pdf</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://8aaaf.com/maben-alqlub-2</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

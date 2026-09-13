@@ -8,19 +8,19 @@
     <meta name="description" content="قاف للألعاب تقدم حروف مع هوجاس، لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة. العب النسخة الكاملة مجانًا.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#4b2370">
-    <link rel="canonical" href="https://7roof-main.vercel.app/pages/playground">
-    <link rel="icon" type="image/png" href="../public/assets/qaf-favicon.png">
+    <link rel="canonical" href="https://8aaaf.com/">
+    <link rel="icon" type="image/png" href="/assets/qaf-favicon.png">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="قاف للألعاب">
     <meta property="og:title" content="قاف للألعاب | حروف مع هوجاس">
     <meta property="og:description" content="اكتشف لعبة حروف مع هوجاس والعب النسخة الكاملة مجانًا.">
-    <meta property="og:url" content="https://7roof-main.vercel.app/pages/playground">
-    <meta property="og:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
+    <meta property="og:url" content="https://8aaaf.com/">
+    <meta property="og:image" content="https://8aaaf.com/assets/qaf-favicon.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="قاف للألعاب | حروف مع هوجاس">
     <meta name="twitter:description" content="لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة.">
-    <meta name="twitter:image" content="https://7roof-main.vercel.app/public/assets/qaf-favicon.png">
+    <meta name="twitter:image" content="https://8aaaf.com/assets/qaf-favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="../css/ads.css?v=qaf-ad-1">
@@ -756,15 +756,44 @@
 
             .section { padding: 28px 18px; }
         }
+
+        /* Compact the portal statistics card so it supports the games grid
+           instead of dominating the store header, especially on phones. */
+        .hero-stats {
+            min-width: 0;
+            gap: 10px;
+            padding: 16px 18px;
+            border-width: 2px;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        .hero-stats .stat-row { gap: 10px; }
+        .hero-stats .stat-label { font-size: .8rem; }
+        .hero-stats .stat-value { font-size: 1.2rem; }
+        .hero-stats .stat-divider { height: 2px; }
+
+        @media (max-width: 600px) {
+            .hero-stats {
+                width: min(100%, 300px);
+                gap: 8px;
+                padding: 12px 14px;
+                border-radius: 9px;
+            }
+
+            .hero-stats .stat-label { font-size: .7rem; }
+            .hero-stats .stat-value { font-size: .95rem; }
+        }
     </style>
     <script>
         function goToGame() {
             try {
                 // Temporary free-access mode: open the full game directly.
-                window.location.href = '../index.html';
+                const localPreview = window.location.protocol === 'file:' ||
+                    /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+                window.location.href = localPreview ? '../index.html' : '/7roof';
             } catch (e) {
                 console.error("Navigation Error:", e);
-                window.location.href = '../index.html';
+                window.location.href = '/7roof';
             }
         }
     </script>
@@ -773,8 +802,8 @@
 <body>
 
     <nav>
-        <a class="nav-logo" href="#">
-            <img src="../public/assets/portal/qaf_logo.png" alt="Qaf Logo"
+        <a class="nav-logo" href="/">
+            <img src="/assets/portal/qaf_logo.png" alt="Qaf Logo"
                 style="height: 48px; width: auto; transform: rotate(-4deg); filter: drop-shadow(2px 2px 0px #000);">
         </a>
     </nav>
@@ -782,7 +811,7 @@
     <section class="hero">
         <div class="hero-left">
             <div class="hero-badge">بوابة قاف للألعاب</div>
-            <img src="../public/assets/portal/qaf_logo.png" alt="Qaf Games Logo"
+            <img src="/assets/portal/qaf_logo.png" alt="Qaf Games Logo"
                 style="height: auto; width: 100%; max-width: 250px; display: block; margin-bottom: 24px; transform: rotate(-2deg); filter: drop-shadow(4px 4px 0px #000);">
             <p class="hero-desc">تجارب تفاعلية صُنعت بالحب — اختر لعبتك وابدأ المتعة مع أصدقائك في أي مكان.</p>
             <a href="#games" class="hero-cta">استعرض الألعاب ↓</a>
@@ -821,10 +850,10 @@
             <span class="portal-ad-space__label">إعلان</span>
         </div>
         <div class="portal-ad-space__grid">
-            <a class="portal-ad-space__qaf" href="https://qaf-srv.netlify.app/" target="_blank"
+            <a class="portal-ad-space__qaf" href="https://8aaaf.com/" target="_blank"
                 rel="noopener noreferrer" aria-label="زيارة موقع قاف لتصميم المواقع">
                 <span class="portal-ad-space__media">
-                    <img src="../public/assets/ads/qaf-company.jpg"
+                    <img src="/assets/ads/qaf-company.jpg"
                         alt="قاف لتصميم مواقع إلكترونية احترافية في السعودية" loading="lazy">
                 </span>
                 <span class="portal-ad-space__body">
@@ -857,7 +886,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/mafia.png" alt="لعبة المافيا"
+                        <img src="/assets/portal/mafia.png" alt="لعبة المافيا"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -891,7 +920,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/hroof_game.png" alt="لعبة حروف"
+                        <img src="/assets/portal/hroof_game.png" alt="لعبة حروف"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -925,7 +954,7 @@
                         </div>
                     </div>
 
-                    <a href="/" class="btn-start-game">العب الآن</a>
+            <a href="/7roof" class="btn-start-game">العب الآن</a>
                 </div>
             </div>
 
@@ -937,7 +966,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/tahadi_suwar.png" alt="تحدي الصور"
+                        <img src="/assets/portal/tahadi_suwar.png" alt="تحدي الصور"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -970,7 +999,7 @@
                         </div>
                     </div>
 
-                    <a href="../public/assets/games/photo-challenge.pdf" class="btn-play" style="background: #2ecc71;" target="_blank" rel="noopener">العب الآن</a>
+                    <a href="/photo-challenge" class="btn-play" style="background: #2ecc71;" target="_blank" rel="noopener">العب الآن</a>
                 </div>
             </div>
 
@@ -982,7 +1011,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/bold_card.png" alt="كرت جريء"
+                        <img src="/assets/portal/bold_card.png" alt="كرت جريء"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -1015,7 +1044,7 @@
                         </div>
                     </div>
 
-                    <a href="../public/assets/games/bold-card.pdf" class="btn-play" style="background: #9b59b6;" target="_blank" rel="noopener">العب الآن</a>
+                    <a href="/bold-card" class="btn-play" style="background: #9b59b6;" target="_blank" rel="noopener">العب الآن</a>
                 </div>
             </div>
 
@@ -1027,7 +1056,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/maben_alqlub_1.png" alt="مآبين آلقلوب 1"
+                        <img src="/assets/portal/maben_alqlub_1.png" alt="مآبين آلقلوب 1"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -1060,7 +1089,7 @@
                         </div>
                     </div>
 
-                    <a href="../public/assets/games/maben-alqlub-1.pdf" class="btn-play" style="background: #d35400;" target="_blank" rel="noopener">العب الآن</a>
+                    <a href="/maben-alqlub-1" class="btn-play" style="background: #d35400;" target="_blank" rel="noopener">العب الآن</a>
                 </div>
             </div>
 
@@ -1072,7 +1101,7 @@
 
                     <div
                         style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/maben_alqlub_2.png" alt="مآبين آلقلوب 2"
+                        <img src="/assets/portal/maben_alqlub_2.png" alt="مآبين آلقلوب 2"
                             style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
@@ -1105,7 +1134,7 @@
                         </div>
                     </div>
 
-                    <a href="../public/assets/games/maben-alqlub-2.pdf" class="btn-play" style="background: #e74c3c;" target="_blank" rel="noopener">العب الآن</a>
+                    <a href="/maben-alqlub-2" class="btn-play" style="background: #e74c3c;" target="_blank" rel="noopener">العب الآن</a>
                 </div>
             </div>
 
@@ -1115,7 +1144,7 @@
                 <div class="card-body">
                     <div class="card-status status-live">متاح الآن</div>
                     <div style="width: 100%; height: 160px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid var(--border);">
-                        <img src="../public/assets/portal/thirty-seconds-game.png" alt="تحدي الـ30 ثانية" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="/assets/portal/thirty-seconds-game.png" alt="تحدي الـ30 ثانية" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="card-name">تحدي الـ30 ثانية</div>
                     <div class="card-tags">
@@ -1130,7 +1159,7 @@
                         <div class="meta-item"><span class="meta-val">30</span><span class="meta-lbl">ثانية</span></div>
                         <div class="meta-item"><span class="meta-val">٢</span><span class="meta-lbl">فريقان</span></div>
                     </div>
-                    <a href="https://30sec-vert.vercel.app/" class="btn-play" style="background: #f39c12;" target="_blank" rel="noopener">العب الآن</a>
+                    <a href="/thirty-seconds" class="btn-play" style="background: #f39c12;" target="_blank" rel="noopener">العب الآن</a>
                 </div>
             </div>
 
@@ -1145,7 +1174,7 @@
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; justify-content: center; opacity: 0.6;">
-            <span style="font-size: 0.9rem;">v 1.2</span>
+            <span style="font-size: 0.9rem;">v 1.55</span>
             <span style="font-size: 0.7rem; background: rgba(74, 222, 128, 0.2); color: #4ADE80; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(74, 222, 128, 0.3);">تحديث جديد</span>
         </div>
     </div>

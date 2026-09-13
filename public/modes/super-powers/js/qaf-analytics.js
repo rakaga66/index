@@ -15,7 +15,8 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const ROOT = 'siteAnalytics';
 const activeSections = new Set();
-const isProductionSite = location.hostname === '7roof-main.vercel.app';
+const productionHosts = new Set(['8aaaf.com', 'www.8aaaf.com', '7roof-main.vercel.app']);
+const isProductionSite = productionHosts.has(location.hostname);
 
 function makeId() {
     return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;

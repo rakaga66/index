@@ -4,6 +4,7 @@ import {
     getDatabase, ref, get, set, update, onValue, runTransaction, push,
     onDisconnect, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { trackOnlineSession } from "./qaf-analytics.js?v=2";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
@@ -64,6 +65,7 @@ try { onlineAuth = getAuth(app); } catch (error) { console.warn("تعذر تهي
 let questionBank = buildQuestionBank();
 let extraQuestionBank = [];
 let extraQuestionBankLoaded = false;
+let questionOverridesLoaded = false;
 
 let roomCode = "";
 let myPlayerId = "";
@@ -92,16 +94,43 @@ function buildQuestionBank() {
         ? window.questionsData
         : [{ letter: "أ", question: "ما عاصمة المملكة العربية السعودية؟", answer: "الرياض" }];
     return source.filter((item) => item && item.letter && item.question && item.answer).map((item, index) => ({
-        id: String(item.id || "q-" + index),
+        id: String(item.id || "static-" + index),
+        legacyId: String(item.id || "q-" + index),
         letter: String(item.letter).trim(),
         question: String(item.question).trim(),
-        answer: String(item.answer).trim()
+        answer: String(item.answer).trim(),
+        status: "active"
     }));
+}
+
+async function loadQuestionOverrides() {
+    if (questionOverridesLoaded) return;
+    try {
+        if (!window.QuestionLibrary?.getQuestionOverrides) return;
+        const overrides = await window.QuestionLibrary.getQuestionOverrides(true);
+        const byId = new Map((overrides || []).map(item => [String(item.baseId || item.id), item]));
+        questionBank = questionBank.map(item => {
+            const override = byId.get(String(item.id));
+            if (!override) return item;
+            return {
+                ...item,
+                letter: String(override.letter || item.letter).trim(),
+                question: String(override.question || item.question).trim(),
+                answer: String(override.answer || item.answer).trim(),
+                status: override.status || item.status || "active"
+            };
+        }).filter(item => item.status !== "disabled");
+    } catch (error) {
+        console.warn("تعذر تحميل تعديلات أسئلة الأدمن للأونلاين.", error);
+    } finally {
+        questionOverridesLoaded = true;
+    }
 }
 
 async function loadExtraQuestionBank() {
     if (extraQuestionBankLoaded) return;
     try {
+        await loadQuestionOverrides();
         if (!window.QuestionLibrary?.getActiveQuestions) return;
         const records = await window.QuestionLibrary.getActiveQuestions(true);
         const existing = new Set(questionBank.map(question => question.id));
@@ -273,15 +302,43 @@ function setView(name) {
         const node = $(id);
         if (node) node.hidden = id !== name;
     });
+    const helpButton = $("onlineBoardHelpBtn");
+    if (helpButton) helpButton.hidden = name !== "onlineBoardGame";
 }
 
+function saveSessionRecord(code, playerId, name) {
+    const cleanRoomCode = cleanCode(code);
+    const cleanPlayerId = String(playerId || "").trim();
+    const cleanPlayerName = cleanName(name);
+    if (cleanRoomCode && cleanPlayerId && cleanPlayerName) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ roomCode: cleanRoomCode, playerId: cleanPlayerId, name: cleanPlayerName, savedAt: Date.now() }));
+    }
+}
 function saveSession() {
-    if (roomCode && myPlayerId && myName) localStorage.setItem(SESSION_KEY, JSON.stringify({ roomCode, playerId: myPlayerId, name: myName, savedAt: Date.now() }));
+    saveSessionRecord(roomCode, myPlayerId, myName);
 }
 function readSession() {
     try { const value = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); return value?.roomCode && value?.playerId && value?.name ? value : null; } catch (_) { return null; }
 }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+async function hasResumableSession() {
+    const session = readSession();
+    if (!session) return false;
+    const code = cleanCode(session.roomCode);
+    if (!/^\d{6}$/.test(code)) { clearSession(); return false; }
+    try {
+        const snapshot = await get(ref(db, ROOM_ROOT + "/" + code));
+        const valid = snapshot.exists() && isValidRoomForJoin(snapshot.val(), code, session.playerId);
+        if (!valid) clearSession();
+        return valid;
+    } catch (_) {
+        // A failed read is not proof that the room still exists. Returning
+        // null lets the shared creator lock make the final decision instead
+        // of stranding the player behind a false cooldown message.
+        return null;
+    }
+}
 
 function safePathSegment(value) {
     return String(value || "unknown").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80) || "unknown";
@@ -309,13 +366,82 @@ async function getCreatorIdentity() {
     }
     return "device:" + getLocalCreatorId();
 }
+function sessionLockRef(identity) {
+    return ref(db, SESSION_LOCK_ROOT + "/" + safePathSegment(identity));
+}
+async function recoverSessionFromLock(lockValue) {
+    const session = readSession();
+    if (session || !lockValue?.roomCode) return false;
+    const code = cleanCode(lockValue.roomCode);
+    if (!/^\d{6}$/.test(code)) return false;
+    try {
+        const snapshot = await get(ref(db, ROOM_ROOT + "/" + code));
+        const room = snapshot.exists() ? snapshot.val() : null;
+        const hostId = room?.meta?.hostId;
+        const host = hostId ? room.players?.[hostId] : null;
+        if (!room || !hostId || !host || !isValidRoomForJoin(room, code, hostId)) return false;
+        const hostName = cleanName(host.name || room.meta.hostName || "المقدم");
+        localStorage.setItem("hojas_online_board_player_" + code, hostId);
+        saveSessionRecord(code, hostId, hostName);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+async function attachSessionCreationLock(lock, code, name) {
+    if (!lock?.identity || !lock?.createdAt) return;
+    try {
+        await update(sessionLockRef(lock.identity), {
+            roomCode: cleanCode(code),
+            hostName: cleanName(name),
+            updatedAt: serverTimestamp()
+        });
+    } catch (error) {
+        // The room and local resume record are already durable; lock metadata
+        // must never turn a successful create into an error.
+        console.warn("تعذر ربط قفل الجلسة بالغرفة.", error);
+    }
+}
 async function acquireSessionCreationLock() {
     const localLockKey = CREATOR_ID_KEY + "_last_created_at";
     const localCreatedAt = Number(localStorage.getItem(localLockKey) || 0);
-    if (localCreatedAt && serverNow() - localCreatedAt < SESSION_COOLDOWN_MS) throw cooldownError(localCreatedAt);
+    if (localCreatedAt && serverNow() - localCreatedAt < SESSION_COOLDOWN_MS) {
+        const resumable = await hasResumableSession();
+        if (resumable === true) throw cooldownError(localCreatedAt);
+        // A previous attempt may have reserved the device and then failed
+        // before a room was written. Do not strand the player behind a ghost
+        // cooldown in that case. The shared Firebase lock below remains the
+        // source of truth if another tab/device still owns a real room.
+        localStorage.removeItem(localLockKey);
+    } else if (localCreatedAt) {
+        localStorage.removeItem(localLockKey);
+    }
 
     const identity = await getCreatorIdentity();
-    const lockRef = ref(db, SESSION_LOCK_ROOT + "/" + safePathSegment(identity));
+    const lockRef = sessionLockRef(identity);
+    // Older builds stored only a timestamp and could not be resumed. If there
+    // is no valid local session, clear that legacy reservation before trying to
+    // create a new room.
+    try {
+        const existingSnapshot = await get(lockRef);
+        const existing = existingSnapshot.exists() ? existingSnapshot.val() : null;
+        const existingCreatedAt = Number(existing?.createdAt || 0);
+        if (existing?.version === 1 && existingCreatedAt && serverNow() - existingCreatedAt < SESSION_COOLDOWN_MS) {
+            await recoverSessionFromLock(existing);
+            const resumable = await hasResumableSession();
+            // Remove only a lock that explicitly points to a deleted/invalid
+            // room. Losing localStorage alone must not disable the cooldown
+            // for a real room.
+            if (existing.roomCode && resumable === false) {
+                await runTransaction(lockRef, (current) => {
+                    if (!current || Number(current.createdAt || 0) !== existingCreatedAt) return;
+                    return null;
+                });
+            }
+        }
+    } catch (error) {
+        console.warn("تعذر تنظيف حجز جلسة قديم، ستستمر محاولة الإنشاء.", error);
+    }
     let transaction = null;
     try {
         transaction = await runTransaction(lockRef, (current) => {
@@ -336,6 +462,20 @@ async function acquireSessionCreationLock() {
     const createdAt = Number(transaction?.snapshot.val()?.createdAt || serverNow());
     localStorage.setItem(localLockKey, String(createdAt));
     return { identity, createdAt };
+}
+async function releaseSessionCreationLock(lock) {
+    if (!lock?.identity || !lock?.createdAt) return;
+    const lockRef = ref(db, SESSION_LOCK_ROOT + "/" + safePathSegment(lock.identity));
+    try {
+        await runTransaction(lockRef, (current) => {
+            if (!current || Number(current.createdAt || 0) !== Number(lock.createdAt)) return;
+            return null;
+        });
+    } catch (error) {
+        console.warn("تعذر تحرير حجز إنشاء الجلسة.", error);
+    }
+    const localLockKey = CREATOR_ID_KEY + "_last_created_at";
+    if (Number(localStorage.getItem(localLockKey) || 0) === Number(lock.createdAt)) localStorage.removeItem(localLockKey);
 }
 function isValidRoomForJoin(room, code, playerId) {
     const meta = room?.meta;
@@ -389,16 +529,19 @@ function questionForLetter(letter, used = {}) {
     const candidates = allQuestions().filter((question) =>
         normalizeLetter(question.letter) === target &&
         firstNormalizedAnswerLetter(question.answer) === target &&
-        !used[question.id]
+        !used[question.id] && !used[question.legacyId]
     );
     // Never fall back to a different letter. A cell without a fresh matching
     // question remains unavailable until the team chooses another open cell.
     if (!candidates.length) return null;
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    const nextUsed = { ...used, [chosen.id]: true };
+    const nextUsed = { ...used, [chosen.id]: true, ...(chosen.legacyId ? { [chosen.legacyId]: true } : {}) };
     return { question: { id: chosen.id, letter, text: chosen.question }, usedQuestions: nextUsed };
 }
-function questionById(id) { return allQuestions().find((question) => question.id === String(id)); }
+function questionById(id) {
+    const key = String(id);
+    return allQuestions().find((question) => question.id === key || question.legacyId === key);
+}
 
 function neighbors(row, col) {
     const odd = row % 2 === 1;
@@ -806,9 +949,13 @@ async function connectToRoom(code, playerId, name) {
 
 async function createRoom(name) {
     if (busy) return; busy = true; const cleanNameValue = cleanName(name); setLoadingOverlay(true, "جاري إنشاء جلسة آمنة ومزامنتها…");
+    let lock = null;
+    let roomCreated = false;
+    let playerId = "";
+    let selected = "";
     try {
-        await acquireSessionCreationLock();
-        const playerId = randomId(); let selected = "";
+        lock = await acquireSessionCreationLock();
+        playerId = randomId();
         for (let attempt = 0; attempt < 8 && !selected; attempt += 1) {
             const candidate = randomRoomCode(); const root = ref(db, ROOM_ROOT + "/" + candidate);
             const result = await runTransaction(root, (current) => current !== null ? undefined : {
@@ -819,8 +966,25 @@ async function createRoom(name) {
             if (result.committed) selected = candidate;
         }
         if (!selected) throw new Error("تعذر إنشاء كود للجلسة.");
+        roomCreated = true;
+        trackOnlineSession(selected).catch(() => {});
+        // Persist as soon as the room exists. If presence/subscription briefly
+        // fails, the player can still see and resume this room instead of being
+        // blocked by the ten-minute creator lock with no visible session.
+        localStorage.setItem("hojas_online_board_player_" + selected, playerId);
+        saveSessionRecord(selected, playerId, cleanNameValue);
+        await attachSessionCreationLock(lock, selected, cleanNameValue);
         await connectToRoom(selected, playerId, cleanNameValue); showToast("تم إنشاء الجلسة " + selected);
-    } catch (error) { console.error(error); showToast(error.message || "تعذر إنشاء الجلسة.", true); }
+    } catch (error) {
+        if (lock && !roomCreated) await releaseSessionCreationLock(lock);
+        console.error(error);
+        if (roomCreated && selected) {
+            showToast("تم إنشاء الجلسة " + selected + " لكن تعذر فتحها. اضغط «العودة للجلسة» للمحاولة مرة أخرى.", true);
+        } else {
+            showToast(error.message || "تعذر إنشاء الجلسة.", true);
+        }
+        showResume();
+    }
     finally { finishLoadingOverlay(); busy = false; }
 }
 
@@ -1259,7 +1423,7 @@ async function leaveRoom(showMessage = true) {
         }).catch(() => {});
     }
     roomUnsubscribe?.(); chatUnsubscribe?.(); connectionUnsubscribe?.(); clearInterval(heartbeatTimer); clearInterval(clockTimer);
-    roomUnsubscribe = null; chatUnsubscribe = null; connectionUnsubscribe = null; roomCode = ""; myPlayerId = ""; myName = ""; currentRoom = null; clearSession(); setView("onlineBoardWelcome"); if (showMessage) showToast("غادرت الجلسة.");
+    roomUnsubscribe = null; chatUnsubscribe = null; connectionUnsubscribe = null; roomCode = ""; myPlayerId = ""; myName = ""; currentRoom = null; clearSession(); setView("onlineBoardWelcome"); showResume(); if (showMessage) showToast("غادرت الجلسة.");
 }
 
 function tickClock() {
@@ -1273,18 +1437,36 @@ function tickClock() {
         if ($("onlineBoardAnswerCountdown")) $("onlineBoardAnswerCountdown").textContent = remaining + "ث";
     }
 }
-function showResume() { const session = readSession(); if (!session) return; $("onlineBoardResume").hidden = false; $("onlineBoardResumeText").textContent = session.name + " • جلسة " + session.roomCode; }
+function showResume() {
+    const card = $("onlineBoardResume");
+    if (!card) return;
+    const session = readSession();
+    if (!session) { card.hidden = true; return; }
+    card.hidden = false;
+    $("onlineBoardResumeText").textContent = session.name + " • جلسة " + session.roomCode;
+}
+async function refreshResume() {
+    if (readSession() && !(await hasResumableSession())) { showResume(); return; }
+    showResume();
+}
 
 $("onlineBoardCreateForm")?.addEventListener("submit", (event) => { event.preventDefault(); const name = cleanName($("onlineBoardCreateName").value); if (name) createRoom(name); });
 $("onlineBoardJoinForm")?.addEventListener("submit", (event) => { event.preventDefault(); const name = cleanName($("onlineBoardJoinName").value); if (name) joinRoom($("onlineBoardJoinCode").value, name); });
 $("onlineBoardHomeBtn")?.addEventListener("click", (event) => {
     event.preventDefault();
-    if (!currentRoom || !roomCode) { window.location.href = "../index.html"; return; }
+    if (!currentRoom || !roomCode) {
+        window.location.href = 'https://8aaaf.com/';
+        return;
+    }
     showOnlineConfirm({
         title: "الخروج من الجلسة؟",
-        message: "سيتم إنهاء اتصالك بهذه الجلسة والعودة إلى شاشة الدخول.",
+        message: "سيتم إنهاء اتصالك بهذه الجلسة والعودة إلى متجر قاف.",
         confirmText: "خروج"
-    }).then((accepted) => { if (accepted) leaveRoom(); });
+    }).then(async (accepted) => {
+        if (!accepted) return;
+        await leaveRoom(false);
+        window.location.href = "https://8aaaf.com/";
+    });
 });
 $("onlineBoardHelpBtn")?.addEventListener("click", openOnlineHelp);
 $("onlineBoardHelpClose")?.addEventListener("click", closeOnlineHelp);
@@ -1335,5 +1517,5 @@ document.addEventListener("keydown", (event) => {
 });
 clockTimer = setInterval(tickClock, 250);
 bindConnection();
-showResume();
+refreshResume();
 document.body.dataset.onlineBoardReady = "true";

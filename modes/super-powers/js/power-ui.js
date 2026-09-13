@@ -17,6 +17,74 @@
         };
     }
 
+    function definitionForIntent(intent) {
+        const item = powerState?.teams?.[intent?.teamId]?.inventory?.find(candidate => candidate.instanceId === intent?.instanceId);
+        return item ? MODE.getCatalog().find(definition => definition.id === item.powerId) : null;
+    }
+
+    function isLivePlayer(player) {
+        if (!player?.name || player.connected === false) return false;
+        const lastSeen = Number(player.lastSeen || 0);
+        return !lastSeen || Date.now() - lastSeen < 45000;
+    }
+
+    async function liveRoster(db) {
+        const cached = typeof _livePlayers !== 'undefined' && _livePlayers ? _livePlayers : {};
+        try {
+            const { ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+            // Prefer a fresh snapshot for validation. The realtime listener can
+            // briefly lag behind a newly joined player, so falling back to a
+            // non-empty cache here could reject a valid request during that
+            // small race window.
+            const remote = (await get(ref(db, `superPowerRooms/${buzzerRoom}/players`))).val() || {};
+            return Object.keys(remote).length ? remote : cached;
+        } catch (_) {
+            return cached;
+        }
+    }
+
+    async function normalizeIntent(intent, db) {
+        const teamId = intent?.teamId;
+        if (!['team1', 'team2'].includes(teamId)) return { ok: false, reason: 'الفريق غير معروف.' };
+        const definition = definitionForIntent(intent);
+        if (!definition) return { ok: false, reason: 'القوة غير موجودة في قائمة الفريق.' };
+        const kind = String(definition.targetType || 'TEAM').toUpperCase();
+        const normalized = { ...intent, source: intent.source || 'player' };
+        const opponent = teamId === 'team1' ? 'team2' : 'team1';
+        if (normalized.source !== 'presenter') {
+            const roster = await liveRoster(db);
+            const requester = intent?.playerId ? roster[intent.playerId] : null;
+            if (!isLivePlayer(requester) || requester.team !== teamId) return { ok: false, reason: 'لا يمكن قبول الطلب إلا من لاعب متصل داخل الفريق.' };
+            normalized.playerId = intent.playerId;
+            normalized.playerName = String(requester.name);
+        }
+        if (['OPPONENT_PLAYER', 'PLAYER'].includes(kind)) {
+            const target = intent?.target?.player;
+            const roster = await liveRoster(db);
+            const player = target?.id ? roster[target.id] : null;
+            if (!isLivePlayer(player) || player.team !== opponent) return { ok: false, reason: 'اختر لاعبًا موجودًا ومتصلًا من الفريق المنافس.' };
+            normalized.target = { player: { id: target.id, name: String(player.name), team: player.team } };
+        } else if (kind === 'PLAYER_PAIR') {
+            const requestedPlayers = Array.isArray(intent?.target?.players) ? intent.target.players : [];
+            const roster = await liveRoster(db);
+            const players = requestedPlayers.map(target => target?.id ? ({ id: target.id, ...(roster[target.id] || {}) }) : null);
+            if (players.length !== 2 || players.some(player => !isLivePlayer(player) || !['team1', 'team2'].includes(player.team)) || new Set(players.map(player => player.id)).size !== 2 || new Set(players.map(player => player.team)).size !== 2) {
+                return { ok: false, reason: 'اختر لاعبًا موجودًا من كل فريق للمبارزة.' };
+            }
+            normalized.target = { players: players.map(player => ({ id: player.id, name: String(player.name), team: player.team })) };
+        } else if (['OPPONENT_CELL', 'OWN_CELL', 'CELL'].includes(kind)) {
+            const cell = intent?.target?.cell;
+            const row = Number(cell?.row), col = Number(cell?.col);
+            const validCoordinates = Number.isInteger(row) && Number.isInteger(col) && row >= 0 && row < 5 && col >= 0 && col < 5;
+            const owner = validCoordinates ? board?.[row]?.[col] : null;
+            if (!validCoordinates || !cell?.letter || (kind === 'OPPONENT_CELL' && owner !== opponent) || (kind === 'OWN_CELL' && owner !== teamId)) {
+                return { ok: false, reason: 'اختر خلية صحيحة من اللوحة.' };
+            }
+            normalized.target = { cell: { row, col, letter: String(cell.letter) } };
+        }
+        return normalized;
+    }
+
     function remaining(team) {
         return (team?.inventory || []).filter(item => item.status !== MODE.POWER_STATUS.USED).length;
     }
@@ -153,19 +221,30 @@
         const { ref, onValue, update } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
         intentsUnsubscribe = onValue(ref(db, `superPowerRooms/${buzzerRoom}/powerIntents`), snapshot => {
             const teams = snapshot.val() || {};
-            Object.values(teams).forEach(group => Object.entries(group || {}).forEach(([id, intent]) => {
-                if (!intent || handledIntents.has(id)) return;
+            Object.entries(teams).forEach(([teamId, group]) => Object.entries(group || {}).forEach(([id, rawIntent]) => {
+                // الاستماع يبدأ من آخر حالة محفوظة؛ تجاهل النوايا التي عولجت
+                // سابقًا حتى لا يتحول إعادة تحميل شاشة اللعبة إلى طلب جديد.
+                if (!rawIntent || rawIntent.processed || handledIntents.has(id)) return;
                 handledIntents.add(id);
-                if (intent.type === 'REQUEST') {
-                    const result = MODE.requestPower(powerState, intent);
-                    toast(result.ok ? 'وصل طلب القوة إلى المقدم' : result.reason, !result.ok);
-                    update(ref(db, `superPowerRooms/${buzzerRoom}/powerIntents/${intent.teamId}/${id}`), { processed: true, ok: result.ok, reason: result.reason || '', requestId: result.request?.id || '', processedAt: Date.now() });
-                } else if (intent.type === 'CANCEL') {
-                    const result = MODE.cancelRequest(powerState, intent.requestId, intent.teamId);
-                    toast(result.ok ? 'تم إلغاء طلب القوة' : result.reason, !result.ok);
-                    update(ref(db, `superPowerRooms/${buzzerRoom}/powerIntents/${intent.teamId}/${id}`), { processed: true, ok: result.ok, reason: result.reason || '', processedAt: Date.now() });
-                }
-                publish();
+                const intent = { ...rawIntent, teamId };
+                (async () => {
+                    let result;
+                    if (intent.type === 'REQUEST') {
+                        const normalized = await normalizeIntent(intent, db);
+                        result = normalized.ok ? MODE.requestPower(powerState, normalized) : normalized;
+                        toast(result.ok ? 'وصل طلب القوة إلى المقدم للموافقة' : result.reason, !result.ok);
+                    } else if (intent.type === 'CANCEL') {
+                        result = MODE.cancelRequest(powerState, intent.requestId, teamId);
+                        toast(result.ok ? 'تم إلغاء طلب القوة' : result.reason, !result.ok);
+                    } else {
+                        result = { ok: false, reason: 'نوع طلب غير معروف.' };
+                    }
+                    await update(ref(db, `superPowerRooms/${buzzerRoom}/powerIntents/${teamId}/${id}`), { processed: true, ok: Boolean(result.ok), reason: result.reason || '', requestId: result.request?.id || '', processedAt: Date.now() });
+                    await publish();
+                })().catch(error => {
+                    console.error('تعذر معالجة طلب القوة', error);
+                    update(ref(db, `superPowerRooms/${buzzerRoom}/powerIntents/${teamId}/${id}`), { processed: true, ok: false, reason: 'تعذر معالجة الطلب، حاول مجددًا.', processedAt: Date.now() }).catch(() => {});
+                });
             }));
         });
     }
@@ -182,19 +261,51 @@
     window.setSuperPowerActivationWindow = async name => { if (powerState && MODE.setActivationWindow(powerState, name)) await publish(); };
     window.activateSuperPowerRequest = async requestId => {
         if (!powerState) return { ok: false, reason: 'لا توجد جلسة قوى.' };
+        const pendingRequest = powerState.requests?.[requestId];
+        if (!pendingRequest) return { ok: false, reason: 'طلب القوة غير موجود أو انتهى.' };
+        // Re-check the requester and target at the moment of approval. A
+        // player may disconnect, change team, or a cell may be claimed while
+        // the presenter is reviewing the request; approving stale data would
+        // otherwise apply a power to a target that is no longer valid.
+        try {
+            const fresh = await normalizeIntent({
+                ...pendingRequest,
+                playerId: pendingRequest.requestedBy?.id || '',
+                playerName: pendingRequest.requestedBy?.name || '',
+                source: pendingRequest.source || 'player'
+            }, await ensureFirebase());
+            if (!fresh.ok) {
+                toast(fresh.reason, true);
+                return fresh;
+            }
+            pendingRequest.target = fresh.target || pendingRequest.target || null;
+        } catch (_) {
+            const failure = { ok: false, reason: 'تعذر التحقق من الهدف، حاول مرة أخرى.' };
+            toast(failure.reason, true);
+            return failure;
+        }
         const result = await MODE.activateRequest(powerState, requestId, { teamName: teamSetup[powerState.requests?.[requestId]?.teamId]?.name });
         toast(result.ok ? `تم تفعيل ${result.definition.name}` : result.reason, !result.ok);
         await applyActivatedEffect(result);
         await publish(); return result;
     };
-    window.presenterUseSuperPower = async ({ teamId, instanceId } = {}) => {
+    window.presenterUseSuperPower = async ({ teamId, instanceId, target = null } = {}) => {
         if (!powerState) return { ok: false, reason: 'لا توجد جلسة قوى.' };
-        const request = MODE.requestPower(powerState, { teamId, instanceId, activationWindow: powerState.activationWindow, playerId:'presenter', playerName:'المقدم' });
+        const candidate = { teamId, instanceId, target, activationWindow: powerState.activationWindow, playerId: 'presenter', playerName: 'المقدم', source: 'presenter' };
+        let normalized = candidate;
+        try {
+            normalized = await normalizeIntent(candidate, await ensureFirebase());
+        } catch (_) {
+            const failure = { ok: false, reason: 'تعذر التحقق من هدف القوة، حاول مرة أخرى.' };
+            toast(failure.reason, true);
+            return failure;
+        }
+        if (!normalized.ok) { toast(normalized.reason, true); return normalized; }
+        const request = MODE.requestPower(powerState, normalized);
         if (!request.ok) { toast(request.reason, true); return request; }
-        const result = await MODE.activateRequest(powerState, request.request.id, { teamName: teamSetup?.[teamId]?.name || teamId, presenter:true });
-        toast(result.ok ? `تم تفعيل ${result.definition.name} للفريق` : result.reason, !result.ok);
-        await applyActivatedEffect(result);
-        await publish(); return result;
+        toast(`تم إرسال طلب تأكيد ${request.request.powerName} — اضغط «تأكيد وتفعيل»`, false);
+        await publish();
+        return { ...request, pending: true };
     };
     window.cancelSuperPowerRequest = async requestId => { const result = MODE.cancelRequest(powerState, requestId); await publish(); return result; };
     window.getSuperPowerMatchSummary = () => powerState ? MODE.getMatchSummary(powerState) : null;

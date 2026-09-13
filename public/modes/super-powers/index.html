@@ -9,25 +9,25 @@
     <meta name="description" content="حروف مع هوجاس من قاف: لعبة حروف وتحديات جماعية ممتعة للجلسات والمنافسات بين الأصدقاء والعائلة.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#4b2370">
-    <link rel="canonical" href="https://7roof-main.vercel.app/">
+    <link rel="canonical" href="https://8aaaf.com/super-powers">
     <meta property="og:locale" content="ar_SA">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="قاف للألعاب">
     <meta property="og:title" content="حروف مع هوجاس | لعبة حروف جماعية من قاف">
     <meta property="og:description" content="النسخة الكاملة المجانية من لعبة حروف مع هوجاس للجلسات والمنافسات الجماعية.">
-    <meta property="og:url" content="https://7roof-main.vercel.app/">
-    <meta property="og:image" content="https://7roof-main.vercel.app/assets/qaf-favicon.png">
+    <meta property="og:url" content="https://8aaaf.com/super-powers">
+    <meta property="og:image" content="https://8aaaf.com/assets/qaf-favicon.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="حروف مع هوجاس | قاف للألعاب">
     <meta name="twitter:description" content="لعبة حروف وتحديات جماعية ممتعة للأصدقاء والعائلة.">
-    <meta name="twitter:image" content="https://7roof-main.vercel.app/assets/qaf-favicon.png">
+    <meta name="twitter:image" content="https://8aaaf.com/assets/qaf-favicon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/qaf-favicon.png?v=1">
     <link rel="shortcut icon" type="image/png" href="/assets/qaf-favicon.png?v=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/modes/super-powers/css/style.css?v=super-powers-mobile-ui-3">
+    <link rel="stylesheet" href="/modes/super-powers/css/style.css?v=super-powers-mobile-ui-4">
     <link rel="stylesheet" href="/modes/super-powers/css/game-view.css?v=presentation-interactive-5">
     <link rel="stylesheet" href="/modes/super-powers/css/power-announcement.css?v=1">
     <link rel="stylesheet" href="/modes/super-powers/css/super-hud.css?v=shadow-power-ui-4">
@@ -151,7 +151,7 @@
         <div class="hex-bg-pattern"></div>
 
         <!-- Logo -->
-        <div class="logo-home" onclick="window.location.href='/index.html'" style="cursor: pointer;">
+        <div class="logo-home" onclick="window.location.href='/'" style="cursor: pointer;">
             <span class="logo-line1">حروف</span>
             <span class="logo-line2">مع</span>
             <span class="logo-line3">هوجاس</span>
@@ -167,21 +167,9 @@
 
         <!-- New Home Extra Links -->
         <div class="home-extra-links">
-            <button class="hex-btn" type="button" onclick="window.location.href='/pages/playground.html'">
-                <span class="icon">🎮</span>
-                <span class="home-link-copy"><strong>ألعاب قاف</strong></span>
-            </button>
             <button class="hex-btn normal-mode-link" type="button" onclick="returnToNormalMode()">
                 <span class="icon">↩️</span>
                 <span class="home-link-copy"><strong>الطور العادي</strong></span>
-            </button>
-            <button class="hex-btn tiktok"
-                onclick="window.open('https://www.tiktok.com/@hojas.1?is_from_webapp=1&sender_device=pc', '_blank')">
-                <svg fill="currentColor" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17A122.18 122.18 0 0 0 381 102.39a122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" />
-                </svg>
-                <span class="home-link-copy"><strong>حساب التيك توك</strong></span>
             </button>
             <button class="hex-btn question-suggestion-link" onclick="openQuestionSuggestionModal()">
                 <span class="icon">💡</span>
@@ -498,14 +486,6 @@
                     <div class="settings-label">مؤقت الجرس:</div>
                     <div class="settings-control timers-grid">
                     <div class="timer-box">
-                        <span class="timer-title">مؤقت يدوي</span>
-                        <div class="timer-stepper">
-                            <button class="step-btn" onclick="adjTime('manualTime', 1)">+</button>
-                            <div class="step-val"><span id="manualTimeVal">5</span> ثانية</div>
-                            <button class="step-btn" onclick="adjTime('manualTime', -1)">-</button>
-                        </div>
-                    </div>
-                    <div class="timer-box">
                         <span class="timer-title">وقت الإجابة</span>
                         <div class="timer-stepper">
                             <button class="step-btn" onclick="adjTime('ansTime', 1)">+</button>
@@ -551,7 +531,7 @@
                 </div>
 
                 <!-- Internal buzzer connection; intentionally hidden from players. -->
-                <input type="hidden" id="setBuzzerUrl" value="/modes/super-powers/buzzer/">
+                <input type="hidden" id="setBuzzerUrl" value="/super-powers/buzzer/">
 
             </div>
 
@@ -571,7 +551,7 @@
             <button class="pt-btn" id="ptBtnHuman" onclick="setGamePresenter('human')">مقدم بشري</button>
         </div>
 
-        <div class="logo" onclick="window.location.href='/index.html'" style="cursor: pointer;">
+        <div class="logo" onclick="window.location.href='/'" style="cursor: pointer;">
 
             <span class="logo-line1">حروف</span>
             <span class="logo-line2">مـع</span>
@@ -590,22 +570,12 @@
                     <span class="score-num" id="score1">0</span>
                 </div>
                 <span class="score-name" id="name1">الفريق الأول</span>
-                <!-- Manual Timer Trigger -->
-                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team1')" title="بدء مؤقت يدوي">
-                    <span>مؤقت</span>
-                    ⏱️
-                </button>
             </div>
             <div class="score-box team-2" id="scoreBox2" onclick="assignTeam('team2')">
                 <div class="score-hex-wrap">
                     <span class="score-num" id="score2">0</span>
                 </div>
                 <span class="score-name" id="name2">الفريق الثاني</span>
-                <!-- Manual Timer Trigger -->
-                <button class="manual-timer-btn" onclick="event.stopPropagation(); startManualTimer('team2')" title="بدء مؤقت يدوي">
-                    <span>مؤقت</span>
-                    ⏱️
-                </button>
             </div>
         </div>
 
@@ -909,6 +879,7 @@
             onerror="this.onerror=null; var s=document.createElement('script'); s.src='/modes/super-powers/js/qrcode.min.js'; document.head.appendChild(s);"></script>
     <script src="/modes/super-powers/js/pdfData.js"></script>
     <script src="/modes/super-powers/js/questionsData.js"></script>
+    <script src="/js/question-library.js?v=question-overrides-1"></script>
     <script>
         window.qafAnalyticsPendingStarts = 0;
         window.qafTrackGameStart = () => { window.qafAnalyticsPendingStarts += 1; };
@@ -916,7 +887,7 @@
     <script src="/modes/super-powers/js/power-system.js?v=official-18-1"></script>
     <script src="/modes/super-powers/js/power-catalog.js?v=official-18-1"></script>
     <script src="/modes/super-powers/js/power-announcement.js?v=1"></script>
-    <script src="/modes/super-powers/js/script.js?v=super-powers-mobile-ui-3"></script>
+    <script src="/modes/super-powers/js/script.js?v=question-overrides-1"></script>
     <script src="/modes/super-powers/js/power-ui.js?v=power-announcement-1"></script>
     <script src="/modes/super-powers/js/super-hud.js?v=shadow-power-ui-3"></script>
     <script type="module">

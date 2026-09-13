@@ -39,6 +39,7 @@
         .empty{color:#bba8cc;text-align:center;padding:16px;font-size:.8rem}.leader{padding:10px;border-radius:11px;background:rgba(49,217,130,.12);color:#8df0bd;text-align:center;margin-top:8px}
         .presenter-toast{position:fixed;left:50%;bottom:20px;z-index:100;max-width:min(360px,calc(100% - 28px));transform:translate(-50%,25px);opacity:0;pointer-events:none;background:#291244;border:1px solid rgba(255,214,0,.55);border-bottom:4px solid var(--yellow);border-radius:12px;padding:11px 16px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:.22s}.presenter-toast.show{opacity:1;transform:translate(-50%,0)}.presenter-toast.error{border-bottom-color:var(--red)}
         .usage-modal{position:fixed;inset:0;z-index:90;display:none;place-items:center;padding:14px;background:rgba(15,3,29,.76);backdrop-filter:blur(12px)}.usage-modal.show{display:grid}.usage-card{position:relative;width:min(560px,100%);max-height:90vh;overflow:auto;padding:22px;background:linear-gradient(145deg,#5d3784,#2d164d);border:1px solid var(--line);border-bottom:5px solid var(--yellow);border-radius:18px;box-shadow:0 14px 0 rgba(0,0,0,.25),0 35px 80px rgba(0,0,0,.55)}.usage-close{position:absolute;top:11px;left:11px;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#351b55;color:#fff;font-size:1.2rem;cursor:pointer}.usage-card h2{margin:0 0 4px;color:var(--yellow);font-size:1.5rem}.usage-card>p{margin:0 0 14px;color:#d8cae5;font-size:.76rem}.usage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.usage-item{display:grid;grid-template-columns:42px 1fr;gap:9px;align-items:center;padding:9px;background:#291244;border:1px solid var(--line);border-radius:11px}.usage-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));font-size:1.35rem;box-shadow:0 3px #754600}.usage-item strong{display:block;color:#fff;font-size:.82rem}.usage-item small{display:block;margin-top:2px;color:#c9b8d8;font-size:.65rem;line-height:1.35}.confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.confirm-actions .action{min-height:42px}
+        .cell-awards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.cell-award{border:0;border-radius:10px;padding:10px 8px;color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 4px color-mix(in srgb,var(--award-color,#653893),#000 38%);background:var(--award-color,#653893);transition:transform .13s ease,filter .13s ease,box-shadow .13s ease}.cell-award.t1{--award-color:#ff9800;color:#24102f}.cell-award.t2{--award-color:#8b5fbf}.cell-award:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-2px)}.cell-award:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px color-mix(in srgb,var(--award-color,#653893),#000 38%)}.cell-award:disabled{opacity:.35;cursor:not-allowed}
         @media(max-width:780px){
             .shell{padding:7px}.grid{grid-template-columns:1fr}.card{border-radius:13px;padding:9px}.game-meta{justify-content:center}.round{width:100%;text-align:center}.score{width:100%;display:grid;grid-template-columns:1fr 1fr}.score span{text-align:center;font-size:.76rem;padding:7px 5px}
             header{position:sticky;padding:7px 8px;font-size:.76rem}.session{gap:4px}.help-button,.logout{padding:7px 8px}.board{margin-top:7px}.question{padding:10px}.question p{font-size:.86rem}.question-head{font-size:.75rem}.controls{gap:6px}.action{padding:10px 6px;font-size:.78rem}.timer-value{font-size:2.3rem}.settings label{font-size:.7rem}.settings .field{padding:9px}.card h2{font-size:.9rem}
@@ -88,11 +89,13 @@
                         <button class="action" data-command="newQuestion">سؤال آخر</button>
                         <button class="action warn" data-command="nextRound" disabled>➡️ الجولة التالية</button>
                         <button class="action" data-command="revealAnswer">إظهار الإجابة للجمهور</button>
-                        <button class="action good" data-command="awardTeam1" data-team="team1" disabled>منح الخلية للفريق الأول</button>
-                        <button class="action team-two-action" data-command="awardTeam2" data-team="team2" disabled>منح الخلية للفريق الثاني</button>
                         <button class="action good" data-command="reopenBuzzer">إعادة فتح الجرس</button>
                         <button class="action shuffle" data-command="shuffleBoard">🔀 خلط الخلايا</button>
                         <button class="action warn" id="resetCellsButton" type="button">تصفير الخلايا</button>
+                    </div>
+                    <div class="cell-awards" aria-label="منح الخلية للفريق">
+                        <button class="cell-award t1" data-team-award="team1" data-team="team1" type="button" disabled>منح الخلية للفريق الأول</button>
+                        <button class="cell-award t2" data-team-award="team2" data-team="team2" type="button" disabled>منح الخلية للفريق الثاني</button>
                     </div>
                 </div>
             </section>
@@ -160,7 +163,7 @@ import {getDatabase,ref,get,set,update,onValue,runTransaction,onDisconnect,serve
 const config={apiKey:"AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",authDomain:"buzzer-game-f2983.firebaseapp.com",databaseURL:"https://buzzer-game-f2983-default-rtdb.firebaseio.com",projectId:"buzzer-game-f2983",storageBucket:"buzzer-game-f2983.firebasestorage.app",messagingSenderId:"125573747954",appId:"1:125573747954:web:8dac68183e6e326b8b2c6b"};
 const db=getDatabase(getApps().length?getApps()[0]:initializeApp(config));
 const params=new URLSearchParams(location.search),room=(params.get("room")||"").toUpperCase(),token=params.get("token")||"";
-const $=id=>document.getElementById(id);let claimId="",game={},roomData={},presenterQuestion={},serverOffset=0,timerLoop=null,heartbeat=null,toastTimer=null,expiredTimerKey="";
+const $=id=>document.getElementById(id);let claimId="",game={},roomData={},presenterQuestion={},serverOffset=0,timerLoop=null,heartbeat=null,toastTimer=null,expiredTimerKey="",firstBuzzHoldTimer=null,firstBuzzKey="",firstBuzzSnapshot=null,firstBuzzVisibleUntil=0,firstBuzzExpiredKey="";
 const COLOR_MAP={
     purple:{light:"#8b5fbf",border:"#4a2570"},orange:{light:"#ff9800",border:"#c26700"},
     red:{light:"#ef4a42",border:"#9f221d"},blue:{light:"#3489e8",border:"#17539b"},
@@ -220,6 +223,7 @@ async function runAction(button,type,payload={},message=ACTION_MESSAGES[type]){
     finally{button?.classList.remove("is-loading");button?.removeAttribute("aria-busy")}
 }
 document.querySelectorAll("[data-command]").forEach(b=>b.onclick=()=>runAction(b,b.dataset.command,{letter:game.question?.letter||"",team:b.dataset.team||roomData.buzzer?.team||""}));
+document.querySelectorAll("[data-team-award]").forEach(b=>b.onclick=()=>{const selected=game.selectedCell;const row=Number(selected?.row),col=Number(selected?.col);if(!Number.isInteger(row)||!Number.isInteger(col)||game.board?.[row]?.[col]){toast("اختر خلية مفتوحة أولًا","error");return}const type=b.dataset.teamAward==="team2"?"awardTeam2":"awardTeam1";runAction(b,type,{row,col},ACTION_MESSAGES[type])});
 $("saveSettings").onclick=e=>runAction(e.currentTarget,"updateSettings",{answerSeconds:Number($("answerSeconds").value),otherTeamSeconds:Number($("otherSeconds").value)});
 function subscribe(){
     onValue(ref(db,".info/connected"),s=>$("connection").textContent=s.val()?"● متصل":"○ منقطع");
@@ -233,7 +237,7 @@ function renderGame(){
     const c1=COLOR_MAP[game.team1?.color]||COLOR_MAP.orange,c2=COLOR_MAP[game.team2?.color]||COLOR_MAP.purple;
     document.documentElement.style.setProperty("--t1",c1.light);document.documentElement.style.setProperty("--t1-border",c1.border);
     document.documentElement.style.setProperty("--t2",c2.light);document.documentElement.style.setProperty("--t2-border",c2.border);
-    const displayedScores=game.roundWins||game.scores||{};
+    const displayedScores=game.roundWins&&typeof game.roundWins==="object"?game.roundWins:{};
     $("roundLabel").textContent=`الجولة ${game.round||1} / ${game.totalRounds||3}`;$("score1").textContent=`${t1}: ${Number(displayedScores.team1||0)} جولات`;$("score2").textContent=`${t2}: ${Number(displayedScores.team2||0)} جولات`;
     $("answerSeconds").value=game.settings?.answerSeconds||3;$("otherSeconds").value=game.settings?.otherTeamSeconds||10;
     const host=$("board"),letters=game.cellLetters||[],board=game.board||[];host.innerHTML="";
@@ -248,10 +252,32 @@ function renderGame(){
     $("questionLetter").textContent=q.letter?`حرف ${q.letter}`:"اختر خلية";$("questionText").textContent=q.text||"";
     $("answerText").textContent=q.answer?`الإجابة: ${q.answer}`:"";$("questionStatus").textContent=q.revealed?"الإجابة ظاهرة":"الإجابة مخفية";
     const selected=game.selectedCell;const selectedOpen=Boolean(selected&&!game.board?.[selected.row]?.[selected.col]);
-    document.querySelectorAll("[data-command='awardTeam1'],[data-command='awardTeam2']").forEach(b=>{b.disabled=!selectedOpen;b.textContent=`منح الخلية لـ ${b.dataset.team==="team2"?t2:t1}`});
+    document.querySelectorAll("[data-team-award]").forEach(b=>{const team=b.dataset.teamAward||b.dataset.team||"team1";const color=team==="team2"?c2.light:c1.light;b.disabled=!selectedOpen;b.textContent=`منح الخلية لـ ${team==="team2"?t2:t1}`;b.style.setProperty("--award-color",color)});
     const nextButton=document.querySelector("[data-command='nextRound']");if(nextButton)nextButton.disabled=!(game.roundWinner==="team1"||game.roundWinner==="team2");
+    const hasClaimedCells=Boolean(game.roundWinner)||game.board?.some(row=>Array.isArray(row)&&row.some(cell=>cell==="team1"||cell==="team2"));const shuffleButton=document.querySelector("[data-command='shuffleBoard']");if(shuffleButton)shuffleButton.disabled=Boolean(hasClaimedCells);
 }
-function renderFirstBuzz(buzz){const box=$("firstBuzz");if(!buzz){box.classList.remove("show");$("firstBuzzName").textContent="";$("firstBuzzTeam").textContent="";return}const teamName=buzz.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول");$("firstBuzzName").textContent=`${buzz.name||"لاعب"} ضغط أولًا`;$("firstBuzzTeam").textContent=teamName;box.classList.add("show")}
+function firstBuzzHoldMs(){const seconds=Number(game.settings?.answerSeconds||3);return Math.max(1,Number.isFinite(seconds)?seconds:3)*1000}
+function firstBuzzTimestamp(buzz){for(const value of [buzz?.time,buzz?.pressedAt,buzz?.clientAt]){const stamp=Number(value);if(Number.isFinite(stamp)&&stamp>0)return stamp}return 0}
+function paintFirstBuzz(buzz){const box=$("firstBuzz");if(!buzz){box.classList.remove("show");$("firstBuzzName").textContent="";$("firstBuzzTeam").textContent="";return}const teamName=buzz.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول");$("firstBuzzName").textContent=`${buzz.name||"لاعب"} ضغط أولًا`;$("firstBuzzTeam").textContent=teamName;box.classList.add("show")}
+function renderFirstBuzz(buzz){
+    clearTimeout(firstBuzzHoldTimer);
+    const now=Date.now();
+    if(buzz){
+        const key=`${buzz.questionId||""}|${buzz.id||buzz.playerId||""}|${buzz.time||buzz.pressedAt||buzz.clientAt||""}`;
+        if(key===firstBuzzExpiredKey){paintFirstBuzz(null);return}
+        if(key!==firstBuzzKey){
+            firstBuzzKey=key;firstBuzzSnapshot=buzz;firstBuzzExpiredKey="";
+            const stamp=firstBuzzTimestamp(buzz),age=stamp?Math.max(0,now+serverOffset-stamp):0;
+            firstBuzzVisibleUntil=now+Math.max(0,firstBuzzHoldMs()-age);
+        }
+        if(!firstBuzzSnapshot||now>=firstBuzzVisibleUntil){firstBuzzExpiredKey=key;paintFirstBuzz(null);return}
+        paintFirstBuzz(firstBuzzSnapshot);
+        firstBuzzHoldTimer=setTimeout(()=>renderFirstBuzz(null),Math.max(0,firstBuzzVisibleUntil-Date.now()));
+        return;
+    }
+    if(firstBuzzSnapshot&&now<firstBuzzVisibleUntil){paintFirstBuzz(firstBuzzSnapshot);firstBuzzHoldTimer=setTimeout(()=>renderFirstBuzz(null),firstBuzzVisibleUntil-now);return}
+    firstBuzzExpiredKey=firstBuzzKey;firstBuzzSnapshot=null;firstBuzzVisibleUntil=0;paintFirstBuzz(null);
+}
 function renderQueue(raw){const q=Object.entries(raw).map(([id,v])=>({id,...v})).sort((a,b)=>Number(a.pressedAt||a.clientAt)-Number(b.pressedAt||b.clientAt));$("queue").innerHTML=q.length?q.map((p,i)=>`<div class="queue-row"><span class="rank">${i+1}</span><div class="person"><b>${safe(p.name)}</b><small>${p.team==="team2"?(game.team2?.name||"الفريق الثاني"):(game.team1?.name||"الفريق الأول")}</small></div><button class="award" data-player="${safeAttr(p.playerId)}" data-team="${p.team}" data-name="${safeAttr(p.name)}">منح نقطة</button></div>`).join(""):'<div class="empty">لم يضغط أحد بعد</div>';
     document.querySelectorAll(".award").forEach(b=>b.onclick=()=>runAction(b,"awardPoint",{playerId:b.dataset.player,team:b.dataset.team},`تم منح النقطة للاعب ${b.closest(".queue-row").querySelector(".person b").textContent}`));
 }

@@ -7,42 +7,42 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "تحدي الصور",
             desc: "لعبة تحدي بالصور ممتعة وسهلة الفهم، تظهر على الشاشة صور تلمّح لاسم معين، وعلى اللاعبين تخمين الإجابة بأسرع وقت.",
             image: "tahadi_suwar.png",
-            link: "/assets/games/photo-challenge.pdf",
+            link: "/photo-challenge",
             btnText: "العب الآن"
         },
         {
             title: "كرت جريء",
             desc: "🎯 جاوب بصراحة أو استعد تنكشف! 😈 تحديات جريئة واعترافات خطيرة للي عنده الجرأة يواجه الحقيقة.",
             image: "bold_card.png",
-            link: "/assets/games/bold-card.pdf",
+            link: "/bold-card",
             btnText: "العب الآن"
         },
         {
             title: "مآبين آلقلوب 1",
             desc: "لعبة أسئلة عاطفية وعميقة تقرّب المسافات وتفتح مواضيع جميلة.",
             image: "maben_alqlub_1.png",
-            link: "/assets/games/maben-alqlub-1.pdf",
+            link: "/maben-alqlub-1",
             btnText: "العب الآن"
         },
         {
             title: "مآبين آلقلوب 2",
             desc: "لعبة بطابع عاطفي واجتماعي مناسبة للأزواج والأصدقاء.",
             image: "maben_alqlub_2.png",
-            link: "/assets/games/maben-alqlub-2.pdf",
+            link: "/maben-alqlub-2",
             btnText: "العب الآن"
         },
         {
             title: "حروف هوجاس",
             desc: "لعبة الحروف العربية الممتعة مع تحديات ذكية وتفاعل مباشر.",
             image: "hroof_game.png",
-            link: "/",
+            link: "/7roof",
             btnText: "العب الآن"
         },
         {
             title: "تحدي الـ30 ثانية",
             desc: "تحدٍ سريع بين فريقين يعتمد على سرعة الإجابة قبل انتهاء الثلاثين ثانية.",
             image: "/assets/portal/thirty-seconds-game.png",
-            link: "https://30sec-vert.vercel.app/",
+            link: "/thirty-seconds",
             btnText: "العب الآن"
         }
     ];
