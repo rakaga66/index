@@ -911,31 +911,39 @@ async function subscribeToRoom() {
     chatUnsubscribe = onValue(ref(db, roomPath() + "/chat"), (snapshot) => renderChat(snapshot.val() || {}));
 }
 async function setPresence() {
-    const result = await runTransaction(roomRef(), (room) => {
-        if (!isValidRoomForJoin(room, roomCode, myPlayerId)) return;
-        const current = room.players?.[myPlayerId] || {};
-        return {
-            ...room,
-            players: {
-                ...(room.players || {}),
-                [myPlayerId]: { ...current, id: myPlayerId, name: myName, connected: true, joinedAt: current.joinedAt || serverNow(), lastSeen: serverNow() }
-            }
-        };
+    if (!roomCode || !myPlayerId) throw new Error("تعذر تحديد بيانات الدخول.");
+    // Read and validate the room first. Updating only the player child avoids a
+    // race where a room-level transaction starts from an empty local cache and
+    // is incorrectly aborted even though the room exists on Firebase.
+    const snapshot = await get(roomRef());
+    if (!snapshot.exists()) throw new Error("لم نجد جلسة بهذا الكود.");
+    const room = snapshot.val();
+    assertRoomCanBeJoined(room, roomCode, myPlayerId);
+    const current = room.players?.[myPlayerId] || {};
+    await update(playerRef(), {
+        id: myPlayerId,
+        name: myName,
+        connected: true,
+        joinedAt: current.joinedAt || serverNow(),
+        lastSeen: serverTimestamp()
     });
-    if (!result.committed) throw new Error("انتهت الجلسة قبل اكتمال الدخول.");
-    currentRoom = result.snapshot.val();
+    const playerSnapshot = await get(playerRef());
+    if (!playerSnapshot.exists()) throw new Error("تعذر حفظ دخولك في الجلسة. حاول مرة أخرى.");
+    currentRoom = { ...room, players: { ...(room.players || {}), [myPlayerId]: playerSnapshot.val() } };
     // Removing the player on disconnect cannot recreate a deleted room, unlike
     // an onDisconnect update on a child path.
-    await onDisconnect(playerRef()).remove();
+    await onDisconnect(playerRef()).update({ connected: false, lastSeen: serverTimestamp(), disconnectedAt: serverTimestamp() });
     clearInterval(heartbeatTimer); heartbeatTimer = setInterval(() => setPresenceHeartbeat().catch(() => {}), 15000);
 }
 async function setPresenceHeartbeat() {
     if (!roomCode || !myPlayerId) return;
-    const result = await runTransaction(roomRef(), (room) => {
-        if (!isValidRoomForJoin(room, roomCode, myPlayerId)) return;
-        return { ...room, players: { ...(room.players || {}), [myPlayerId]: { ...(room.players?.[myPlayerId] || {}), connected: true, lastSeen: serverNow() } } };
-    });
-    if (result.committed) currentRoom = result.snapshot.val();
+    try {
+        const snapshot = await get(roomRef());
+        if (!snapshot.exists() || !isValidRoomForJoin(snapshot.val(), roomCode, myPlayerId)) return;
+        await update(playerRef(), { connected: true, lastSeen: serverTimestamp() });
+    } catch (error) {
+        console.warn("تعذر تحديث حضور اللاعب.", error);
+    }
 }
 async function connectToRoom(code, playerId, name) {
     roomCode = cleanCode(code); myPlayerId = playerId; myName = cleanName(name);
