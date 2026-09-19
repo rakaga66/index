@@ -203,6 +203,22 @@ function clearSession() {
     localStorage.removeItem(SESSION_KEY);
 }
 
+// Do not let a normal join inherit a presenter id left in this browser's
+// per-room storage.  The saved id is reusable only from the explicit resume
+// action, which passes the matching session record.
+function resolveJoinPlayerId(room, code, providedPlayerId = "") {
+    const savedSession = readSession();
+    const explicitResume = Boolean(
+        providedPlayerId && savedSession?.roomCode === code && savedSession?.playerId === providedPlayerId
+    );
+    const storedPlayerId = localStorage.getItem("hojas_online_player_" + code) || "";
+    const candidate = providedPlayerId || storedPlayerId;
+    if (!candidate) return randomId();
+    if (explicitResume) return candidate;
+    if (candidate === room?.meta?.hostId) return randomId();
+    return room?.players?.[candidate] ? candidate : randomId();
+}
+
 function playersArray(room) {
     const source = room || currentRoom;
     return Object.values(source && source.players || {}).filter((player) => player && player.id);
@@ -581,7 +597,7 @@ async function setPresence() {
     const current = currentRoom && currentRoom.players && currentRoom.players[myPlayerId] || {};
     const presence = playerRef();
     await update(presence, {
-        id: myPlayerId, name: myName, connected: true,
+        id: myPlayerId, name: myName, host: myPlayerId === currentRoom?.meta?.hostId, connected: true,
         joinedAt: current.joinedAt || serverNow(), lastSeen: serverTimestamp()
     });
     await onDisconnect(presence).update({
@@ -667,14 +683,14 @@ async function joinRoom(code, name, playerId) {
         const snapshot = await get(ref(db, ROOM_ROOT + "/" + cleanRoom));
         if (!snapshot.exists()) throw new Error("لم نجد غرفة بهذا الكود.");
         const room = snapshot.val();
-        const savedId = playerId || localStorage.getItem("hojas_online_player_" + cleanRoom) || randomId();
+        const savedId = resolveJoinPlayerId(room, cleanRoom, playerId);
         if (room.meta && room.meta.status === "FINISHED" && !room.players?.[savedId]) {
             throw new Error("هذه المباراة انتهت.");
         }
         localStorage.setItem("hojas_online_player_" + cleanRoom, savedId);
         const existing = room.players && room.players[savedId] || {};
         await update(ref(db, ROOM_ROOT + "/" + cleanRoom + "/players/" + savedId), {
-            id: savedId, name: name, score: Number(existing.score || 0), connected: true,
+            id: savedId, name: name, host: savedId === room.meta?.hostId, score: Number(existing.score || 0), connected: true,
             joinedAt: existing.joinedAt || serverNow(), lastSeen: serverTimestamp()
         });
         await connectToRoom(cleanRoom, savedId, name);

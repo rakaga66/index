@@ -490,6 +490,24 @@ function assertRoomCanBeJoined(room, code, playerId) {
     if (room.meta.status === "FINISHED" && !room.players?.[playerId]) throw new Error("هذه الجلسة انتهت.");
 }
 
+// A browser can keep the presenter id for a room in localStorage.  If the
+// same device later joins that room through the normal join form, reusing that
+// id would make the new tab look like the presenter.  Only the explicit
+// "resume session" action is allowed to reuse the saved identity; a normal
+// join always gets a fresh id when the stored id belongs to the host.
+function resolveJoinPlayerId(room, code, savedPlayerId = "") {
+    const savedSession = readSession();
+    const explicitResume = Boolean(
+        savedPlayerId && savedSession?.roomCode === code && savedSession?.playerId === savedPlayerId
+    );
+    const storedPlayerId = localStorage.getItem("hojas_online_board_player_" + code) || "";
+    const candidate = savedPlayerId || storedPlayerId;
+    if (!candidate) return randomId();
+    if (explicitResume) return candidate;
+    if (candidate === room?.meta?.hostId) return randomId();
+    return room?.players?.[candidate] ? candidate : randomId();
+}
+
 function setConnection(online) {
     const badge = $("onlineBoardConnection");
     if (!badge) return;
@@ -923,6 +941,7 @@ async function setPresence() {
     await update(playerRef(), {
         id: myPlayerId,
         name: myName,
+        host: myPlayerId === room.meta?.hostId,
         connected: true,
         joinedAt: current.joinedAt || serverNow(),
         lastSeen: serverTimestamp()
@@ -1001,10 +1020,11 @@ async function joinRoom(code, name, savedPlayerId = "") {
     try {
         const cleanRoom = cleanCode(code); const cleanNameValue = cleanName(name);
         if (!/^\d{6}$/.test(cleanRoom)) throw new Error("اكتب كود الجلسة المكوّن من 6 أرقام.");
-        const playerId = savedPlayerId || localStorage.getItem("hojas_online_board_player_" + cleanRoom) || randomId();
         const snapshot = await get(ref(db, ROOM_ROOT + "/" + cleanRoom));
         if (!snapshot.exists()) throw new Error("لم نجد جلسة بهذا الكود.");
-        assertRoomCanBeJoined(snapshot.val(), cleanRoom, playerId);
+        const room = snapshot.val();
+        const playerId = resolveJoinPlayerId(room, cleanRoom, savedPlayerId);
+        assertRoomCanBeJoined(room, cleanRoom, playerId);
         localStorage.setItem("hojas_online_board_player_" + cleanRoom, playerId);
         await connectToRoom(cleanRoom, playerId, cleanNameValue); showToast("دخلت الجلسة " + cleanRoom);
     } catch (error) { console.error(error); showToast(error.message || "تعذر دخول الجلسة.", true); }
