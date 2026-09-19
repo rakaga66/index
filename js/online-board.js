@@ -1483,7 +1483,10 @@ $("onlineBoardJoinForm")?.addEventListener("submit", (event) => { event.preventD
 $("onlineBoardHomeBtn")?.addEventListener("click", (event) => {
     event.preventDefault();
     if (!currentRoom || !roomCode) {
-        window.location.href = 'https://8aaaf.com/';
+        // Keep the player inside the Huroof game instead of sending them to
+        // the QAAF games store.  The same relative route works locally and
+        // on the production domain.
+        window.location.href = '/7roof';
         return;
     }
     showOnlineConfirm({
@@ -1493,7 +1496,7 @@ $("onlineBoardHomeBtn")?.addEventListener("click", (event) => {
     }).then(async (accepted) => {
         if (!accepted) return;
         await leaveRoom(false);
-        window.location.href = "https://8aaaf.com/";
+        window.location.href = "/7roof";
     });
 });
 $("onlineBoardHelpBtn")?.addEventListener("click", openOnlineHelp);

@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/modes/super-powers/css/style.css?v=super-powers-mobile-ui-4">
+    <link rel="stylesheet" href="/modes/super-powers/css/style.css?v=super-powers-mobile-ui-5">
     <link rel="stylesheet" href="/modes/super-powers/css/game-view.css?v=presentation-interactive-5">
     <link rel="stylesheet" href="/modes/super-powers/css/power-announcement.css?v=1">
     <link rel="stylesheet" href="/modes/super-powers/css/super-hud.css?v=shadow-power-ui-4">
@@ -146,7 +146,6 @@
 
     <!-- ===== HOME SCREEN ===== -->
     <div class="home-screen" id="homeScreen">
-        <div class="super-mode-home-badge">⚡ طور القوى الخارقة</div>
         <!-- Background Pattern -->
         <div class="hex-bg-pattern"></div>
 
@@ -154,65 +153,32 @@
         <div class="logo-home" onclick="window.location.href='/'" style="cursor: pointer;">
             <span class="logo-line1">حروف</span>
             <span class="logo-line2">مع</span>
-            <span class="logo-line3">هوجاس</span>
+            <span class="logo-line3 super-home-mode-title">طور القوى الخارقة</span>
         </div>
+
+        <div class="super-mode-home-badge" aria-label="وضع اللعبة الحالي">طور القوى الخارقة</div>
 
         <!-- Action Buttons -->
         <div class="home-buttons">
             <button class="btn-pill" onclick="startGame()">بدء اللعبة</button>
             <button class="btn-pill btn-online" onclick="openOnlineModal()" style="background: linear-gradient(135deg, #FFD600, #F57C00); color: #1a1a1a; font-weight: 900; border-color: #F57C00;">العب اونلاين 🌐</button>
+            <button class="btn-pill normal-mode-primary" type="button" onclick="returnToNormalMode()">الطور العادي</button>
             <button class="btn-pill" onclick="showSettings()">إعدادات</button>
             <button class="btn-pill" onclick="openRulesModal()">القوانين</button>
         </div>
 
         <!-- New Home Extra Links -->
         <div class="home-extra-links">
-            <button class="hex-btn normal-mode-link" type="button" onclick="returnToNormalMode()">
-                <span class="icon">↩️</span>
-                <span class="home-link-copy"><strong>الطور العادي</strong></span>
-            </button>
             <button class="hex-btn question-suggestion-link" onclick="openQuestionSuggestionModal()">
                 <span class="icon">💡</span>
                 <span class="home-link-copy"><strong>أسئلة المتابعين</strong></span>
             </button>
         </div>
 
-        <!-- Compact home information cards -->
-        <div class="home-info-panels" aria-label="معلومات اللعبة">
-            <section class="home-info-card home-updates-card">
-                <div class="home-info-card__heading">
-                    <span class="home-info-card__icon" aria-hidden="true">✨</span>
-                    <div>
-                        <small>جديد اللعبة</small>
-                        <h2>آخر التحديثات</h2>
-                    </div>
-                </div>
-                <div class="home-info-preview" id="homeUpdatesPreview"></div>
-                <button type="button" class="home-info-more" onclick="openHomeInfoModal('updates')">
-                    عرض سجل التحديثات
-                </button>
-            </section>
-
-            <section class="home-info-card home-upcoming-card">
-                <div class="home-info-card__heading">
-                    <span class="home-info-card__icon" aria-hidden="true">🗓️</span>
-                    <div>
-                        <small>التوفر المتوقع</small>
-                        <h2>التحديثات القادمة</h2>
-                    </div>
-                </div>
-                <div class="home-info-preview home-upcoming-preview" id="homeUpcomingPreview"></div>
-                <button type="button" class="home-info-more" onclick="openHomeInfoModal('upcoming')">
-                    عرض التحديثات القادمة
-                </button>
-            </section>
-
-        </div>
-
         <!-- Version Tag -->
         <div class="home-version-badges" style="position: absolute; bottom: 15px; font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.85rem; background: rgba(74, 222, 128, 0.18); color: #4ADE80; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(74, 222, 128, 0.35);">النسخة الكاملة المجانية</span>
-            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.55</span>
+            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.6</span>
         </div>
     </div>
 
@@ -887,7 +853,7 @@
     <script src="/modes/super-powers/js/power-system.js?v=official-18-1"></script>
     <script src="/modes/super-powers/js/power-catalog.js?v=official-18-1"></script>
     <script src="/modes/super-powers/js/power-announcement.js?v=1"></script>
-    <script src="/modes/super-powers/js/script.js?v=question-overrides-1"></script>
+    <script src="/modes/super-powers/js/script.js?v=super-home-1.6"></script>
     <script src="/modes/super-powers/js/power-ui.js?v=power-announcement-1"></script>
     <script src="/modes/super-powers/js/super-hud.js?v=shadow-power-ui-3"></script>
     <script type="module">

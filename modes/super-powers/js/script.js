@@ -264,6 +264,12 @@ function closePlayerHelp() {
 
 const HOME_UPDATE_ITEMS = [
     {
+        version: '1.6',
+        date: '19 سبتمبر 2026',
+        title: 'تنقل وهوية موحّدان للأطوار',
+        description: 'العودة من الأونلاين ترجع إلى لعبة حروف مباشرة، وواجهة القوى الخارقة أصبحت بهوية داكنة واضحة مع زر الطور العادي ضمن الأزرار الرئيسية.'
+    },
+    {
         version: '1.55',
         date: '26 أغسطس 2026',
         title: 'تحسين مظهر الجوال لجميع الأطوار',
@@ -1563,8 +1569,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // Aggressive Migration: If the saved URL is old Railway or old github.io, force local relative URL
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
     const isGithub = savedBuzzerUrl && savedBuzzerUrl.includes('rakaga66.github.io');
-    const isLegacyProductionRoute = savedBuzzerUrl && !isLocalGameRuntime() &&
-        savedBuzzerUrl.includes('/modes/super-powers/buzzer') || savedBuzzerUrl.includes('/قوى-خارقة/الجرس');
+    const isLegacyProductionRoute = Boolean(savedBuzzerUrl && !isLocalGameRuntime() &&
+        (savedBuzzerUrl.includes('/modes/super-powers/buzzer') || savedBuzzerUrl.includes('/قوى-خارقة/الجرس')));
 
     if (isOldRailway || isGithub || isLegacyProductionRoute) {
         console.log('🔄 Forced migration of buzzer server URL to local origin...');
@@ -1639,15 +1645,9 @@ window.addEventListener('DOMContentLoaded', () => {
         syncSettingsUI();
     }
 
-    // The home-page super-powers button is a direct game entry.  Keep the
-    // introductory title/round transition, but do not show the old setup menu.
-    if (freshModeEntry) {
-        const home = document.getElementById('homeScreen');
-        const settings = document.getElementById('settingsScreen');
-        if (home) home.style.display = 'none';
-        if (settings) settings.style.display = 'none';
-        requestAnimationFrame(() => setTimeout(() => startGame(), 40));
-    }
+    // A mode entry opens its own home shell first.  The player can then choose
+    // "بدء اللعبة" explicitly; this keeps the mode switch visual and avoids
+    // dropping them straight into a round.
 });
 
 window.addEventListener('beforeunload', saveGameState);
@@ -2086,7 +2086,7 @@ function initSettingsUI() {
         compNameInput.addEventListener('input', (e) => {
             const newName = e.target.value.trim() || 'هوجاس';
             teamSetup.competitionName = newName;
-            document.querySelectorAll('.logo-line3, #settingsLiveCompName').forEach(el => {
+            document.querySelectorAll('.logo-line3:not(.super-home-mode-title), #settingsLiveCompName').forEach(el => {
                 el.textContent = newName;
             });
         });

@@ -257,6 +257,12 @@ function closePlayerHelp() {
 
 const HOME_UPDATE_ITEMS = [
     {
+        version: '1.6',
+        date: '19 سبتمبر 2026',
+        title: 'تنقل وهوية موحّدان للأطوار',
+        description: 'العودة من الأونلاين ترجع إلى لعبة حروف مباشرة، وواجهة القوى الخارقة أصبحت بهوية داكنة واضحة مع زر الطور العادي ضمن الأزرار الرئيسية.'
+    },
+    {
         version: '1.55',
         date: '26 أغسطس 2026',
         title: 'تحسين مظهر الجوال لجميع الأطوار',
@@ -968,6 +974,13 @@ function hydrateSharedSetup() {
     }
 }
 
+// The home logo is static HTML, so hydrate it after loading the shared setup
+// as well as when the settings field is edited live.
+function syncHomeBranding() {
+    const homeName = document.getElementById('homeCompetitionName');
+    if (homeName) homeName.textContent = teamSetup.competitionName || 'هوجاس';
+}
+
 // ===== Buzzer State =====
 let buzzerSocket = null;
 let buzzerRoom = null;
@@ -1268,6 +1281,7 @@ window.addEventListener('DOMContentLoaded', () => {
     applyDarkMode(savedTheme === 'dark');
     
     hydrateSharedSetup();
+    syncHomeBranding();
     initSettingsUI();
     setGamePresenter(isAdminViewer() ? 'human' : teamSetup.presenter, true);
     applyAdminViewerMode();
@@ -1278,8 +1292,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // Aggressive Migration: If the saved URL is old Railway or old github.io, force local relative URL
     const isOldRailway = savedBuzzerUrl && savedBuzzerUrl.includes('railway.app');
     const isGithub = savedBuzzerUrl && savedBuzzerUrl.includes('rakaga66.github.io');
-    const isLegacyProductionRoute = savedBuzzerUrl && !isLocalGameRuntime() &&
-        savedBuzzerUrl.includes('/buzzer-server-qaf') || savedBuzzerUrl.includes('/حروف/الجرس');
+    const isLegacyProductionRoute = Boolean(savedBuzzerUrl && !isLocalGameRuntime() &&
+        (savedBuzzerUrl.includes('/buzzer-server-qaf') || savedBuzzerUrl.includes('/حروف/الجرس')));
 
     if (isOldRailway || isGithub || isLegacyProductionRoute) {
         console.log('🔄 Forced migration of buzzer server URL to local origin...');
@@ -1772,6 +1786,7 @@ function initSettingsUI() {
             document.querySelectorAll('.logo-line3, #settingsLiveCompName').forEach(el => {
                 el.textContent = newName;
             });
+            syncHomeBranding();
         });
     }
 

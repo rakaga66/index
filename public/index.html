@@ -165,7 +165,7 @@
         <div class="logo-home" onclick="window.location.href='/'" style="cursor: pointer;">
             <span class="logo-line1">حروف</span>
             <span class="logo-line2">مع</span>
-            <span class="logo-line3">هوجاس</span>
+            <span class="logo-line3" id="homeCompetitionName">هوجاس</span>
         </div>
 
         <!-- Action Buttons -->
@@ -196,7 +196,7 @@
         <!-- Version Tag -->
         <div class="home-version-badges" style="font-size: 1rem; color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.85rem; background: rgba(74, 222, 128, 0.18); color: #4ADE80; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(74, 222, 128, 0.35);">النسخة الكاملة المجانية</span>
-            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.55</span>
+            <span style="font-size: 0.85rem; background: rgba(255, 214, 0, 0.16); color: #FFD600; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255, 214, 0, 0.35);">التحديث الجديد 1.6</span>
         </div>
         </footer>
         </div>
@@ -821,7 +821,7 @@
         window.qafTrackGameStart = () => { window.qafAnalyticsPendingStarts += 1; };
     </script>
     <script src="js/first-game-tour.js?v=first-game-tour-1"></script>
-    <script src="js/script.js?v=question-overrides-1"></script>
+    <script src="js/script.js?v=home-navigation-1.6"></script>
     <script type="module">
         import { trackSection, trackGameStart } from './js/qaf-analytics.js?v=1';
         trackSection('game');

@@ -6119,3 +6119,53 @@ body.super-game-active:has(#settingsScreen[style*="display: flex"]) .player-help
 body.super-game-active:has(#transitionScreen[style*="display: flex"]) .player-help-btn {
     display: none !important;
 }
+
+/* v1.6: the super-powers entry keeps the Huroof home shell, but uses a
+   distinct dark identity so it reads as a mode rather than a separate site. */
+body.super-power-mode {
+    background: #07070b !important;
+}
+body.super-power-mode .home-screen {
+    background: linear-gradient(180deg, #07070b 0%, #111118 100%) !important;
+    gap: 24px;
+}
+body.super-power-mode .home-screen .hex-bg-pattern {
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(-45deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
+    opacity: .55;
+}
+body.super-power-mode .home-screen .logo-home {
+    margin-bottom: 0;
+}
+body.super-power-mode .super-mode-home-badge {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    z-index: 10;
+    margin: -8px 0 0;
+    padding: 6px 16px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 10px;
+    background: #050507;
+    color: #fff;
+    font-size: clamp(.9rem, 2vw, 1.2rem);
+    box-shadow: 0 4px 0 rgba(0,0,0,.4);
+}
+body.super-power-mode .home-buttons .normal-mode-primary {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,.3) !important;
+    border-bottom-color: #000 !important;
+}
+body.super-power-mode .home-extra-links {
+    margin-top: 0;
+}
+
+@media (max-width: 900px) {
+    body.super-power-mode .home-screen { gap: 10px; }
+    body.super-power-mode .super-mode-home-badge { margin: -2px 0 2px; }
+}
