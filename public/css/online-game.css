@@ -183,7 +183,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--online-yell
 .online-resume span { color: var(--online-muted); font-size: .72rem; }
 
 .online-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.online-section-heading h1 { margin: 4px 0 0; font-size: clamp(1.7rem, 4vw, 2.7rem); }
+.online-section-heading h2 { margin: 4px 0 0; font-size: clamp(1.7rem, 4vw, 2.7rem); }
 .lobby-layout, .game-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(290px, .8fr); gap: 18px; align-items: start; }
 .lobby-main, .game-main { display: grid; gap: 14px; min-width: 0; }
 .room-code-card {
@@ -279,7 +279,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--online-yell
 
 .results-card { width: min(560px, 100%); margin: 30px auto; padding: 30px 26px; border: 1px solid var(--online-border); border-bottom: 6px solid var(--online-yellow); border-radius: 24px; text-align: center; background: linear-gradient(145deg, rgba(78,38,115,.95), rgba(35,13,61,.94)); box-shadow: 0 22px 70px rgba(0,0,0,.34); }
 .results-trophy { margin: 12px 0 3px; font-size: 3.5rem; }
-.results-card h1 { margin: 0; color: var(--online-yellow); font-size: 2rem; }
+.results-card h2 { margin: 0; color: var(--online-yellow); font-size: 2rem; }
 .results-card > p { margin: 5px 0 18px; color: var(--online-muted); font-size: .8rem; }
 .results-ranking { display: grid; gap: 7px; margin-bottom: 21px; text-align: right; }
 .results-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }

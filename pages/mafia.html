@@ -4,15 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>لعبة المافيا | قاف للألعاب</title>
-  <meta name="description" content="لعبة المافيا من قاف للألعاب — قريبًا.">
+  <meta name="description" content="تعرّف على لعبة المافيا القادمة إلى قاف للألعاب، وهي تجربة جماعية مليئة بالخداع والتحقيق والاستنتاج بين الأصدقاء. تابع الصفحة لمعرفة جديد اللعبة وموعد إتاحتها.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#241239">
   <link rel="canonical" href="https://8aaaf.com/mafia">
   <meta property="og:locale" content="ar_SA">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="قاف للألعاب">
   <meta property="og:title" content="لعبة المافيا | قاف للألعاب">
-  <meta property="og:description" content="لعبة المافيا قادمة قريبًا إلى بوابة قاف للألعاب.">
+  <meta property="og:description" content="لعبة جماعية مليئة بالخداع والتحقيق والاستنتاج بين الأصدقاء، قادمة إلى قاف للألعاب.">
   <meta property="og:url" content="https://8aaaf.com/mafia">
-  <meta property="og:image" content="https://8aaaf.com/assets/portal/mafia.png">
+  <meta property="og:image" content="https://8aaaf.com/assets/portal/mafia-social.jpg">
+  <meta property="og:image:alt" content="غلاف لعبة المافيا">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="لعبة المافيا | قاف للألعاب">
+  <meta name="twitter:description" content="لعبة جماعية مليئة بالخداع والتحقيق والاستنتاج بين الأصدقاء، قادمة إلى قاف للألعاب.">
+  <meta name="twitter:image" content="https://8aaaf.com/assets/portal/mafia-social.jpg">
+  <link rel="shortcut icon" type="image/png" href="/assets/qaf-favicon.png">
   <link rel="icon" type="image/png" href="/assets/qaf-favicon.png">
   <style>
     @font-face{font-family:HrofFont;src:url('/assets/حروف.ttf') format('truetype'),url('../public/assets/حروف.ttf') format('truetype');font-display:swap}
@@ -29,19 +37,23 @@
 </head>
 <body>
   <main>
-    <img id="mafiaCover" src="/assets/portal/mafia.png" alt="غلاف لعبة المافيا" loading="eager">
+    <img id="mafiaCover" src="/assets/portal/mafia.webp" alt="غلاف لعبة المافيا" width="823" height="666" loading="eager">
     <h1>لعبة المافيا</h1>
     <p>لعبة جماعية مليئة بالخداع والتحقيق قادمة قريبًا إلى قاف للألعاب.</p>
     <a href="/">العودة إلى متجر قاف</a>
   </main>
   <script>
     const cover = document.getElementById('mafiaCover');
-    if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-      cover.src = '../public/assets/portal/mafia.png';
-    }
+    const useLocalCover = () => {
+      if (cover.dataset.localFallback === 'true') return;
+      if (location.protocol !== 'file:' && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+      cover.dataset.localFallback = 'true';
+      cover.src = '../public/assets/portal/mafia.webp';
+    };
     cover.addEventListener('error', () => {
-      if (!cover.src.includes('../public/assets/')) cover.src = '../public/assets/portal/mafia.png';
+      useLocalCover();
     }, {once:true});
+    if (location.protocol === 'file:') useLocalCover();
   </script>
 </body>
 </html>

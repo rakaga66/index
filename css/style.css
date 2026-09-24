@@ -643,7 +643,7 @@ h1, h2, h3, .game-title {
         animation: arrowPulse 1.35s ease-in-out infinite;
     }
 
-    .rotate-device h1 {
+    .rotate-device__title {
         margin: 2px 0 0;
         color: #ffd600;
         font-size: clamp(2rem, 10vw, 2.8rem);
@@ -2094,7 +2094,10 @@ body.presentation-mode .player-help-btn { display: none !important; }
     align-items: center;
     font-family: 'HrofFont', sans-serif;
     transform: rotate(-5deg);
+    margin-top: 0;
     margin-bottom: 60px;
+    font-size: inherit;
+    font-weight: inherit;
     animation: float 4s ease-in-out infinite alternate;
 }
 

@@ -3,9 +3,24 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>حروف | اللعب أونلاين</title>
-    <meta name="description" content="لعبة حروف الجماعية أونلاين مع جلسة ومشاركة كود الغرفة.">
+    <title>اللعب الجماعي أونلاين | لعبة حروف</title>
+    <meta name="description" content="العب حروف أونلاين مع أصدقائك: أنشئ جلسة، شارك رمزها، اختاروا الفرق وتنافسوا بالإجابات على لوحة سداسية مباشرة من أي مكان.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#24103f">
     <link rel="canonical" href="https://8aaaf.com/7roof/online/board">
+    <link rel="icon" type="image/png" href="/assets/qaf-favicon.png">
+    <meta property="og:locale" content="ar_SA">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="قاف للألعاب">
+    <meta property="og:title" content="اللعب الجماعي أونلاين | لعبة حروف">
+    <meta property="og:description" content="أنشئ جلسة حروف أونلاين، شارك رمزها، اختاروا الفرق وتنافسوا على لوحة سداسية مباشرة.">
+    <meta property="og:url" content="https://8aaaf.com/7roof/online/board">
+    <meta property="og:image" content="https://8aaaf.com/assets/portal/hroof-social.jpg">
+    <meta property="og:image:alt" content="تصميم لعبة حروف مع هوجاس">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="اللعب الجماعي أونلاين | لعبة حروف">
+    <meta name="twitter:description" content="أنشئ جلسة حروف أونلاين، شارك رمزها وتنافس مع أصدقائك مباشرة.">
+    <meta name="twitter:image" content="https://8aaaf.com/assets/portal/hroof-social.jpg">
     <link rel="stylesheet" href="/css/online-board.css?v=online-board-17">
     <link rel="stylesheet" href="/css/first-game-tour.css?v=first-game-tour-1">
 </head>
@@ -49,7 +64,7 @@
         </section>
 
         <section class="online-board-view online-board-lobby" id="onlineBoardLobby" hidden>
-            <div class="ob-section-head"><div><span class="online-board-kicker">LOBBY</span><h1>تجهيز الجلسة</h1></div><button class="ob-ghost-btn" type="button" id="onlineBoardLobbyLeave">مغادرة</button></div>
+            <div class="ob-section-head"><div><span class="online-board-kicker">LOBBY</span><h2>تجهيز الجلسة</h2></div><button class="ob-ghost-btn" type="button" id="onlineBoardLobbyLeave">مغادرة</button></div>
             <div class="ob-room-code"><div><small>كود الجلسة</small><strong id="onlineBoardRoomCode">------</strong></div><button class="ob-primary-btn ob-copy-btn" type="button" id="onlineBoardCopyCode">نسخ الكود</button></div>
             <div class="ob-lobby-layout">
                 <div class="ob-lobby-main">
@@ -70,7 +85,7 @@
         </section>
 
         <section class="online-board-view online-board-game" id="onlineBoardGame" hidden>
-            <div class="ob-game-head"><div><span class="online-board-kicker">LIVE MATCH</span><h1>حروف أونلاين</h1></div><div class="ob-game-status"><span id="onlineBoardGameState">السؤال مفتوح</span><strong id="onlineBoardRound">الجولة الأولى</strong><strong id="onlineBoardCountdown">—</strong></div></div>
+            <div class="ob-game-head"><div><span class="online-board-kicker">LIVE MATCH</span><h2>حروف أونلاين</h2></div><div class="ob-game-status"><span id="onlineBoardGameState">السؤال مفتوح</span><strong id="onlineBoardRound">الجولة الأولى</strong><strong id="onlineBoardCountdown">—</strong></div></div>
             <section class="ob-ready-panel" id="onlineBoardReadyPanel" hidden>
                 <div><strong>استعدوا قبل بداية السؤال</strong><small id="onlineBoardReadyStatus">يجب أن يضغط جميع اللاعبين «أنا جاهز».</small></div>
                 <button class="ob-primary-btn" type="button" id="onlineBoardReadyBtn">أنا جاهز</button>
@@ -93,7 +108,7 @@
             </div>
         </section>
 
-        <section class="online-board-view online-board-results" id="onlineBoardResults" hidden><div class="ob-results-card"><span class="online-board-kicker">MATCH FINISHED</span><div>🏆</div><h1 id="onlineBoardResultTitle">انتهت المباراة</h1><p id="onlineBoardResultText"></p><div id="onlineBoardResultScores"></div><section class="ob-rematch-panel"><strong>إعادة المباراة</strong><small id="onlineBoardRematchStatus">اضغطوا «جاهز» جميعًا للبدء من جديد، أو اختاروا المغادرة.</small><div id="onlineBoardRematchPlayers"></div></section><div class="ob-results-actions"><button class="ob-primary-btn" id="onlineBoardPlayAgain" type="button">جاهز لمباراة جديدة</button><button class="ob-secondary-btn" id="onlineBoardResultsLobby" type="button">العودة للجلسة</button><button class="ob-ghost-btn" id="onlineBoardResultsLeave" type="button">مغادرة</button></div></div></section>
+        <section class="online-board-view online-board-results" id="onlineBoardResults" hidden><div class="ob-results-card"><span class="online-board-kicker">MATCH FINISHED</span><div>🏆</div><h2 id="onlineBoardResultTitle">انتهت المباراة</h2><p id="onlineBoardResultText"></p><div id="onlineBoardResultScores"></div><section class="ob-rematch-panel"><strong>إعادة المباراة</strong><small id="onlineBoardRematchStatus">اضغطوا «جاهز» جميعًا للبدء من جديد، أو اختاروا المغادرة.</small><div id="onlineBoardRematchPlayers"></div></section><div class="ob-results-actions"><button class="ob-primary-btn" id="onlineBoardPlayAgain" type="button">جاهز لمباراة جديدة</button><button class="ob-secondary-btn" id="onlineBoardResultsLobby" type="button">العودة للجلسة</button><button class="ob-ghost-btn" id="onlineBoardResultsLeave" type="button">مغادرة</button></div></div></section>
 
         <div class="ob-site-confirm" id="onlineBoardConfirm" role="dialog" aria-modal="true" aria-labelledby="onlineBoardConfirmTitle" aria-describedby="onlineBoardConfirmMessage" aria-hidden="true" hidden>
             <div class="ob-site-confirm__card">
