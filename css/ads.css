@@ -507,6 +507,50 @@
     }
 }
 
+/* ===== GOOGLE ADSENSE: STORE PLACEMENTS ===== */
+.portal-adsense-placement {
+    box-sizing: border-box;
+    width: min(970px, calc(100% - 32px));
+    min-height: 250px;
+    margin: 20px auto 28px;
+    padding: 10px 12px;
+    border: 1px solid rgba(24, 12, 36, 0.14);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.76);
+    text-align: center;
+}
+
+.portal-adsense-placement[hidden] {
+    display: none !important;
+}
+
+.portal-adsense-placement__label {
+    display: block;
+    margin: 0 0 8px;
+    color: #5f5967;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.portal-adsense-placement .adsbygoogle {
+    min-height: 210px;
+}
+
+@media (max-width: 760px) {
+    .portal-adsense-placement {
+        width: calc(100% - 28px);
+        min-height: 260px;
+        margin: 14px auto 20px;
+        padding: 8px;
+    }
+
+    .portal-adsense-placement .adsbygoogle {
+        min-height: 220px;
+    }
+}
+
 /* ===== HOME LAYOUT OVERRIDE =====
    The home page now owns the ad block inside its right-aligned flow column.
    Reset the old viewport-absolute placement so it cannot cover buttons or
