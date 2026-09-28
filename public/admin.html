@@ -507,24 +507,63 @@
            للمكتبة النشطة قبل ضغط الأدمن على «اعتماد». */
         .ai-question-section { background: linear-gradient(145deg, #fff, #fffaf0); }
         .ai-question-kicker { color: #6d28d9; font-size: .76rem; font-weight: 900; }
-        .ai-generator-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .7fr); gap: 12px; align-items: end; }
+        .ai-generator-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .68fr); gap: 9px; align-items: end; }
         .ai-generator-grid label { display: grid; gap: 6px; font-weight: 900; font-size: .84rem; }
         .ai-generator-grid textarea,
         .ai-generator-grid input,
-        .ai-generator-grid select { width: 100%; min-width: 0; padding: 10px 12px; border: 2px solid #000; border-radius: 8px; box-shadow: 2px 2px 0 #000; font: inherit; font-size: .9rem; background: #fff; }
-        .ai-generator-grid textarea { min-height: 86px; resize: vertical; }
-        .ai-generator-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-        .ai-generator-options label:first-child { grid-column: 1 / -1; }
-        .ai-generator-options .btn-main { grid-column: 1 / -1; width: 100%; padding: 10px 14px; font-size: .95rem; }
+        .ai-generator-grid select,
+        .ai-assistant-tools select { width: 100%; min-width: 0; padding: 7px 9px; border: 1.5px solid #000; border-radius: 7px; box-shadow: 1px 1px 0 #000; font: inherit; font-size: .84rem; background: #fff; }
+        .ai-generator-grid textarea { min-height: 58px; resize: vertical; }
+        .ai-generator-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+        .ai-generator-options label { min-width: 0; }
+        .ai-generator-options .btn-main { grid-column: 1 / -1; width: 100%; min-height: 38px; padding: 6px 10px; font-size: .86rem; }
         .ai-generator-options .btn-main[disabled] { opacity: .55; cursor: wait; }
-        .ai-question-list { margin-top: 16px; }
+        .ai-question-list { margin-top: 10px; gap: 8px; }
+        .ai-question-section { padding: 14px; }
+        .ai-question-section .question-admin-subtitle { margin: 5px 0 8px; font-size: .78rem; line-height: 1.55; }
+        .ai-question-section .question-library-card { padding: 10px; border-width: 1.5px; box-shadow: 2px 2px 0 #000; }
+        .ai-question-section .question-library-card__meta { gap: 5px; margin-bottom: 5px; font-size: .72rem; }
+        .ai-question-section .question-library-card__question { margin-bottom: 3px; font-size: .92rem; }
+        .ai-question-section .question-library-card__answer { font-size: .83rem; line-height: 1.5; }
         .ai-question-card { border-right: 6px solid #7c3aed; background: #fbf8ff; }
         .ai-question-card.is-approved { border-right-color: #16a34a; }
         .ai-question-card.is-rejected { border-right-color: #dc2626; opacity: .72; }
         .ai-question-card.is-archived { border-right-color: #64748b; opacity: .72; }
         .ai-question-card__request { color: #6b7280; font-size: .76rem; margin-top: 6px; overflow-wrap: anywhere; }
-        .ai-request-history { margin-top: 14px; padding: 10px 12px; border: 1px dashed #7c3aed; border-radius: 9px; background: rgba(124,58,237,.06); color: #4c1d95; font-size: .78rem; line-height: 1.7; }
+        .ai-request-history { margin-top: 8px; padding: 7px 9px; border: 1px dashed #7c3aed; border-radius: 8px; background: rgba(124,58,237,.06); color: #4c1d95; font-size: .73rem; line-height: 1.55; }
         .ai-request-history:empty { display: none; }
+        .ai-history-details { margin-top: 8px; font-size: .76rem; }
+        .ai-history-details summary { display:inline-flex; min-height:32px; align-items:center; padding:4px 8px; border:1px solid #7c3aed; border-radius:7px; color:#4c1d95; font-weight:800; cursor:pointer; }
+        .ai-assistant-tools { display:flex; align-items:end; gap:8px; margin:8px 0; }
+        .ai-assistant-tools label { display:grid; grid-template-columns:auto minmax(0,220px); gap:7px; align-items:center; font-size:.76rem; font-weight:800; }
+        .ai-assistant-tools details { position:relative; font-size:.78rem; }
+        .ai-assistant-tools summary,
+        .ai-card-more summary { min-height:34px; display:flex; align-items:center; padding:4px 9px; border:1.5px solid #5b21b6; border-radius:7px; background:#fff; color:#4c1d95; font-weight:900; cursor:pointer; list-style:none; }
+        .ai-assistant-tools summary::-webkit-details-marker,
+        .ai-card-more summary::-webkit-details-marker { display:none; }
+        .ai-assistant-tools details[open] { display:flex; align-items:center; gap:6px; }
+        .ai-assistant-tools details[open] summary { background:#ede9fe; }
+        #aiAssistantTestBtn { min-height:34px; padding:4px 9px; border:1.5px solid #5b21b6; border-radius:7px; background:#fff; color:#4c1d95; font:inherit; font-size:.76rem; font-weight:900; cursor:pointer; }
+        #aiGenerateResult { display:block; overflow-wrap:anywhere; line-height:1.6; margin:8px 0 0; padding:8px 10px; font-size:.82rem; }
+        #aiGenerateProgress { width:100%; height:7px; margin-top:8px; accent-color:#6d28d9; }
+        .ai-generator-grid select, .ai-generator-grid input { min-height:38px; }
+        .ai-question-section .question-library-card__actions { gap:6px; margin-top:8px; align-items:start; }
+        .ai-question-section .question-library-card__actions > button,
+        .ai-card-more summary { min-height:34px; padding:4px 9px; border-width:1.5px; border-radius:7px; box-shadow:1px 1px 0 #000; font-size:.78rem; }
+        .ai-question-section .ai-approve-button { background:#dcfce7; border-color:#15803d; }
+        .ai-card-more { position:relative; }
+        .ai-card-more[open] .ai-card-more__menu { display:flex; }
+        .ai-card-more__menu { display:none; flex-wrap:wrap; gap:6px; margin-top:6px; padding:7px; border:1px solid #c4b5fd; border-radius:7px; background:#fff; }
+        .ai-card-more__menu button { min-height:34px; padding:4px 8px; border:1px solid #000; border-radius:6px; background:#fff; font:inherit; font-size:.76rem; font-weight:800; cursor:pointer; }
+        @media (max-width: 620px) {
+            .ai-generator-grid { grid-template-columns:minmax(0,1fr); }
+            .ai-assistant-tools { justify-content:space-between; }
+            .ai-assistant-tools label { grid-template-columns:auto minmax(0,1fr); flex:1; }
+            .ai-generator-options .btn-main,
+            #aiAssistantTestBtn,
+            .ai-question-section .question-library-card__actions > button,
+            .ai-card-more summary { min-height:44px; }
+        }
 
         /* لوحة الأدمن تعمل بعرض واحد مع الجوال ولا تنشئ تمريرًا أفقيًا. */
         html,
@@ -781,9 +820,23 @@
                     <div class="question-admin-head">
                         <div>
                             <div class="section-title" style="margin-bottom:0">مساعد أسئلة الذكاء الاصطناعي <span class="ai-question-kicker">دفعات قابلة للمراجعة</span></div>
-                            <p class="question-admin-subtitle">اكتب طلبك وحدد العدد. ستصل الأسئلة هنا أولًا، ولا تظهر في اللعب إلا بعد اعتمادك لكل سؤال.</p>
+                            <p class="question-admin-subtitle">صف موضوع الأسئلة وجمهورها، ثم اختر العدد والحرف والصعوبة. يدقّق المساعد تطابق الحرف والتكرار، وتراجع أنت صحة المعلومات قبل اعتمادها في اللعبة.</p>
                         </div>
                         <span id="aiPendingBadge" class="question-badge is-pending">0 معلّقة</span>
+                    </div>
+                    <div class="ai-assistant-tools" aria-label="أدوات مساعد الأسئلة">
+                        <label for="aiPromptPreset">فكرة جاهزة
+                            <select id="aiPromptPreset">
+                                <option value="">اختر فكرة (اختياري)</option>
+                                <option value="أسئلة عائلية متنوعة بصياغة قصيرة وإجابة محددة، من العلوم والجغرافيا والحياة اليومية.">أسئلة عائلية</option>
+                                <option value="أسئلة مناسبة للأطفال عن الحيوانات والطبيعة والأشياء اليومية، دون ألغاز غامضة.">للأطفال</option>
+                                <option value="أسئلة علمية ممتعة تعتمد على حقائق ثابتة، كل سؤال له إجابة واحدة واضحة.">علوم ومعرفة</option>
+                            </select>
+                        </label>
+                        <details>
+                            <summary>أدوات</summary>
+                            <button type="button" id="aiAssistantTestBtn">اختبار الاتصال</button>
+                        </details>
                     </div>
                     <div class="ai-generator-grid">
                         <label>ماذا تريد من المساعد؟
@@ -794,16 +847,22 @@
                                 <input id="aiGenerateCount" type="number" min="1" max="50" value="10" inputmode="numeric">
                             </label>
                             <label>حرف اختياري
-                                <input id="aiGenerateLetter" maxlength="2" placeholder="كل الحروف">
+                                <select id="aiGenerateLetter"><option value="">حروف متنوعة</option><option>ا</option><option>ب</option><option>ت</option><option>ث</option><option>ج</option><option>ح</option><option>خ</option><option>د</option><option>ذ</option><option>ر</option><option>ز</option><option>س</option><option>ش</option><option>ص</option><option>ض</option><option>ط</option><option>ظ</option><option>ع</option><option>غ</option><option>ف</option><option>ق</option><option>ك</option><option>ل</option><option>م</option><option>ن</option><option>هـ</option><option>و</option><option>ي</option></select>
                             </label>
                             <label>الصعوبة
                                 <select id="aiGenerateDifficulty"><option value="">متنوعة</option><option>سهل</option><option>متوسط</option><option>صعب</option></select>
                             </label>
-                            <button class="btn-main" type="button" id="aiGenerateBtn">✨ توليد أسئلة للمراجعة</button>
+                            <button class="btn-main" type="button" id="aiGenerateBtn">توليد أسئلة للمراجعة</button>
                         </div>
                     </div>
-                    <div id="aiGenerateResult" class="result-box" aria-live="polite"></div>
-                    <div id="aiRequestHistory" class="ai-request-history"></div>
+                    <progress id="aiGenerateProgress" max="10" value="0" aria-label="الأسئلة المحفوظة للمراجعة"></progress>
+                    <div id="aiGenerateResult" class="result-box" role="status" aria-live="polite">جاهز لطلبك. تُحفظ الأسئلة على دفعات من خمسة في صندوق المراجعة.</div>
+                    <div class="ai-assistant-presets ai-assistant-state-actions">
+                        <button type="button" id="aiStopBtn" hidden>إيقاف بعد الدفعة الحالية</button>
+                        <button type="button" id="aiRetrySaveBtn" hidden>إعادة حفظ النتائج</button>
+                        <button type="button" id="aiDownloadBtn" hidden>تنزيل النتائج احتياطيًا</button>
+                    </div>
+                    <details class="ai-history-details"><summary>سجل الطلبات السابقة</summary><div id="aiRequestHistory" class="ai-request-history"></div></details>
                     <div class="question-library-list ai-question-list" id="aiQuestionList"><div class="admin-empty">لم تُولّد أسئلة بالذكاء الاصطناعي بعد.</div></div>
                 </div>
 
@@ -844,7 +903,8 @@
         </div>
     </div>
 
-    <script src="js/question-library.js?v=question-overrides-1"></script>
+    <script src="js/question-library.js?v=ai-batches-3"></script>
+    <script src="js/admin-ai-assistant.js?v=3"></script>
     <!-- Script Block -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -876,7 +936,7 @@
                 document.getElementById('onlineAiModel').value = data.model || '—';
                 document.getElementById('onlineAiEnabled').checked = Boolean(data.enabled);
                 result.className = 'result-box ' + (data.enabled && data.configured ? 'success' : 'error');
-                result.textContent = data.enabled && data.configured ? 'التحقق بالذكاء الاصطناعي مفعّل ومهيأ من السيرفر ✅' : 'التحقق البرمجي مفعّل، والذكاء الاصطناعي غير مهيأ بعد من السيرفر.';
+                result.textContent = data.configured ? 'المفتاح موجود في السيرفر؛ هذا لا يؤكد صلاحيته. اضغط اختبار الاتصال للتأكد من رد المزوّد. خيار التفعيل هنا يخص إجابات الأونلاين فقط.' : 'لا يوجد مفتاح للخدمة في السيرفر.';
             } catch (_) {
                 result.className = 'result-box error';
                 result.textContent = 'تعذر قراءة إعدادات التحقق من السيرفر.';
@@ -895,15 +955,7 @@
                 result.className = 'result-box success';
                 result.textContent = `تم الاتصال بالذكاء الاصطناعي بنجاح ✅ (${data.provider || 'AI'} · ${data.model || 'model'} · ${data.latencyMs || 0}ms)`;
             } catch (error) {
-                const message = {
-                    'admin-token-required': 'انتهت جلسة الأدمن، سجّل الدخول من جديد.',
-                    'admin-required': 'لا تملك صلاحية الأدمن لهذا الطلب.',
-                    'ai-not-configured': 'مفتاح الذكاء الاصطناعي غير مهيأ في السيرفر.',
-                    'ai-disabled': 'مساعد الأسئلة غير مفعّل من إعدادات السيرفر.',
-                    'ai-invalid-key': 'مفتاح الذكاء الاصطناعي مرفوض أو ملغى. أنشئ مفتاحًا جديدًا ثم حدّث Vercel وأعد النشر.',
-                    'ai-insufficient-balance': 'رصيد حساب الذكاء الاصطناعي غير كافٍ.',
-                    'ai-rate-limit': 'تم تجاوز حد الطلبات مؤقتًا. انتظر دقيقة ثم حاول مرة أخرى.'
-                }[error?.message] || 'فشل الاتصال بمزود الذكاء الاصطناعي.';
+                const message = window.AdminAiAssistant.errorText(error);
                 result.className = 'result-box error';
                 result.textContent = message;
             }
@@ -942,6 +994,7 @@
         let followerSuggestions = [];
         let aiQuestionSubmissions = [];
         let aiRequestHistory = [];
+        const aiApprovingIds = new Set();
         let questionInboxFilter = 'all';
         let questionLibraryPage = 1;
         let questionLibraryUnsub;
@@ -1008,7 +1061,9 @@
             })();
             ['qlSearch', 'qlLetterFilter', 'qlDifficultyFilter', 'qlStatusFilter', 'qlSourceFilter', 'qlDateFilter'].forEach(id => document.getElementById(id)?.addEventListener('input', () => { questionLibraryPage = 1; renderQuestionLibrary(); }));
             document.getElementById('inboxSearch')?.addEventListener('input', renderFollowerInbox);
-            document.getElementById('aiGenerateBtn')?.addEventListener('click', generateAiQuestions);
+        const aiAssistant = window.AdminAiAssistant.create({ auth, library: window.QuestionLibrary,
+            getExisting: () => [...questionRecords, ...aiQuestionSubmissions] });
+        document.getElementById('aiGenerateBtn')?.addEventListener('click', () => aiAssistant.generate());
             document.querySelectorAll('[data-inbox-filter]').forEach(button => button.addEventListener('click', () => {
                 questionInboxFilter = button.dataset.inboxFilter || 'all';
                 document.querySelectorAll('[data-inbox-filter]').forEach(item => item.classList.toggle('is-selected', item === button));
@@ -1041,80 +1096,45 @@
             const pending = aiQuestionSubmissions.filter(item => item.status === 'pending' && !item.readAt).length;
             const badge = document.getElementById('aiPendingBadge');
             if (badge) badge.textContent = `${pending} معلّقة`;
-            const records = [...aiQuestionSubmissions].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+            const records = aiQuestionSubmissions.filter(item => item.status !== 'approved').sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
             list.innerHTML = records.length ? records.map(item => {
                 const id = encodeURIComponent(item.id);
                 const status = item.status || 'pending';
                 const isPending = status === 'pending';
-                const actionButtons = [
-                    isPending ? `<button type="button" onclick="approveAiQuestionFromAdmin('${id}')">اعتماد للمكتبة</button>` : '',
+                const actionButtons = isPending ? `<button class="ai-approve-button" id="ai-approve-${id}" type="button" onclick="approveAiQuestionFromAdmin('${id}')">اعتماد ونقل للمكتبة</button>` : '';
+                const moreButtons = [
                     `<button type="button" onclick="editAiQuestionFromAdmin('${id}')">تعديل</button>`,
                     isPending ? `<button type="button" onclick="setAiQuestionStatus('${id}','rejected')">رفض</button>` : '',
                     `<button type="button" onclick="setAiQuestionRead('${id}')">${item.readAt ? 'مقروء' : 'تحديد كمقروء'}</button>`,
                     status !== 'archived' ? `<button type="button" onclick="setAiQuestionStatus('${id}','archived')">أرشفة</button>` : `<button type="button" onclick="setAiQuestionStatus('${id}','pending')">إعادة للمراجعة</button>`,
-                    `<button type="button" onclick="deleteAiQuestionFromAdmin('${id}')">حذف</button>`
+                    `<button type="button" onclick="deleteAiQuestionFromAdmin('${id}')">حذف</button>`,
+                    item.requestId ? `<small class="ai-question-card__request">طلب التوليد: ${escapeAdminHtml(item.requestId)}</small>` : ''
                 ].join('');
                 return `<article class="question-library-card ai-question-card is-${escapeAdminHtml(status)} ${!item.readAt && isPending ? 'inbox-unread' : ''}">
                     <div class="question-library-card__meta"><span class="question-badge">${escapeAdminHtml(item.letter || '—')}</span><span class="question-badge is-${escapeAdminHtml(status)}">${statusLabel(status)}</span><span class="question-badge">${escapeAdminHtml(item.category || 'عام')}</span><span class="question-badge">${escapeAdminHtml(item.difficulty || 'متوسط')}</span><small>${escapeAdminHtml(item.name || 'مساعد الذكاء الاصطناعي')} · ${adminDate(item.createdAt)}</small></div>
                     <div class="question-library-card__question">${escapeAdminHtml(item.question)}</div>
                     <div class="question-library-card__answer">الإجابة: ${escapeAdminHtml(item.answer)}</div>
-                    ${item.requestId ? `<div class="ai-question-card__request">طلب التوليد: ${escapeAdminHtml(item.requestId)}</div>` : ''}
-                    <div class="question-library-card__actions">${actionButtons}</div>
+                    <div class="question-library-card__actions">${actionButtons}<details class="ai-card-more"><summary>خيارات</summary><div class="ai-card-more__menu">${moreButtons}</div></details></div>
                 </article>`;
-            }).join('') : '<div class="admin-empty">لم تُولّد أسئلة بالذكاء الاصطناعي بعد.</div>';
+            }).join('') : '<div class="admin-empty">لا توجد أسئلة تحتاج إلى مراجعة.</div>';
         }
 
-        async function generateAiQuestions() {
-            const button = document.getElementById('aiGenerateBtn');
-            const result = document.getElementById('aiGenerateResult');
-            if (!button || !result || button.disabled) return;
-            const count = Math.max(1, Math.min(50, Number(document.getElementById('aiGenerateCount')?.value || 10)));
-            const prompt = document.getElementById('aiGeneratePrompt')?.value.trim() || 'أنشئ أسئلة متنوعة مناسبة للعائلة.';
-            const letter = document.getElementById('aiGenerateLetter')?.value.trim().slice(0, 2) || '';
-            const difficulty = document.getElementById('aiGenerateDifficulty')?.value || '';
-            button.disabled = true;
-            result.className = 'result-box';
-            result.textContent = 'جارٍ إرسال الطلب للمساعد وتدقيق الإجابات…';
-            try {
-                const token = await auth.currentUser?.getIdToken();
-                if (!token) throw new Error('admin-token-required');
-                const response = await fetch('/api/admin/generate-questions', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ count, prompt, letter, difficulty })
-                });
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok || !data.ok) throw new Error(data.message || 'generation-failed');
-                let saved = 0;
-                for (const question of (data.questions || [])) {
-                    await window.QuestionLibrary.addAiQuestion({ ...question, requestId: data.requestId });
-                    saved += 1;
-                }
-                await window.QuestionLibrary.recordAiRequest({ requestId: data.requestId, prompt, count, generatedCount: saved, provider: data.provider, model: data.model });
-                result.className = 'result-box success';
-                result.textContent = `تم توليد ${saved} أسئلة ووضعها في صندوق المراجعة. لن تظهر في اللعب قبل اعتمادها ✅`;
-                document.getElementById('aiGeneratePrompt').value = '';
-            } catch (error) {
-                console.error(error);
-                result.className = 'result-box error';
-                const message = {
-                    'admin-token-required': 'انتهت جلسة الأدمن، سجّل الدخول من جديد.',
-                    'ai-not-configured': 'مفتاح الذكاء الاصطناعي غير مهيأ في السيرفر.',
-                    'ai-disabled': 'مساعد الأسئلة غير مفعّل من إعدادات السيرفر.',
-                    'admin-required': 'لا تملك صلاحية الأدمن لهذا الطلب.',
-                    'ai-invalid-key': 'مفتاح الذكاء الاصطناعي مرفوض أو ملغى. أنشئ مفتاحًا جديدًا وضعه في Vercel ثم أعد النشر.',
-                    'ai-insufficient-balance': 'رصيد حساب الذكاء الاصطناعي غير كافٍ.',
-                    'ai-rate-limit': 'تم تجاوز حد الطلبات مؤقتًا. انتظر دقيقة ثم حاول مرة أخرى.'
-                }[error?.message] || 'تعذر توليد الأسئلة. تحقق من إعدادات الذكاء الاصطناعي واتصال الشبكة.';
-                result.textContent = message;
-            } finally {
-                button.disabled = false;
-            }
-        }
 
         window.approveAiQuestionFromAdmin = async id => {
-            const item = findAiQuestion(id); if (!item || item.status !== 'pending') return;
-            try { await window.QuestionLibrary.approveAiQuestion(item); alert('تم اعتماد السؤال وإضافته للمكتبة ✅'); }
-            catch (error) { console.error(error); alert('تعذر اعتماد سؤال الذكاء الاصطناعي.'); }
+            const item = findAiQuestion(id); if (!item || item.status !== 'pending' || aiApprovingIds.has(item.id)) return;
+            aiApprovingIds.add(item.id);
+            const button = document.getElementById(`ai-approve-${encodeURIComponent(item.id)}`);
+            if (button) { button.disabled = true; button.textContent = 'جارٍ النقل…'; }
+            try {
+                await window.QuestionLibrary.approveAiQuestion(item);
+                const result = document.getElementById('aiGenerateResult');
+                if (result) { result.className = 'result-box success'; result.textContent = 'نُقل السؤال إلى مكتبة الأسئلة وأُزيل من صندوق الذكاء الاصطناعي.'; }
+            } catch (error) {
+                console.error(error);
+                if (button) { button.disabled = false; button.textContent = 'إعادة المحاولة'; }
+                const result = document.getElementById('aiGenerateResult');
+                if (result) { result.className = 'result-box error'; result.textContent = 'تعذر نقل السؤال؛ بقي في صندوق المراجعة دون إنشاء نسخة ناقصة. تحقق من اتصال المكتبة ثم أعد المحاولة.'; }
+            } finally { aiApprovingIds.delete(item.id); }
         };
         window.editAiQuestionFromAdmin = id => {
             const item = findAiQuestion(id); if (!item) return;

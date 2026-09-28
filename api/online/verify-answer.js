@@ -14,8 +14,11 @@ const SYSTEM_PROMPT = `أنت محرك تحقق من الإجابات داخل �
 لا تدخل في نقاش.
 
 الإجابة الصحيحة الرسمية هي Expected Answer التي يرسلها النظام لك.
-يجب عليك فقط مقارنة Expected Answer وPlayer Answer، مع مراعاة الأخطاء الكتابية البسيطة التي لا تغير المعنى أو هوية الإجابة.
+يجب عليك فقط مقارنة Expected Answer وPlayer Answer، مع مراعاة اختلافات الكتابة والأخطاء الإملائية البسيطة.
 اعتبر التشكيل، والمسافات الزائدة أو الناقصة، وعلامات الترقيم، واختلاف أ / إ / آ / ا، واختلاف ى / ي، واختلاف ة / ه عند وضوح المقصود، والمسافة داخل الأسماء المركبة، واختلاف كتابة الاسم الأجنبي بالعربية عند وضوح المقصود، اختلافات غير مؤثرة.
+
+إذا اختلفت إجابة اللاعب بحرف عربي واحد فقط (حذف أو إضافة أو استبدال أو قلب حرفين متجاورين)، فاقبلها عندما تكون زلة كتابية واضحة والمقصود هو نفس الإجابة الرسمية. ارفضها إذا كانت الكلمة الناتجة إجابة أخرى صحيحة أو اسمًا/شيئًا مختلفًا، حتى لو كان الفرق حرفًا واحدًا. لا تتسامح مع أكثر من خطأ حرفي واحد، إلا الاختلافات الكتابية غير المؤثرة المذكورة أعلاه.
+يمكن قبول صياغة قصيرة تشير بوضوح إلى نفس الاسم أو الشيء الرسمي، لكن لا تقبل اسمًا عامًا أو إجابة أوسع أو أضيق تغيّر المقصود.
 
 لا تقبل الإجابة إذا كانت شخصًا أو دولة أو مدينة أو عنصرًا مختلفًا، أو إجابة عامة بدل الاسم المحدد، أو كان التشابه مجرد تشابه أسماء، أو غيّر الخطأ الإملائي المعنى فعليًا، أو كانت إجابة محتملة صحيحة في العالم لكنها ليست Expected Answer المرسل من النظام.
 لا تحاول معرفة إن كان Expected Answer نفسه صحيحًا؛ اعتبره الحقيقة الرسمية لهذه الجولة.
@@ -89,9 +92,14 @@ function obviousMatch(expected, submitted) {
     if (a === b) return true;
     const stripArticle = (value) => value.replace(/^ال(?=[\u0621-\u064A])/, "");
     if (stripArticle(a) === stripArticle(b)) return true;
-    const maxLength = Math.max(a.length, b.length);
-    const maxDistance = maxLength <= 4 ? 1 : Math.min(2, Math.max(1, Math.floor(maxLength * .2)));
-    return editDistance(a, b) <= maxDistance || editDistance(stripArticle(a), stripArticle(b)) <= maxDistance;
+    return editDistance(a, b) === 1 || editDistance(stripArticle(a), stripArticle(b)) === 1;
+}
+
+function sameAnswerIgnoringFormatting(expected, submitted) {
+    const a = normalize(expected); const b = normalize(submitted);
+    if (!a || !b) return false;
+    const stripArticle = (value) => value.replace(/^ال(?=[\u0621-\u064A])/, "");
+    return a === b || stripArticle(a) === stripArticle(b);
 }
 
 function firstLetter(value) {
@@ -180,7 +188,10 @@ async function verifyAnswer(req, res) {
     if (!expectedAnswer || firstLetter(expectedAnswer) !== requiredLetter) {
         return json(res, 400, { valid: false, confidence: 0 });
     }
-    if (obviousMatch(expectedAnswer, playerAnswer)) return json(res, 200, { valid: true, confidence: .96 });
+    // Only spelling/format variants that normalize to the same answer bypass
+    // the model. A one-character edit must be adjudicated by AI so words such
+    // as «جمل» and «جبل» are not accepted merely because they are close.
+    if (sameAnswerIgnoringFormatting(expectedAnswer, playerAnswer)) return json(res, 200, { valid: true, confidence: .99 });
 
     const stored = await readStoredSettings();
     const enabled = stored.enabled === undefined ? String(process.env.ONLINE_AI_ENABLED || "false").toLowerCase() === "true" : stored.enabled === true;
@@ -220,4 +231,5 @@ module.exports = verifyAnswer;
 module.exports.normalizeAnswer = normalize;
 module.exports.editDistance = editDistance;
 module.exports.answerMatches = obviousMatch;
+module.exports.sameAnswerIgnoringFormatting = sameAnswerIgnoringFormatting;
 module.exports.firstLetter = firstLetter;

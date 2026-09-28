@@ -221,6 +221,34 @@
         });
     }
 
+    async function saveAiBatch(data) {
+        assertAdminSession();
+        const id = clean(data.requestId, 120);
+        if (!/^ai-[a-z0-9-]+$/i.test(id) || !Array.isArray(data.questions) || !data.questions.length) throw new Error('invalid-ai-batch');
+        const changes = {};
+        const createdAt = Number(data.generatedAt) || Date.now();
+        data.questions.forEach((item, index) => {
+            const answer = clean(item.answer, 240), letter = clean(item.letter, 2);
+            if (!answerMatchesLetter(answer, letter)) throw new Error('invalid-ai-batch');
+            changes[`${AI_SUBMISSIONS_PATH}/${id}-${index}`] = {
+                type: 'question', status: 'pending', source: 'ai', requestId: id,
+                question: clean(item.question, 500), answer, letter,
+                category: clean(item.category, 50) || 'عام', difficulty: clean(item.difficulty, 20) || 'متوسط',
+                name: 'مساعد الذكاء الاصطناعي', createdAt, updatedAt: createdAt
+            };
+        });
+        changes[`${AI_REQUESTS_PATH}/${id}`] = {
+            type: 'generation', status: 'completed', requestId: id, prompt: clean(data.prompt, 1200),
+            count: data.requestedCount, generatedCount: data.questions.length,
+            model: clean(data.model, 120), provider: clean(data.provider, 60), createdAt, updatedAt: createdAt
+        };
+        const { db, ref, update } = await getDbTools();
+        // One atomic update: a failed save cannot leave a half-saved batch.
+        // Stable keys make retries idempotent instead of creating duplicates.
+        await update(ref(db), changes);
+        return data.questions.length;
+    }
+
     async function recordAiRequest(data) {
         assertAdminSession();
         return createRecord(AI_REQUESTS_PATH, {
@@ -261,11 +289,33 @@
 
     async function approveAiQuestion(submission, overrides = {}) {
         assertAdminSession();
+        const submissionId = String(submission?.id || '');
+        const safeId = safeFirebaseKey(submissionId);
+        if (!safeId || safeId !== submissionId) throw new Error('invalid-ai-question-id');
         const data = { ...submission, ...overrides };
-        const libraryId = await addQuestion({ ...data, source: 'ai', status: 'active', approvedAt: Date.now() });
-        await updateRecord(AI_SUBMISSIONS_PATH, submission.id, {
-            status: 'approved', libraryId, reviewedAt: Date.now(), updatedAt: Date.now(), readAt: submission.readAt || Date.now()
+        const letter = clean(data.letter, 2);
+        const answer = clean(data.answer, 240);
+        if (!answerMatchesLetter(answer, letter)) throw new Error('الإجابة لا تبدأ بالحرف المحدد.');
+
+        // Keep the destination ID stable so a retry/double-click cannot make
+        // duplicate library rows; remove the inbox copy in the same atomic write.
+        const libraryId = `ai-${safeId}`;
+        const approvedAt = Date.now();
+        const { db, ref, update } = await getDbTools();
+        await update(ref(db), {
+            [`${LIBRARY_PATH}/${libraryId}`]: {
+                type: 'question', status: 'active', source: 'ai',
+                question: clean(data.question, 500), answer, letter,
+                category: clean(data.category, 50) || 'عام',
+                difficulty: clean(data.difficulty, 20) || 'متوسط',
+                notes: clean(data.notes, 500),
+                createdAt: Number(data.createdAt) || approvedAt,
+                updatedAt: approvedAt, approvedAt
+            },
+            [`${AI_SUBMISSIONS_PATH}/${submissionId}`]: null
         });
+        cache = null;
+        cacheAt = 0;
         return libraryId;
     }
 
@@ -281,7 +331,7 @@
         subscribeSuggestions: callback => subscribe(SUGGESTIONS_PATH, callback),
         subscribeAiQuestions: callback => subscribe(AI_SUBMISSIONS_PATH, callback),
         subscribeAiRequests: callback => subscribe(AI_REQUESTS_PATH, callback),
-        submitQuestion, submitSuggestion, addQuestion, approveSubmission, addAiQuestion, approveAiQuestion, recordAiRequest,
+        submitQuestion, submitSuggestion, addQuestion, approveSubmission, addAiQuestion, approveAiQuestion, recordAiRequest, saveAiBatch,
         updateQuestionOverride, removeQuestionOverride,
         updateQuestion: (id, value) => { assertAdminSession(); return updateRecord(LIBRARY_PATH, id, { ...value, updatedAt: Date.now() }); },
         removeQuestion: id => { assertAdminSession(); return removeRecord(LIBRARY_PATH, id); },

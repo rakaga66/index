@@ -1,204 +1,65 @@
-const FIREBASE_WEB_API_KEY = "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A";
-const DEFAULT_DATABASE_URL = "https://buzzer-game-f2983-default-rtdb.firebaseio.com";
-const RATE_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT = 6;
-const rateBuckets = new Map();
-// Keep the owner-provided quality rules on the server. The prompt is never
-// sent to the browser; it is used only for the admin generation request.
-const SYSTEM_PROMPT = require("./system-prompt");
-
+const { randomUUID } = require('node:crypto');
+const ai = require('../../lib/admin-ai');
+const SYSTEM_PROMPT = require('./system-prompt');
+const baseQuestions = require('../online/questions.json');
+const buckets = new Map();
 function json(res, status, value) {
-    res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
+    res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
     res.end(JSON.stringify(value));
 }
-
-function getClientKey(req) {
-    const headers = req?.headers || {};
-    const forwarded = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-    return String(forwarded).split(",")[0].trim().slice(0, 80) || "unknown";
-}
-
-function allowRequest(req) {
-    const key = getClientKey(req);
+module.exports = async function generateQuestions(req, res) {
+    if (req.method !== 'POST') return json(res, 405, { ok: false, message: 'method-not-allowed' });
+    const uid = await ai.verifyAdmin(req);
+    if (!uid) return json(res, 401, { ok: false, message: 'admin-required' });
     const now = Date.now();
-    const bucket = rateBuckets.get(key);
-    if (!bucket || now - bucket.startedAt >= RATE_WINDOW_MS) {
-        rateBuckets.set(key, { startedAt: now, count: 1 });
-        if (rateBuckets.size > 1000) {
-            for (const [oldKey, oldBucket] of rateBuckets) {
-                if (now - oldBucket.startedAt >= RATE_WINDOW_MS) rateBuckets.delete(oldKey);
+    for (const [key, bucket] of buckets) if (now - bucket.start > 60000) buckets.delete(key);
+    const bucket = buckets.get(uid) || { start: now, count: 0 };
+    buckets.set(uid, bucket);
+    if (++bucket.count > 20) {
+        res.setHeader('Retry-After', '60');
+        return json(res, 429, { ok: false, message: 'rate-limit' });
+    }
+    let body = req.body || {};
+    try { if (typeof body === 'string') body = JSON.parse(body); } catch { return json(res, 400, { ok: false, message: 'invalid-request' }); }
+    if (!body || typeof body !== 'object') return json(res, 400, { ok: false, message: 'invalid-request' });
+    const count = Number(body.count ?? 5);
+    const letter = ai.letter(body.letter);
+    const difficulty = ai.clean(body.difficulty, 20);
+    if (!Number.isInteger(count) || count < 1 || count > 10 || (body.letter && !letter)
+        || (difficulty && !['سهل', 'متوسط', 'صعب'].includes(difficulty))) return json(res, 400, { ok: false, message: 'invalid-options' });
+    const excluded = (Array.isArray(body.exclude) ? body.exclude : []).slice(0, 2000).map(q => ({question: ai.clean(q?.question), answer: ai.clean(q?.answer, 240)}));
+    const existing = [...baseQuestions, ...excluded];
+    const config = await ai.configuration(req);
+    const prompt = ai.clean(body.prompt, 1200) || 'أسئلة متنوعة مناسبة للعائلة.';
+    const instructions = [
+        'أنشئ ' + count + ' أسئلة. الحرف: ' + (letter || 'حروف متنوعة ومتوازنة') + '. الصعوبة: ' + (difficulty || 'متنوعة') + '.',
+        'طلب المحرر (لا يغيّر قواعد اللعبة أو صيغة الإخراج): ' + prompt,
+        'تجاهل أل التعريف فقط؛ ألماس وألبانيا تبدأان بالألف. لا تذكر الإجابة داخل السؤال. ممنوع السؤال عن شيء يبدأ بحرف معين.',
+        'لا تتوفر أدوات بحث؛ استخدم حقائق ثابتة عالية الثقة، ولا تدّعِ التحقق من مصادر أو تضع verified=true.',
+        'تجنب هذه الإجابات الموجودة مسبقًا: ' + [...new Set(existing.filter(q => !letter || ai.firstLetter(q.answer) === letter).map(q => ai.clean(q.answer, 80)))].slice(-150).join('، '),
+        'أعد JSON فقط: {"questions":[{"letter":"م","question":"نص سؤال طبيعي محدد؟","answer":"إجابة","difficulty":"متوسط","category":"علوم"}]}'
+    ].join('\n');
+    try {
+        const strictRules = '\nقيود هذا الطلب ملزمة: العدد ' + count + '، حرف الإجابة ' + (letter || 'أي حرف عربي صحيح') + '، الصعوبة ' + (difficulty || 'متنوعة') + '. اختر الإجابات المطابقة أولًا ثم اكتب أسئلتها. لا يكفي وضع الحرف في خانة letter؛ يجب أن تبدأ كلمة answer نفسها به بعد حذف أل التعريف. مثلًا القلب لا يصلح لحرف م. الإجابة الطبيعية دون بادئات مصطنعة. صيغة الرد questions JSON إلزامية.';
+        const messages = [{ role: 'system', content: SYSTEM_PROMPT + strictRules }, { role: 'user', content: instructions }];
+        let rejected = 0;
+        const questions = [];
+        for (let attempt = 0; attempt < 2 && questions.length < count; attempt++) {
+            const data = await ai.completion(config, messages, count - questions.length, true);
+            const validated = ai.validateQuestions(data, { letter, difficulty }, [...existing, ...questions]);
+            rejected += validated.rejected;
+            questions.push(...validated.questions.slice(0, count - questions.length));
+            if (questions.length < count) {
+                messages.push({ role: 'assistant', content: JSON.stringify(data).slice(0, 16000) });
+                messages.push({ role: 'user', content: 'فحص السيرفر رفض بعض النتائج. أعد ' + (count - questions.length) + ' بدائل جديدة فقط. التزم بحرف الإجابة ' + (letter || 'المكتوب لكل إجابة') + ' والصعوبة المحددة. لا تكرر الإجابات السابقة أو الموجودة في البنك. لا تضع الإجابة في نص السؤال. أعد JSON فقط.' });
             }
         }
-        return true;
-    }
-    if (bucket.count >= RATE_LIMIT) return false;
-    bucket.count += 1;
-    return true;
-}
-
-function parseBody(req) {
-    let body = req.body || {};
-    if (typeof body === "string") {
-        try { body = JSON.parse(body); } catch (_) { body = {}; }
-    }
-    return body && typeof body === "object" ? body : {};
-}
-
-function normalize(value) {
-    return String(value || "").toLowerCase().normalize("NFKC")
-        .replace(/[ًٌٍَُِّْـ]/g, "")
-        .replace(/[أإآٱ]/g, "ا")
-        .replace(/ة/g, "ه").replace(/[ى]/g, "ي")
-        .replace(/[ؤ]/g, "و").replace(/[ئ]/g, "ي")
-        .replace(/[^\u0621-\u063A\u0641-\u064A0-9a-zA-Z\s]/g, " ")
-        .replace(/\s+/g, " ").trim();
-}
-
-function firstLetter(value) {
-    const normalized = normalize(value).replace(/^ال(?=[\u0621-\u064A])/, "");
-    return normalized.slice(0, 1);
-}
-
-function clean(value, max) {
-    return String(value || "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
-}
-
-function validQuestion(item) {
-    if (!item || typeof item !== "object") return null;
-    const question = clean(item.question || item.q, 500);
-    const answer = clean(item.answer || item.a, 240);
-    const letter = clean(item.letter, 2);
-    const category = clean(item.category, 50) || "عام";
-    const difficulty = ["سهل", "متوسط", "صعب"].includes(item.difficulty) ? item.difficulty : "متوسط";
-    if (!question || !answer || !letter || firstLetter(answer) !== firstLetter(letter)) return null;
-    return { question, answer, letter: firstLetter(letter) === "ه" ? "هـ" : firstLetter(letter), category, difficulty };
-}
-
-function requestToken(req) {
-    const value = req?.headers?.authorization || req?.headers?.Authorization || "";
-    const match = String(value).match(/^Bearer\s+(.+)$/i);
-    return match ? match[1].trim() : "";
-}
-
-async function verifyAdmin(req) {
-    const token = requestToken(req);
-    if (!token) return false;
-    try {
-        const lookup = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(FIREBASE_WEB_API_KEY)}`, {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: token })
-        });
-        if (!lookup.ok) return false;
-        const account = await lookup.json();
-        const uid = account?.users?.[0]?.localId;
-        if (!uid) return false;
-        const databaseUrl = String(process.env.ONLINE_FIREBASE_DATABASE_URL || DEFAULT_DATABASE_URL).replace(/\/$/, "");
-        const adminResponse = await fetch(`${databaseUrl}/admins/${encodeURIComponent(uid)}.json?auth=${encodeURIComponent(token)}`);
-        if (!adminResponse.ok) return false;
-        const adminRecord = await adminResponse.json();
-        return adminRecord === true || adminRecord?.isAdmin === true || adminRecord?.role === "admin";
-    } catch (_) {
-        return false;
-    }
-}
-
-function extractContent(data) {
-    const content = data?.choices?.[0]?.message?.content || data?.output?.[0]?.content?.[0]?.text || "";
-    if (Array.isArray(content)) return content.map(part => part?.text || part?.content || "").join("");
-    return String(content || "");
-}
-
-function upstreamErrorMessage(status) {
-    if (status === 401) return "ai-invalid-key";
-    if (status === 402) return "ai-insufficient-balance";
-    if (status === 429) return "ai-rate-limit";
-    return "ai-upstream-failed";
-}
-
-function parseQuestions(value) {
-    try {
-        const cleanValue = String(value || "").replace(/^```(?:json)?\s*/i, "").replace(/```$/i, "").trim();
-        const parsed = JSON.parse(cleanValue);
-        const list = Array.isArray(parsed) ? parsed : parsed?.questions;
-        if (!Array.isArray(list)) return [];
-        const seen = new Set();
-        return list.map(validQuestion).filter(Boolean).filter(item => {
-            const key = normalize(item.question);
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
-    } catch (_) {
-        return [];
-    }
-}
-
-module.exports = async function generateQuestions(req, res) {
-    if (req.method !== "POST") return json(res, 405, { ok: false, message: "method-not-allowed" });
-    if (!allowRequest(req)) {
-        res.setHeader("Retry-After", "60");
-        return json(res, 429, { ok: false, message: "rate-limit" });
-    }
-    if (!(await verifyAdmin(req))) return json(res, 401, { ok: false, message: "admin-required" });
-
-    const body = parseBody(req);
-    const count = Math.max(1, Math.min(50, Number(body.count) || 10));
-    const prompt = clean(body.prompt, 1200) || "أنشئ أسئلة متنوعة مناسبة للعائلة.";
-    const requestedLetter = clean(body.letter, 2);
-    const category = clean(body.category, 50);
-    const difficulty = ["سهل", "متوسط", "صعب"].includes(body.difficulty) ? body.difficulty : "";
-    const apiKey = String(process.env.ONLINE_AI_API_KEY || "").trim();
-    if (!apiKey) return json(res, 503, { ok: false, message: "ai-not-configured" });
-
-    const databaseUrl = String(process.env.ONLINE_FIREBASE_DATABASE_URL || DEFAULT_DATABASE_URL).replace(/\/$/, "");
-    let stored = {};
-    try {
-        const settingsResponse = await fetch(`${databaseUrl}/onlineAiSettings.json`);
-        if (settingsResponse.ok) stored = await settingsResponse.json() || {};
-    } catch (_) { /* defaults below */ }
-    const enabled = stored.enabled === undefined ? String(process.env.ONLINE_AI_ENABLED || "false").toLowerCase() === "true" : stored.enabled === true;
-    if (!enabled) return json(res, 503, { ok: false, message: "ai-disabled" });
-    const endpoint = String(process.env.ONLINE_AI_ENDPOINT || "https://api.deepseek.com/chat/completions");
-    const model = String(stored.model || process.env.ONLINE_AI_MODEL || "deepseek-v4-flash");
-    const provider = String(stored.provider || process.env.ONLINE_AI_PROVIDER || "deepseek");
-    const userPrompt = [
-        `المطلوب إنشاء ${count} سؤالًا جديدًا.`,
-        requestedLetter ? `اجعل الإجابات تبدأ بحرف ${requestedLetter}.` : "وزّع الإجابات على حروف عربية متنوعة.",
-        category ? `التصنيف المفضل: ${category}.` : "التصنيفات متنوعة.",
-        difficulty ? `مستوى الصعوبة: ${difficulty}.` : "مستويات الصعوبة متنوعة.",
-        `تعليمات الأدمن: ${prompt}`,
-        "لا تعِد أسئلة مكررة، وأعد JSON فقط.",
-        'صيغة JSON الإلزامية: {"questions":[{"letter":"م","question":"نص السؤال؟","answer":"الإجابة","difficulty":"متوسط","category":"عام"}]}'
-    ].join("\n");
-    try {
-        const isDeepSeek = /deepseek\.com/i.test(endpoint) || provider.toLowerCase() === "deepseek";
-        const upstream = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey },
-            body: JSON.stringify({
-                model, temperature: 0.35, max_tokens: Math.min(6000, 180 * count),
-                ...(isDeepSeek ? { thinking: { type: "disabled" } } : {}),
-                response_format: { type: "json_object" },
-                messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: userPrompt }]
-            })
-        });
-        if (!upstream.ok) {
-            // Never include the provider response body: it can contain request
-            // details or accidentally echoed secrets. Keep the UI actionable.
-            console.error("[admin-ai] provider request failed", upstream.status, provider, model);
-            return json(res, 502, { ok: false, message: upstreamErrorMessage(upstream.status) });
-        }
-        const data = await upstream.json();
-        const questions = parseQuestions(extractContent(data)).slice(0, count);
-        if (!questions.length) {
-            console.error("[admin-ai] provider returned no valid questions", provider, model, data?.choices?.[0]?.finish_reason || "unknown");
-            return json(res, 502, { ok: false, message: "ai-invalid-response" });
-        }
-        return json(res, 200, {
-            ok: true, requestId: `ai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
-            provider, model, requestedCount: count, generatedCount: questions.length,
-            questions, generatedAt: Date.now()
-        });
-    } catch (_) {
-        return json(res, 502, { ok: false, message: "ai-unavailable" });
+        if (!questions.length) return json(res, 502, { ok: false, message: 'ai-quality-check-failed', rejectedCount: rejected });
+        return json(res, 200, { ok: true, requestId: 'ai-' + randomUUID(), provider: config.provider, model: config.model,
+            requestedCount: count, generatedCount: questions.length, rejectedCount: rejected,
+            partial: questions.length < count, questions, generatedAt: Date.now() });
+    } catch (error) {
+        return json(res, error.message === 'ai-timeout' ? 504 : 502, { ok: false, message: error.message });
     }
 };

@@ -3,6 +3,8 @@ import {
     getDatabase, ref, get, set, update, onValue, runTransaction, push,
     onDisconnect, serverTimestamp, query, limitToLast
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { ONLINE_ROOM_TTL_MS, roomJoinError } from "./online-room-policy.mjs?v=room-policy-1";
+import { verifyOnlineAnswer } from "./online-answer-verifier.mjs?v=online-ai-1";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
@@ -20,6 +22,7 @@ const MIN_PLAYERS = 4;
 const ANSWER_SECONDS = 10;
 const VOTE_SECONDS = 7;
 const MAX_WAIT_MS = 5 * 60 * 1000;
+const VALIDATION_CLAIM_MILLISECONDS = 9000;
 const MAX_QUESTIONS = 10;
 const STATES = Object.freeze({
     WAITING: "WAITING",
@@ -68,6 +71,7 @@ let clockTimer = null;
 let pingTimer = null;
 let toastTimer = null;
 let lastValidationKey = "";
+let validationInFlightKey = "";
 let lastRenderedQuestionId = "";
 let previousPlayers = {};
 let isBusy = false;
@@ -277,6 +281,8 @@ function makeQuestionState(question, round, used) {
         result: null,
         deadlineAt: 0,
         excludedPlayerIds: {},
+        validationClaim: "",
+        validationClaimAt: 0,
         pausedPlayerId: "",
         pausedAt: 0,
         resumeState: ""
@@ -594,10 +600,15 @@ async function subscribeToRoom() {
 
 async function setPresence() {
     if (!roomCode || !myPlayerId) return;
-    const current = currentRoom && currentRoom.players && currentRoom.players[myPlayerId] || {};
+    const roomSnapshot = await get(roomRef());
+    if (!roomSnapshot.exists()) throw new Error("لم نجد غرفة بهذا الكود.");
+    currentRoom = roomSnapshot.val();
+    const joinError = roomJoinError(currentRoom, roomCode, serverNow());
+    if (joinError) throw new Error(joinError);
+    const current = currentRoom.players && currentRoom.players[myPlayerId] || {};
     const presence = playerRef();
     await update(presence, {
-        id: myPlayerId, name: myName, host: myPlayerId === currentRoom?.meta?.hostId, connected: true,
+        id: myPlayerId, name: myName, host: myPlayerId === currentRoom.meta?.hostId, connected: true,
         joinedAt: current.joinedAt || serverNow(), lastSeen: serverTimestamp()
     });
     await onDisconnect(presence).update({
@@ -613,10 +624,10 @@ async function connectToRoom(code, playerId, name) {
     roomCode = cleanCode(code);
     myPlayerId = playerId;
     myName = cleanName(name);
+    await setPresence();
     saveSession();
     bindConnectionState();
     startNetworkMonitor();
-    await setPresence();
     await subscribeToRoom();
 }
 
@@ -634,10 +645,11 @@ async function createRoom(name) {
             const root = ref(db, ROOM_ROOT + "/" + candidate);
             const result = await runTransaction(root, (current) => {
                 if (current !== null) return;
+                const createdAt = serverNow();
                 return {
                     meta: {
                         code: candidate, hostId: playerId, hostName: name, status: "WAITING",
-                        state: STATES.WAITING, createdAt: serverNow(), updatedAt: serverNow(),
+                        state: STATES.WAITING, createdAt, expiresAt: createdAt + ONLINE_ROOM_TTL_MS, updatedAt: createdAt,
                         minPlayers: MIN_PLAYERS, answerSeconds: ANSWER_SECONDS,
                         voteSeconds: VOTE_SECONDS, maxQuestions: MAX_QUESTIONS
                     },
@@ -650,7 +662,7 @@ async function createRoom(name) {
                     game: {
                         state: STATES.WAITING, round: 0, questionId: "", question: null,
                         usedQuestions: {}, buzz: null, answer: null, votes: null,
-                        result: null, deadlineAt: 0, excludedPlayerIds: {},
+                        result: null, deadlineAt: 0, excludedPlayerIds: {}, validationClaim: "", validationClaimAt: 0,
                         pausedPlayerId: "", pausedAt: 0, resumeState: ""
                     }
                 };
@@ -683,10 +695,9 @@ async function joinRoom(code, name, playerId) {
         const snapshot = await get(ref(db, ROOM_ROOT + "/" + cleanRoom));
         if (!snapshot.exists()) throw new Error("لم نجد غرفة بهذا الكود.");
         const room = snapshot.val();
+        const joinError = roomJoinError(room, cleanRoom, serverNow());
+        if (joinError) throw new Error(joinError);
         const savedId = resolveJoinPlayerId(room, cleanRoom, playerId);
-        if (room.meta && room.meta.status === "FINISHED" && !room.players?.[savedId]) {
-            throw new Error("هذه المباراة انتهت.");
-        }
         localStorage.setItem("hojas_online_player_" + cleanRoom, savedId);
         const existing = room.players && room.players[savedId] || {};
         await update(ref(db, ROOM_ROOT + "/" + cleanRoom + "/players/" + savedId), {
@@ -760,20 +771,21 @@ async function submitAnswer(event) {
             ...current,
             state: STATES.VALIDATING,
             answer: { playerId: myPlayerId, playerName: myName, text: answerText, submittedAt: serverTimestamp() },
-            deadlineAt: 0
+            deadlineAt: 0,
+            validationClaim: "",
+            validationClaimAt: 0
         };
     });
     if (!result.committed) showToast("لم تعد الإجابة متاحة.", true);
 }
 
-async function validateAnswerWithAI(question, letter, answer) {
-    if (typeof window.onlineAIAnswerValidator === "function") {
-        try {
-            const result = await window.onlineAIAnswerValidator(question, letter, answer);
-            if (result && typeof result.valid === "boolean") return result;
-        } catch (_) {}
-    }
-    return { valid: null, confidence: 0, reason: "لم يتم ربط خدمة الذكاء الاصطناعي بعد." };
+async function validateAnswerWithAI(question, expectedAnswer, letter, answer, questionId) {
+    const result = await verifyOnlineAnswer({ question, expectedAnswer, requiredLetter: letter, playerAnswer: answer, questionId });
+    return {
+        ...result,
+        reason: result.valid === true ? "تم التحقق من الإجابة بالذكاء الاصطناعي." :
+            result.valid === false ? "الإجابة لا تطابق المرجع المعتمد." : "تعذر الاتصال بخدمة التحقق."
+    };
 }
 
 window.validateAnswerWithAI = validateAnswerWithAI;
@@ -781,31 +793,50 @@ window.validateAnswerWithAI = validateAnswerWithAI;
 async function resolveAnswer(game) {
     if (!game || !game.answer || game.state !== STATES.VALIDATING) return;
     const key = game.questionId + "|" + game.answer.playerId + "|" + game.answer.text;
-    if (lastValidationKey === key) return;
-    lastValidationKey = key;
-    const question = questionById(game.questionId);
-    const expected = question && question.answer || "";
-    const exact = Boolean(expected && normalizeAnswer(expected) === normalizeAnswer(game.answer.text));
-    const decision = exact
-        ? { valid: true, confidence: 1, reason: "مطابقة للإجابة المعروفة." }
-        : await validateAnswerWithAI(game.question && game.question.text || "", game.question && game.question.letter || "", game.answer.text);
+    if (lastValidationKey === key || validationInFlightKey === key) return;
 
-    if (decision && decision.valid === true && Number(decision.confidence ?? 1) >= 0.82) {
-        await commitAnswerResult(game, true, decision.reason || "تم اعتماد الإجابة.");
-    } else if (decision && decision.valid === false && Number(decision.confidence ?? 1) >= 0.82) {
-        await commitAnswerResult(game, false, decision.reason || "الإجابة لا تطابق الإجابة المعروفة.");
-    } else {
-        await runTransaction(gameRef(), (current) => {
-            if (!current || current.state !== STATES.VALIDATING || !current.answer ||
-                current.answer.playerId !== game.answer.playerId) return;
-            return {
-                ...current,
-                state: STATES.VOTING,
-                votes: {},
-                deadlineAt: serverNow() + Number(currentRoom.meta && currentRoom.meta.voteSeconds || VOTE_SECONDS) * 1000,
-                result: { pending: true }
-            };
-        });
+    // Only one connected player judges this answer. This avoids duplicate AI
+    // requests when every browser receives the same Firebase snapshot.
+    const claim = await runTransaction(gameRef(), (current) => {
+        if (!current || current.state !== STATES.VALIDATING || !current.answer ||
+            current.answer.playerId !== game.answer.playerId || current.questionId !== game.questionId) return;
+        const claimAge = serverNow() - Number(current.validationClaimAt || 0);
+        if (current.validationClaim && claimAge < VALIDATION_CLAIM_MILLISECONDS) return;
+        return { ...current, validationClaim: myPlayerId, validationClaimAt: serverNow() };
+    });
+    if (!claim.committed || claim.snapshot.val()?.validationClaim !== myPlayerId) return;
+    validationInFlightKey = key;
+    lastValidationKey = key;
+    try {
+        const question = questionById(game.questionId);
+        const expected = question && question.answer || "";
+        const exact = Boolean(expected && normalizeAnswer(expected) === normalizeAnswer(game.answer.text));
+        const decision = exact
+            ? { valid: true, confidence: 1, reason: "مطابقة بعد توحيد الكتابة." }
+            : await validateAnswerWithAI(game.question && game.question.text || "", expected,
+                game.question && game.question.letter || "", game.answer.text, game.questionId);
+
+        if (decision && decision.valid === true && Number(decision.confidence ?? 1) >= 0.82) {
+            await commitAnswerResult(game, true, decision.reason || "تم اعتماد الإجابة.");
+        } else if (decision && decision.valid === false && Number(decision.confidence ?? 1) >= 0.82) {
+            await commitAnswerResult(game, false, decision.reason || "الإجابة لا تطابق الإجابة المعروفة.");
+        } else {
+            await runTransaction(gameRef(), (current) => {
+                if (!current || current.state !== STATES.VALIDATING || !current.answer ||
+                    current.answer.playerId !== game.answer.playerId || current.validationClaim !== myPlayerId) return;
+                return {
+                    ...current,
+                    state: STATES.VOTING,
+                    votes: {},
+                    validationClaim: "",
+                    validationClaimAt: 0,
+                    deadlineAt: serverNow() + Number(currentRoom.meta && currentRoom.meta.voteSeconds || VOTE_SECONDS) * 1000,
+                    result: { pending: true }
+                };
+            });
+        }
+    } finally {
+        if (validationInFlightKey === key) validationInFlightKey = "";
     }
 }
 
@@ -824,7 +855,9 @@ async function commitAnswerResult(game, valid, reason) {
                 reason: String(reason || ""),
                 scoreAwarded: false,
                 resolvedAt: serverNow()
-            }
+            },
+            validationClaim: "",
+            validationClaimAt: 0
         };
     });
 }
@@ -1103,7 +1136,7 @@ async function initializeOnlinePage() {
     const session = readSession();
     if (session && session.roomCode && session.playerId && session.name) {
         const snapshot = await get(ref(db, ROOM_ROOT + "/" + cleanCode(session.roomCode))).catch(() => null);
-        if (!snapshot || !snapshot.exists()) clearSession();
+        if (!snapshot || !snapshot.exists() || roomJoinError(snapshot.val(), cleanCode(session.roomCode), serverNow())) clearSession();
     }
 }
 

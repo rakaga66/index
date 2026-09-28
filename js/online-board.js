@@ -5,6 +5,8 @@ import {
     onDisconnect, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { trackOnlineSession } from "./qaf-analytics.js?v=2";
+import { ONLINE_ROOM_TTL_MS, roomJoinError } from "./online-room-policy.mjs?v=room-policy-1";
+import { verifyOnlineAnswer } from "./online-answer-verifier.mjs?v=online-ai-1";
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCV2ZAVYmHxbgZvFPmWtooCHR6C4aMOE3A",
@@ -156,34 +158,15 @@ function normalizeAnswer(value) {
         .replace(/ة/g, "ه").replace(/[ى]/g, "ي").replace(/[ؤ]/g, "و").replace(/[ئ]/g, "ي")
         .replace(/[^\u0621-\u063A\u0641-\u064A0-9a-zA-Z]/g, "").trim();
 }
-function editDistance(left, right) {
-    const a = String(left || ""); const b = String(right || "");
-    const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
-    for (let row = 0; row <= a.length; row += 1) matrix[row][0] = row;
-    for (let col = 0; col <= b.length; col += 1) matrix[0][col] = col;
-    for (let row = 1; row <= a.length; row += 1) {
-        for (let col = 1; col <= b.length; col += 1) {
-            matrix[row][col] = Math.min(
-                matrix[row - 1][col] + 1,
-                matrix[row][col - 1] + 1,
-                matrix[row - 1][col - 1] + (a[row - 1] === b[col - 1] ? 0 : 1)
-            );
-            if (row > 1 && col > 1 && a[row - 1] === b[col - 2] && a[row - 2] === b[col - 1]) {
-                matrix[row][col] = Math.min(matrix[row][col], matrix[row - 2][col - 2] + 1);
-            }
-        }
-    }
-    return matrix[a.length][b.length];
-}
 function answerLooksLikeExpected(expected, submitted) {
     const cleanExpected = normalizeAnswer(expected); const cleanSubmitted = normalizeAnswer(submitted);
     if (!cleanExpected || !cleanSubmitted) return false;
     if (cleanExpected === cleanSubmitted) return true;
     const withoutArticle = (value) => value.replace(/^ال(?=[\u0621-\u064A])/, "");
-    if (withoutArticle(cleanExpected) === withoutArticle(cleanSubmitted)) return true;
-    const maxLength = Math.max(cleanExpected.length, cleanSubmitted.length);
-    const maxDistance = maxLength <= 4 ? 1 : Math.min(2, Math.max(1, Math.floor(maxLength * .2)));
-    return editDistance(cleanExpected, cleanSubmitted) <= maxDistance || editDistance(withoutArticle(cleanExpected), withoutArticle(cleanSubmitted)) <= maxDistance;
+    // Only formatting/orthographic normalization is an instant match. A
+    // one-letter typo goes to the server AI judge, which can reject a nearby
+    // but different word (for example «جمل» versus «جبل»).
+    return withoutArticle(cleanExpected) === withoutArticle(cleanSubmitted);
 }
 function normalizeLetter(value) { return normalizeAnswer(value).slice(0, 1); }
 // Answers in the shared Arabic bank may include the definite article ("ال").
@@ -478,16 +461,11 @@ async function releaseSessionCreationLock(lock) {
     if (Number(localStorage.getItem(localLockKey) || 0) === Number(lock.createdAt)) localStorage.removeItem(localLockKey);
 }
 function isValidRoomForJoin(room, code, playerId) {
-    const meta = room?.meta;
-    if (!meta || String(meta.code || "") !== String(code)) return false;
-    if (!["WAITING", "PLAYING", "FINISHED"].includes(meta.status)) return false;
-    if (meta.status === "FINISHED" && !room.players?.[playerId]) return false;
-    return true;
+    return !roomJoinError(room, code, serverNow());
 }
 function assertRoomCanBeJoined(room, code, playerId) {
-    if (!room || !room.meta || String(room.meta.code || "") !== String(code)) throw new Error("لم نجد جلسة بهذا الكود.");
-    if (!["WAITING", "PLAYING", "FINISHED"].includes(room.meta.status)) throw new Error("هذه الجلسة غير متاحة للدخول.");
-    if (room.meta.status === "FINISHED" && !room.players?.[playerId]) throw new Error("هذه الجلسة انتهت.");
+    const error = roomJoinError(room, code, serverNow());
+    if (error) throw new Error(error);
 }
 
 // A browser can keep the presenter id for a room in localStorage.  If the
@@ -979,16 +957,17 @@ async function createRoom(name) {
     let lock = null;
     let roomCreated = false;
     let playerId = "";
-    let selected = "";
-    try {
-        lock = await acquireSessionCreationLock();
-        playerId = randomId();
-        for (let attempt = 0; attempt < 8 && !selected; attempt += 1) {
-            const candidate = randomRoomCode(); const root = ref(db, ROOM_ROOT + "/" + candidate);
-            const result = await runTransaction(root, (current) => current !== null ? undefined : {
-                meta: { code: candidate, hostId: playerId, hostName: cleanNameValue, status: "WAITING", createdAt: serverNow(), updatedAt: serverNow(), team1Name: "الفريق الأول", team2Name: "الفريق الثاني" },
-                players: { [playerId]: { id: playerId, name: cleanNameValue, host: true, team: null, connected: true, joinedAt: serverNow() } },
-                game: { state: STATES.WAITING, round: 0, board: [], cellLetters: [], selectedCell: null, question: null, usedQuestions: {}, choiceTeam: "", choicePlayerId: "", selectionPlayerIds: [], choices: {}, readyBy: {}, rematchReadyBy: {}, questionChangeVotes: {}, bellPresses: [], answerLog: [], pendingSelectionPlayerIds: [], pendingOwner: "", countdownDeadlineAt: 0, answerTeam: "", answerPhase: "", validationClaim: "", validationClaimAt: 0, buzz: null, answer: null, attemptsUsed: 0, result: null, revealedAnswer: "", feedback: "", feedbackTone: "", deadlineAt: 0, scores: { team1: 0, team2: 0 }, winnerTeam: "", winPath: [] }
+        let selected = "";
+        try {
+            lock = await acquireSessionCreationLock();
+            playerId = randomId();
+            for (let attempt = 0; attempt < 8 && !selected; attempt += 1) {
+                const candidate = randomRoomCode(); const root = ref(db, ROOM_ROOT + "/" + candidate);
+                const createdAt = serverNow();
+                const result = await runTransaction(root, (current) => current !== null ? undefined : {
+                    meta: { code: candidate, hostId: playerId, hostName: cleanNameValue, status: "WAITING", createdAt, expiresAt: createdAt + ONLINE_ROOM_TTL_MS, updatedAt: createdAt, team1Name: "الفريق الأول", team2Name: "الفريق الثاني" },
+                    players: { [playerId]: { id: playerId, name: cleanNameValue, host: true, team: null, connected: true, joinedAt: createdAt } },
+                    game: { state: STATES.WAITING, round: 0, board: [], cellLetters: [], selectedCell: null, question: null, usedQuestions: {}, choiceTeam: "", choicePlayerId: "", selectionPlayerIds: [], choices: {}, readyBy: {}, rematchReadyBy: {}, questionChangeVotes: {}, bellPresses: [], answerLog: [], pendingSelectionPlayerIds: [], pendingOwner: "", countdownDeadlineAt: 0, answerTeam: "", answerPhase: "", validationClaim: "", validationClaimAt: 0, buzz: null, answer: null, attemptsUsed: 0, result: null, revealedAnswer: "", feedback: "", feedbackTone: "", deadlineAt: 0, scores: { team1: 0, team2: 0 }, winnerTeam: "", winPath: [] }
             });
             if (result.committed) selected = candidate;
         }
@@ -1290,21 +1269,6 @@ async function submitAnswer(event) {
     });
 }
 
-async function verifyAnswerWithServer(question, expectedAnswer, playerAnswer, requiredLetter, questionId) {
-    try {
-        const response = await fetch(new URL("/api/online/verify-answer", window.location.origin), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question, expectedAnswer, playerAnswer, requiredLetter, questionId })
-        });
-        if (!response.ok) return { valid: false, confidence: 0, source: "disabled" };
-        const payload = await response.json();
-        return { valid: payload.valid === true, confidence: Math.max(0, Math.min(1, Number(payload.confidence) || 0)), source: "ai" };
-    } catch (_) {
-        return { valid: false, confidence: 0, source: "unavailable" };
-    }
-}
-
 async function resolveAnswer(game) {
     if (!game?.answer || game.state !== STATES.VALIDATING) return;
     const claim = await runTransaction(gameRef(), (current) => {
@@ -1325,11 +1289,18 @@ async function resolveAnswer(game) {
         return;
     }
     if (answerLooksLikeExpected(expected, game.answer.text)) {
-        await commitValidationResult(game, true, "إجابة مطابقة أو بها خطأ كتابي بسيط.", expected, "normalized-fuzzy");
+        await commitValidationResult(game, true, "إجابة مطابقة بعد توحيد الهمزات والتشكيل والكتابة.", expected, "normalized");
         return;
     }
-    const remote = await verifyAnswerWithServer(game.question.text, expected, game.answer.text, requiredLetter, game.question.id);
-    await commitValidationResult(game, remote.valid, remote.valid ? "تم اعتماد الإجابة بعد التحقق." : "الإجابة غير صحيحة.", expected, remote.source);
+    const remote = await verifyOnlineAnswer({
+        question: game.question.text,
+        expectedAnswer: expected,
+        playerAnswer: game.answer.text,
+        requiredLetter,
+        questionId: game.question.id
+    });
+    const accepted = remote.valid && remote.confidence >= 0.82;
+    await commitValidationResult(game, accepted, accepted ? "تم اعتماد الإجابة بعد التحقق." : "الإجابة غير صحيحة أو لم تتأكد منها الخدمة.", expected, remote.source);
 }
 
 async function commitValidationResult(game, valid, reason, expectedAnswer, verificationSource) {

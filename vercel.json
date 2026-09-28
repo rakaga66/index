@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "functions": {
+    "api/admin/generate-questions.js": { "maxDuration": 120 },
+    "api/online/test-connection.js": { "maxDuration": 60 }
+  },
   "cleanUrls": true,
   "trailingSlash": false,
   "routes": [

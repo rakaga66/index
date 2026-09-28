@@ -6,5 +6,6 @@ node_modules
 .git
 tmp
 test-results
+tests
 dist
 build
