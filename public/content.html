@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#211a35">
+  <title>استوديو المحتوى — حروف | قاف</title>
+  <link rel="icon" href="/assets/qaf-favicon.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/content-studio.css?v=1">
+</head>
+<body>
+  <a href="#authForm" class="skip-link">انتقل إلى المحتوى</a>
+  <section id="authGate" class="auth-gate" aria-labelledby="authTitle">
+    <div class="auth-art" aria-hidden="true"><span>ح</span><span>ر</span><span>و</span><span>ف</span></div>
+    <div class="auth-card">
+      <a class="wordmark" href="/">قاف <span lang="en">QAAF</span></a>
+      <p class="eyebrow">مساحة خاصة لصنّاع اللعب</p>
+      <h1 id="authTitle">المحتوى يبدأ من هنا.</h1>
+      <p class="muted">أسئلتك، مراجعاتك، وتعديلاتك. في مساحة واحدة خفيفة.</p>
+      <form id="authForm">
+        <label for="email">البريد الإداري</label>
+        <input id="email" type="email" autocomplete="username" required dir="ltr" placeholder="you@example.com">
+        <label for="password">كلمة المرور</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <p id="authError" class="form-error" role="alert"></p>
+        <button id="loginButton" class="button primary" disabled>دخول الاستوديو <span aria-hidden="true">←</span></button>
+      </form>
+      <p id="authStatus" class="auth-status" role="status">جارٍ التحقق من جلسة الدخول…</p>
+      <button id="retryAuth" class="button subtle" hidden>إعادة محاولة الاتصال</button>
+      <p class="auth-footnote">بنفس حساب لوحة الإدارة. الوصول للمشرفين فقط.</p>
+      <noscript>فعّل JavaScript لاستخدام إدارة المحتوى.</noscript>
+    </div>
+  </section>
+
+  <div id="studio" class="studio" hidden>
+    <aside class="sidebar" aria-label="أقسام المحتوى">
+      <a href="/" class="wordmark">قاف <span lang="en">QAAF</span></a>
+      <div class="game-identity"><span class="game-letter" aria-hidden="true">ح</span><div><strong>حروف</strong><small>استوديو المحتوى</small></div><span class="tiny-tag">إدارة</span></div>
+      <p class="sidebar-label">مساحة العمل</p>
+      <nav class="workspace-nav">
+        <button data-tab="library" aria-pressed="true"><span class="nav-icon" aria-hidden="true">▤</span>المكتبة <span id="navLibrary" class="nav-count">—</span></button>
+        <button data-tab="ai" aria-pressed="false"><span class="nav-icon" aria-hidden="true">✧</span>مراجعة الذكاء <span id="navAi" class="nav-count">—</span></button>
+        <button data-tab="follower" aria-pressed="false"><span class="nav-icon" aria-hidden="true">☷</span>أسئلة المتابعين <span id="navFollower" class="nav-count">—</span></button>
+      </nav>
+      <div class="sidebar-note"><span aria-hidden="true">✦</span><strong>فكرة صغيرة، جولة أجمل.</strong><p>أضف سؤالًا واضحًا، بإجابة دقيقة تبدأ بالحرف المختار.</p></div>
+      <div class="sidebar-bottom"><a href="/admin.html">لوحة الإدارة الكاملة <span aria-hidden="true">↗</span></a><a href="/7roof" target="_blank" rel="noopener">افتح اللعبة <span aria-hidden="true">↗</span></a></div>
+    </aside>
+
+    <main id="workspace" class="workspace" tabindex="-1">
+      <header class="topbar"><span class="breadcrumb">حروف <span aria-hidden="true">/</span> إدارة المحتوى</span><div class="account"><span id="accountName"></span><button id="logoutButton" class="button subtle">خروج</button></div></header>
+      <div class="page-heading"><div><p class="eyebrow">رتّب. حسّن. أطلق السؤال.</p><h1 id="pageTitle">مكتبة الأسئلة<span class="heading-dot" aria-hidden="true">.</span></h1><p id="pageSubtitle" class="muted">كل محتوى اللعبة، تحت يدك.</p></div><button id="newQuestion" class="button primary"><span class="plus" aria-hidden="true">+</span> سؤال جديد</button></div>
+
+      <section class="metrics" aria-label="ملخص المحتوى">
+        <div><span class="metric-mark violet" aria-hidden="true">▤</span><div><span>إجمالي المكتبة</span><strong id="totalCount">—</strong></div></div>
+        <div><span class="metric-mark green" aria-hidden="true">✓</span><div><span>جاهزة للعب</span><strong id="activeCount">—</strong></div></div>
+        <div><span class="metric-mark amber" aria-hidden="true">◷</span><div><span>بانتظار مراجعتك</span><strong id="pendingCount">—</strong></div></div>
+      </section>
+      <div id="loadError" class="load-error" role="alert" hidden><span id="loadErrorText"></span><button id="reloadData" class="button subtle">إعادة المحاولة</button></div>
+      <div class="content-grid">
+        <section class="library-panel" aria-labelledby="listHeading">
+          <div class="panel-heading"><h2 id="listHeading">أسئلة اللعبة</h2><span id="connectionStatus" class="sync-status" role="status">جارٍ الاتصال…</span></div>
+          <div class="toolbar">
+            <label class="search-box"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span class="sr-only">ابحث في السؤال أو الإجابة</span><input id="search" type="search" placeholder="ابحث في السؤال أو الإجابة…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+            <div class="filters"><label><span class="sr-only">الحرف</span><select id="letterFilter"><option value="">كل الحروف</option></select></label><label><span class="sr-only">الحالة</span><select id="statusFilter"></select></label><button id="clearFilters" class="button subtle" hidden>مسح الفلاتر</button><button id="exportButton" class="button subtle" title="تنزيل الأسئلة المعروضة بصيغة JSON">تصدير <span aria-hidden="true">↓</span></button></div>
+          </div>
+          <div class="list-meta"><span id="resultCount" role="status">جارٍ تحميل الأسئلة…</span><span>السؤال / الإجابة</span></div>
+          <div id="questionList" class="question-list" aria-busy="true"></div>
+          <div class="pagination"><button id="previousPage" class="button subtle" aria-label="الصفحة السابقة">→ السابق</button><span id="pageIndicator">—</span><button id="nextPage" class="button subtle" aria-label="الصفحة التالية">التالي ←</button></div>
+        </section>
+
+        <aside id="editorPanel" class="editor-panel" aria-label="محرّر السؤال">
+          <div id="editorEmpty" class="editor-empty"><div class="empty-hex" aria-hidden="true">؟</div><h2>مساحة الأفكار الجيدة</h2><p>اختر سؤالًا لتحسينه، أو أضف فكرة جديدة إلى الجولة القادمة.</p><button id="emptyNew" class="button secondary">أضف أول فكرة <span aria-hidden="true">+</span></button><small>اختصار الحفظ <kbd>Ctrl</kbd> + <kbd>S</kbd></small></div>
+          <form id="editorForm" hidden>
+            <div class="panel-heading"><div><span id="editorKind" class="eyebrow">محرّر المحتوى</span><h2 id="editorTitle">تعديل السؤال</h2></div><button id="closeEditor" type="button" class="button icon-button subtle" aria-label="إغلاق المحرر">×</button></div>
+            <div class="editor-body">
+              <div class="editor-status"><span id="recordSource" class="badge">سؤال جديد</span><span id="draftStatus" class="muted">جاهز للتحرير</span></div>
+              <label for="questionText">السؤال</label><textarea id="questionText" rows="3" maxlength="500" required placeholder="ما السؤال الذي سيشعل المنافسة؟"></textarea>
+              <div class="answer-fields"><div><label for="answerText">الإجابة الصحيحة</label><input id="answerText" maxlength="240" required aria-describedby="letterHint" placeholder="إجابة واضحة ومختصرة"></div><div><label for="questionLetter">الحرف</label><select id="questionLetter" required></select></div></div>
+              <p id="letterHint" class="field-hint">تبدأ الإجابة بالحرف المختار، مع تجاهل «الـ» التعريف.</p>
+              <details class="extra-fields"><summary>تصنيف وملاحظات <span aria-hidden="true">+</span></summary><div class="field-pair"><div><label for="category">التصنيف</label><input id="category" maxlength="50" placeholder="عام" list="categories"><datalist id="categories"><option value="علوم"><option value="جغرافيا"><option value="تاريخ"><option value="رياضة"><option value="ثقافة عامة"></datalist></div><div><label for="difficulty">الصعوبة</label><select id="difficulty"><option>سهل</option><option selected>متوسط</option><option>صعب</option></select></div></div><label for="notes">ملاحظة للمراجعة</label><textarea id="notes" rows="2" maxlength="500" placeholder="مصدر المعلومة أو ملاحظة لك…"></textarea></details>
+              <div class="preview-label">هكذا سيقرأه اللاعب</div><div class="question-preview"><span id="previewLetter" aria-hidden="true">ح</span><p id="previewQuestion">اكتب السؤال لتظهر معاينته هنا.</p><small id="previewAnswer">الإجابة تظهر للمقدم</small></div>
+              <p id="editorError" class="form-error" role="alert"></p>
+            </div>
+            <div class="editor-footer"><button id="saveButton" class="button primary" type="submit">حفظ السؤال <span aria-hidden="true">✓</span></button><div class="record-actions"><button id="approveButton" class="button secondary" type="button" hidden>اعتماد للمكتبة</button><button id="toggleStatus" class="button subtle" type="button" hidden>إيقاف السؤال</button><button id="duplicateButton" class="button subtle" type="button" hidden>نسخة جديدة</button></div><small id="saveHint">يُحفظ في مكتبة اللعبة ويظهر عند تحميل الأسئلة.</small></div>
+          </form>
+        </aside>
+      </div>
+      <footer class="studio-footer"><span>محتوى يستحق اللعب.</span><span>QAAF CONTENT STUDIO</span></footer>
+    </main>
+  </div>
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle"><div class="confirm-content"><span class="eyebrow">لحظة قبل المتابعة</span><h2 id="confirmTitle">لديك تعديلات غير محفوظة</h2><p id="confirmMessage">إذا تابعت، ستفقد تعديلات هذا السؤال.</p><div><button id="confirmCancel" class="button secondary">العودة للتعديل</button><button id="confirmOk" class="button primary">تجاهل التعديلات</button></div></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="/js/questionsData.js"></script>
+  <script src="/js/question-library.js?v=ai-batches-3"></script>
+  <script src="/js/content-studio-store.js?v=1"></script>
+  <script src="/js/content-studio.js?v=1"></script>
+  <script src="/js/content-studio-auth.js?v=1"></script>
+</body>
+</html>
